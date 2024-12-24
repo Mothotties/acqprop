@@ -5,6 +5,7 @@ import { PropertyForm } from "@/components/PropertyForm";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, ChevronRight } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const sampleProperty = {
@@ -21,6 +22,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ThemeToggle />
       <main className="container py-12 space-y-8">
         <div className="space-y-2 text-center md:text-left">
           <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 mb-4 text-sm font-medium text-gold-dark bg-gold-light/10 rounded-full">

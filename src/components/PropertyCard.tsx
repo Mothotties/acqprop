@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PropertyCardProps {
   title: string;
@@ -16,6 +17,16 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ title, price, type, location, metrics }: PropertyCardProps) {
+  const { toast } = useToast();
+
+  const handleViewDetails = () => {
+    toast({
+      title: "Property Details",
+      description: `Viewing details for ${title}`,
+    });
+    console.log("Viewing property details:", { title, price, type, location, metrics });
+  };
+
   return (
     <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg animate-fade-up">
       <CardHeader className="space-y-1">
@@ -33,7 +44,12 @@ export function PropertyCard({ title, price, type, location, metrics }: Property
             <span className="text-3xl font-bold text-primary">
               ${price.toLocaleString()}
             </span>
-            <Button variant="ghost" size="sm" className="text-gold">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gold"
+              onClick={handleViewDetails}
+            >
               View Details <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>

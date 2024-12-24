@@ -12,20 +12,75 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+interface PropertyFormData {
+  propertyName: string;
+  propertyType: string;
+  price: string;
+  location: string;
+  squareFeet: string;
+  yearBuilt: string;
+}
+
 export function PropertyForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<PropertyFormData>({
+    propertyName: "",
+    propertyType: "",
+    price: "",
+    location: "",
+    squareFeet: "",
+    yearBuilt: "",
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
+  const handleTypeChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      propertyType: value,
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Validate form data
+    if (!Object.values(formData).every(value => value)) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Simulate form submission with the collected data
+    console.log("Submitting property data:", formData);
     
-    // Simulate form submission
     setTimeout(() => {
       setLoading(false);
       toast({
         title: "Property Added",
         description: "The property has been successfully added to your portfolio.",
+      });
+      
+      // Reset form
+      setFormData({
+        propertyName: "",
+        propertyType: "",
+        price: "",
+        location: "",
+        squareFeet: "",
+        yearBuilt: "",
       });
     }, 1500);
   };
@@ -43,12 +98,14 @@ export function PropertyForm() {
               <Input
                 id="propertyName"
                 placeholder="Enter property name"
+                value={formData.propertyName}
+                onChange={handleInputChange}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="propertyType">Property Type</Label>
-              <Select>
+              <Select value={formData.propertyType} onValueChange={handleTypeChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -69,6 +126,8 @@ export function PropertyForm() {
                 id="price"
                 type="number"
                 placeholder="Enter purchase price"
+                value={formData.price}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -77,6 +136,8 @@ export function PropertyForm() {
               <Input
                 id="location"
                 placeholder="Enter property location"
+                value={formData.location}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -86,6 +147,8 @@ export function PropertyForm() {
                 id="squareFeet"
                 type="number"
                 placeholder="Enter square footage"
+                value={formData.squareFeet}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -95,6 +158,8 @@ export function PropertyForm() {
                 id="yearBuilt"
                 type="number"
                 placeholder="Enter year built"
+                value={formData.yearBuilt}
+                onChange={handleInputChange}
                 required
               />
             </div>

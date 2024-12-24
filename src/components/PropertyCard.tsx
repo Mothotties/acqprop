@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 
 interface PropertyCardProps {
   title: string;
@@ -31,6 +33,9 @@ export function PropertyCard({ title, price, type, location, metrics }: Property
             <span className="text-3xl font-bold text-primary">
               ${price.toLocaleString()}
             </span>
+            <Button variant="ghost" size="sm" className="text-gold">
+              View Details <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <MetricItem label="Cap Rate" value={`${metrics.capRate}%`} />

@@ -4,6 +4,7 @@ import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { PropertyForm } from "@/components/PropertyForm";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Building2, ChevronRight } from "lucide-react";
 
 const Index = () => {
   const sampleProperty = {
@@ -20,13 +21,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container py-8 space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight animate-fade-up">
-            Property Value Ninja
+      <main className="container py-12 space-y-8">
+        <div className="space-y-2 text-center md:text-left">
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 mb-4 text-sm font-medium text-gold-dark bg-gold-light/10 rounded-full">
+            <Building2 className="w-4 h-4" />
+            Premium Property Analysis
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight lg:text-5xl xl:text-6xl animate-fade-up">
+            Property Value <span className="text-gold">Ninja</span>
           </h1>
-          <p className="text-muted-foreground animate-fade-up">
-            Advanced property analysis for sophisticated investors
+          <p className="max-w-[42rem] text-lg text-muted-foreground animate-fade-up">
+            Sophisticated analysis tools for discerning real estate investors
           </p>
         </div>
 
@@ -35,26 +40,21 @@ const Index = () => {
         </section>
 
         <Tabs defaultValue="properties" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="properties">Properties</TabsTrigger>
-            <TabsTrigger value="analysis">Analysis</TabsTrigger>
-            <TabsTrigger value="location">Location</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-14">
+            <TabsTrigger value="properties" className="text-base">Properties</TabsTrigger>
+            <TabsTrigger value="analysis" className="text-base">Analysis</TabsTrigger>
+            <TabsTrigger value="location" className="text-base">Location</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="properties" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Add New Property
-              </h2>
-            </div>
-            <PropertyForm />
-            
+          <TabsContent value="properties" className="space-y-6">
             <div className="mt-8">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  Recent Properties
+                  Premium Properties
                 </h2>
-                <Button variant="outline">View All</Button>
+                <Button variant="outline" className="gap-2">
+                  View All <ChevronRight className="w-4 h-4" />
+                </Button>
               </div>
               <div className="grid gap-6 mt-4 md:grid-cols-2 lg:grid-cols-3">
                 <PropertyCard {...sampleProperty} />
@@ -72,25 +72,32 @@ const Index = () => {
                 />
               </div>
             </div>
+
+            <div className="p-8 mt-8 border rounded-lg bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/50">
+              <h2 className="mb-6 text-2xl font-semibold tracking-tight">
+                Add New Property
+              </h2>
+              <PropertyForm />
+            </div>
           </TabsContent>
           
-          <TabsContent value="analysis" className="space-y-4">
+          <TabsContent value="analysis" className="space-y-6 pt-6">
             <LocationAnalysis />
           </TabsContent>
           
-          <TabsContent value="location" className="space-y-4">
+          <TabsContent value="location" className="space-y-6 pt-6">
             <div className="grid gap-4">
-              <div className="p-6 border rounded-lg">
-                <h3 className="mb-4 text-xl font-semibold">Location Score: 85/100</h3>
-                <div className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="mb-2 font-medium">Neighborhood Rating</h4>
-                      <p className="text-2xl font-bold text-gold">A+</p>
+              <div className="p-8 border rounded-lg bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/50">
+                <h3 className="mb-6 text-2xl font-semibold">Location Score: 85/100</h3>
+                <div className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="p-6 border rounded-lg">
+                      <h4 className="mb-3 text-lg font-medium">Neighborhood Rating</h4>
+                      <p className="text-3xl font-bold text-gold">A+</p>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="mb-2 font-medium">School District</h4>
-                      <p className="text-2xl font-bold text-gold">9/10</p>
+                    <div className="p-6 border rounded-lg">
+                      <h4 className="mb-3 text-lg font-medium">School District</h4>
+                      <p className="text-3xl font-bold text-gold">9/10</p>
                     </div>
                   </div>
                 </div>

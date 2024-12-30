@@ -3,6 +3,7 @@ import { PropertyCard } from "@/components/PropertyCard";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { PropertyForm } from "@/components/PropertyForm";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
+import { PropertyMetrics } from "@/components/PropertyMetrics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -17,12 +18,20 @@ const Index = () => {
       capRate: 5.8,
       roi: 12.4,
       cashFlow: 25000,
+      occupancyRate: 95,
+      daysOnMarket: 45,
+      appreciationRate: 4.2,
+      riskScore: 3,
+      marketTrend: "Growing",
     },
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <ThemeToggle />
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      
       <main className="container py-12 space-y-8">
         <div className="space-y-2 text-center md:text-left">
           <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 mb-4 text-sm font-medium text-gold-dark bg-gold-light/10 rounded-full">
@@ -39,6 +48,10 @@ const Index = () => {
 
         <section className="animate-fade-up">
           <AnalyticsDashboard />
+        </section>
+
+        <section className="animate-fade-up">
+          <PropertyMetrics metrics={sampleProperty.metrics} />
         </section>
 
         <Tabs defaultValue="properties" className="w-full">

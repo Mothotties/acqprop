@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Building2 } from "lucide-react";
+import { ChevronRight, Building2, TrendingUp, DollarSign, Calendar } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { PropertyMetrics } from "@/components/PropertyMetrics";
 
 interface PropertyCardProps {
   title: string;
@@ -13,6 +14,9 @@ interface PropertyCardProps {
     capRate: number;
     roi: number;
     cashFlow: number;
+    occupancyRate?: number;
+    daysOnMarket?: number;
+    appreciationRate?: number;
   };
 }
 
@@ -57,13 +61,36 @@ export function PropertyCard({ title, price, type, location, metrics }: Property
               View Details <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
+          
           <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-            <MetricItem label="Cap Rate" value={`${metrics.capRate}%`} />
-            <MetricItem label="ROI" value={`${metrics.roi}%`} />
+            <MetricItem label="Cap Rate" value={`${metrics.capRate}%`} icon={<TrendingUp className="w-4 h-4" />} />
+            <MetricItem label="ROI" value={`${metrics.roi}%`} icon={<DollarSign className="w-4 h-4" />} />
             <MetricItem
               label="Cash Flow"
               value={`$${metrics.cashFlow.toLocaleString()}`}
+              icon={<DollarSign className="w-4 h-4" />}
             />
+            {metrics.occupancyRate && (
+              <MetricItem
+                label="Occupancy"
+                value={`${metrics.occupancyRate}%`}
+                icon={<Building2 className="w-4 h-4" />}
+              />
+            )}
+            {metrics.daysOnMarket && (
+              <MetricItem
+                label="Days Listed"
+                value={metrics.daysOnMarket.toString()}
+                icon={<Calendar className="w-4 h-4" />}
+              />
+            )}
+            {metrics.appreciationRate && (
+              <MetricItem
+                label="Appreciation"
+                value={`${metrics.appreciationRate}%`}
+                icon={<TrendingUp className="w-4 h-4" />}
+              />
+            )}
           </div>
         </div>
       </CardContent>
@@ -71,9 +98,16 @@ export function PropertyCard({ title, price, type, location, metrics }: Property
   );
 }
 
-function MetricItem({ label, value }: { label: string; value: string }) {
+interface MetricItemProps {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}
+
+function MetricItem({ label, value, icon }: MetricItemProps) {
   return (
     <div className="space-y-1 text-center">
+      {icon && <div className="flex justify-center text-muted-foreground mb-1">{icon}</div>}
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="text-lg font-semibold">{value}</p>
     </div>

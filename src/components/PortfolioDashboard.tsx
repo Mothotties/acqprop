@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, TrendingUp, DollarSign, AlertTriangle, PieChart } from "lucide-react";
+import { Building2, TrendingUp, DollarSign, PieChart } from "lucide-react";
+import { PropertySearch } from "./PropertySearch";
 import {
   BarChart,
   Bar,
@@ -10,6 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useState } from "react";
 
 const performanceData = [
   { month: "Jan", revenue: 45000 },
@@ -20,7 +22,7 @@ const performanceData = [
   { month: "Jun", revenue: 67000 },
 ];
 
-const properties = [
+const allProperties = [
   {
     id: 1,
     name: "Luxury Apartment Complex",
@@ -48,12 +50,26 @@ const properties = [
 ];
 
 export function PortfolioDashboard() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all");
+
+  const filteredProperties = allProperties.filter((property) => {
+    const matchesSearch = property.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterType === "all" || property.type.toLowerCase() === filterType;
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <div className="space-y-6 animate-fade-up">
+      <PropertySearch
+        onSearch={setSearchQuery}
+        onFilterChange={setFilterType}
+      />
+      
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Properties"
-          value="12"
+          value={allProperties.length.toString()}
           icon={<Building2 className="w-4 h-4" />}
           trend="+2"
           trendUp={true}
@@ -107,7 +123,7 @@ export function PortfolioDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {properties.map((property) => (
+              {filteredProperties.map((property) => (
                 <div
                   key={property.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"

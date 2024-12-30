@@ -5,26 +5,27 @@ import { PropertyForm } from "@/components/PropertyForm";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { PropertyMetrics } from "@/components/PropertyMetrics";
 import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
+import { PortfolioDashboard } from "@/components/PortfolioDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-  const sampleProperty = {
-    title: "Luxury Apartment Complex",
-    price: 2500000,
-    type: "Multi-Family",
-    location: "Beverly Hills, CA",
-    metrics: {
-      capRate: 5.8,
-      roi: 12.4,
-      cashFlow: 25000,
-      occupancyRate: 95,
-      daysOnMarket: 45,
-      appreciationRate: 4.2,
-      riskScore: 3,
-      marketTrend: "Growing",
-    },
-  };
+const sampleProperty = {
+  title: "Luxury Apartment Complex",
+  price: 2500000,
+  type: "Multi-Family",
+  location: "Beverly Hills, CA",
+  metrics: {
+    capRate: 5.8,
+    roi: 12.4,
+    cashFlow: 25000,
+    occupancyRate: 95,
+    daysOnMarket: 45,
+    appreciationRate: 4.2,
+    riskScore: 3,
+    marketTrend: "Growing",
+  },
+};
 
 const Index = () => {
   return (
@@ -55,14 +56,19 @@ const Index = () => {
           <PropertyMetrics metrics={sampleProperty.metrics} />
         </section>
 
-        <Tabs defaultValue="properties" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 h-14">
+        <Tabs defaultValue="portfolio" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 h-14">
+            <TabsTrigger value="portfolio" className="text-base">Portfolio</TabsTrigger>
             <TabsTrigger value="properties" className="text-base">Properties</TabsTrigger>
             <TabsTrigger value="analysis" className="text-base">Analysis</TabsTrigger>
             <TabsTrigger value="location" className="text-base">Location</TabsTrigger>
             <TabsTrigger value="evaluation" className="text-base">Evaluation</TabsTrigger>
           </TabsList>
           
+          <TabsContent value="portfolio" className="space-y-6">
+            <PortfolioDashboard />
+          </TabsContent>
+
           <TabsContent value="properties" className="space-y-6">
             <div className="mt-8">
               <div className="flex items-center justify-between mb-6">

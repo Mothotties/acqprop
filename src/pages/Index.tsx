@@ -4,11 +4,11 @@ import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { PropertyForm } from "@/components/PropertyForm";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { PropertyMetrics } from "@/components/PropertyMetrics";
+import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const Index = () => {
   const sampleProperty = {
     title: "Luxury Apartment Complex",
     price: 2500000,
@@ -26,6 +26,7 @@ const Index = () => {
     },
   };
 
+const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="fixed top-4 right-4 z-50">
@@ -55,10 +56,11 @@ const Index = () => {
         </section>
 
         <Tabs defaultValue="properties" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-14">
+          <TabsList className="grid w-full grid-cols-4 h-14">
             <TabsTrigger value="properties" className="text-base">Properties</TabsTrigger>
             <TabsTrigger value="analysis" className="text-base">Analysis</TabsTrigger>
             <TabsTrigger value="location" className="text-base">Location</TabsTrigger>
+            <TabsTrigger value="evaluation" className="text-base">Evaluation</TabsTrigger>
           </TabsList>
           
           <TabsContent value="properties" className="space-y-6">
@@ -118,6 +120,10 @@ const Index = () => {
                 </div>
               </div>
             </div>
+          </TabsContent>
+          
+          <TabsContent value="evaluation" className="space-y-6 pt-6">
+            <PropertyEvaluationTools />
           </TabsContent>
         </Tabs>
       </main>

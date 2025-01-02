@@ -1,100 +1,117 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Building2, TrendingUp, Users, School, Car, ShoppingBag, Heart, Shield } from "lucide-react";
+import {
+  Building2,
+  TrendingUp,
+  Users,
+  Home,
+  School,
+  ShoppingBag,
+  Car,
+  Heart,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-const marketTrendData = [
-  { month: 'Jan', value: 2500 },
-  { month: 'Feb', value: 2600 },
-  { month: 'Mar', value: 2800 },
-  { month: 'Apr', value: 3000 },
-  { month: 'May', value: 2900 },
-  { month: 'Jun', value: 3100 },
+const populationData = [
+  { year: "2019", population: 45000 },
+  { year: "2020", population: 47000 },
+  { year: "2021", population: 48500 },
+  { year: "2022", population: 50000 },
+  { year: "2023", population: 52000 },
 ];
 
 export function LocationAnalysis() {
   return (
-    <div className="grid gap-4 animate-fade-up">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Market Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[200px] mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={marketTrendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#D4AF37" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
-            <MetricCard
-              icon={<Building2 className="h-4 w-4" />}
-              label="Market Growth"
-              value="+15.3%"
-              badge={{ text: "Growing", className: "bg-green-100 text-green-800" }}
-            />
-            <MetricCard
-              icon={<Users className="h-4 w-4" />}
-              label="Population Growth"
-              value="+2.3%"
-              badge={{ text: "Stable", className: "bg-blue-100 text-blue-800" }}
-            />
-            <MetricCard
-              icon={<TrendingUp className="h-4 w-4" />}
-              label="Price Trend"
-              value="$285/sqft"
-              badge={{ text: "Premium", className: "bg-gold-light/10 text-gold-dark" }}
-            />
-            <MetricCard
-              icon={<Building2 className="h-4 w-4" />}
-              label="Rental Demand"
-              value="High"
-              badge={{ text: "Strong", className: "bg-green-100 text-green-800" }}
-            />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6 animate-fade-up">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Population Growth"
+          value="+4.0%"
+          icon={<Users className="w-4 h-4" />}
+          trend="Growing"
+          positive={true}
+        />
+        <MetricCard
+          title="Property Value Trend"
+          value="+8.2%"
+          icon={<Home className="w-4 h-4" />}
+          trend="Rising"
+          positive={true}
+        />
+        <MetricCard
+          title="School Rating"
+          value="8.5/10"
+          icon={<School className="w-4 h-4" />}
+          trend="Top 10%"
+          positive={true}
+        />
+        <MetricCard
+          title="Business Growth"
+          value="+12"
+          icon={<ShoppingBag className="w-4 h-4" />}
+          trend="Expanding"
+          positive={true}
+        />
+      </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Demographics
-            </CardTitle>
+            <CardTitle>Population Growth Trend</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              <ScoreItem label="Age Distribution" score={75} />
-              <ScoreItem label="Income Level" score={85} />
-              <ScoreItem label="Education Level" score={90} />
-              <ScoreItem label="Employment Rate" score={95} />
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={populationData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="year" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="population" fill="#D4AF37" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Area Features
-            </CardTitle>
+            <CardTitle>Neighborhood Analysis</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <FeatureCard icon={<School />} label="Schools" rating={4.5} count={12} />
-              <FeatureCard icon={<ShoppingBag />} label="Shopping" rating={4.2} count={8} />
-              <FeatureCard icon={<Car />} label="Transport" rating={4.0} count={5} />
-              <FeatureCard icon={<Heart />} label="Healthcare" rating={4.8} count={3} />
+            <div className="space-y-4">
+              <NeighborhoodMetric
+                icon={<Car className="w-4 h-4" />}
+                title="Transit Score"
+                value="85/100"
+                description="Excellent public transportation"
+              />
+              <NeighborhoodMetric
+                icon={<Heart className="w-4 h-4" />}
+                title="Quality of Life"
+                value="92/100"
+                description="High livability score"
+              />
+              <NeighborhoodMetric
+                icon={<ShoppingBag className="w-4 h-4" />}
+                title="Amenities"
+                value="95/100"
+                description="Abundant shopping and dining"
+              />
+              <NeighborhoodMetric
+                icon={<School className="w-4 h-4" />}
+                title="Education"
+                value="88/100"
+                description="Strong school district"
+              />
             </div>
           </CardContent>
         </Card>
@@ -104,64 +121,52 @@ export function LocationAnalysis() {
 }
 
 interface MetricCardProps {
-  icon: React.ReactNode;
-  label: string;
+  title: string;
   value: string;
-  badge: {
-    text: string;
-    className: string;
-  };
-}
-
-function MetricCard({ icon, label, value, badge }: MetricCardProps) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        {icon}
-        <p className="text-sm text-muted-foreground">{label}</p>
-      </div>
-      <p className="text-2xl font-bold">{value}</p>
-      <Badge variant="secondary" className={badge.className}>
-        {badge.text}
-      </Badge>
-    </div>
-  );
-}
-
-interface ScoreItemProps {
-  label: string;
-  score: number;
-}
-
-function ScoreItem({ label, score }: ScoreItemProps) {
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm text-muted-foreground">{score}%</span>
-      </div>
-      <Progress value={score} className="h-2" />
-    </div>
-  );
-}
-
-interface FeatureCardProps {
   icon: React.ReactNode;
-  label: string;
-  rating: number;
-  count: number;
+  trend: string;
+  positive: boolean;
 }
 
-function FeatureCard({ icon, label, rating, count }: FeatureCardProps) {
+function MetricCard({ title, value, icon, trend, positive }: MetricCardProps) {
   return (
-    <div className="p-4 border rounded-lg space-y-2">
-      <div className="flex items-center gap-2">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {icon}
-        <span className="text-sm font-medium">{label}</span>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <Badge
+          variant="secondary"
+          className={positive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}
+        >
+          {trend}
+        </Badge>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface NeighborhoodMetricProps {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  description: string;
+}
+
+function NeighborhoodMetric({ icon, title, value, description }: NeighborhoodMetricProps) {
+  return (
+    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+      <div className="flex items-center gap-3">
+        {icon}
+        <div>
+          <h3 className="font-medium">{title}</h3>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
       </div>
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">Rating: {rating}/5</span>
-        <span className="text-xs text-muted-foreground">({count})</span>
+      <div className="text-right">
+        <span className="font-bold">{value}</span>
       </div>
     </div>
   );

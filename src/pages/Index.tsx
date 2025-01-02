@@ -9,7 +9,7 @@ import { PortfolioDashboard } from "@/components/PortfolioDashboard";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, ChevronRight } from "lucide-react";
+import { Building2, ChevronRight, Brain, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const sampleProperty = {
@@ -39,15 +39,24 @@ const Index = () => {
       <main className="container py-12 space-y-8">
         <div className="space-y-2 text-center md:text-left">
           <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 mb-4 text-sm font-medium text-gold-dark bg-gold-light/10 rounded-full">
-            <Building2 className="w-4 h-4" />
-            Premium Property Analysis
+            <Sparkles className="w-4 h-4" />
+            Next-Generation Real Estate Platform
           </div>
           <h1 className="text-4xl font-bold tracking-tight lg:text-5xl xl:text-6xl animate-fade-up">
-            Property Value <span className="text-gold">Ninja</span>
+            <span className="text-gold">AcuProp</span> AI
           </h1>
           <p className="max-w-[42rem] text-lg text-muted-foreground animate-fade-up">
-            Sophisticated analysis tools for discerning real estate investors
+            The world's first fully integrated, AI-powered real estate ecosystem
           </p>
+          <div className="flex flex-wrap gap-4 justify-center md:justify-start mt-6">
+            <Button className="gap-2" size="lg">
+              <Brain className="w-4 h-4" />
+              AI Analysis
+            </Button>
+            <Button variant="outline" className="gap-2" size="lg">
+              Learn More <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         <section className="animate-fade-up">

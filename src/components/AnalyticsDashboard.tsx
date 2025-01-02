@@ -1,37 +1,37 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Wallet, Building } from "lucide-react";
+import { DollarSign, TrendingUp, Wallet, Building, Brain, ChartBar, Globe } from "lucide-react";
 
 export function AnalyticsDashboard() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <MetricCard
-        title="Total Portfolio Value"
-        value="$2.4M"
+        title="AI-Powered Insights"
+        value="98.5%"
+        trend="Accuracy"
+        positive
+        icon={<Brain className="w-4 h-4" />}
+      />
+      <MetricCard
+        title="Market Analysis"
+        value="Real-time"
+        trend="Live Data"
+        positive
+        icon={<ChartBar className="w-4 h-4" />}
+      />
+      <MetricCard
+        title="Global Properties"
+        value="12,500+"
+        trend="+15%"
+        positive
+        icon={<Globe className="w-4 h-4" />}
+      />
+      <MetricCard
+        title="Portfolio Value"
+        value="$2.4B"
         trend="+12.5%"
         positive
         icon={<DollarSign className="w-4 h-4" />}
-      />
-      <MetricCard
-        title="Average Cap Rate"
-        value="7.2%"
-        trend="+0.5%"
-        positive
-        icon={<TrendingUp className="w-4 h-4" />}
-      />
-      <MetricCard
-        title="Monthly Cash Flow"
-        value="$15,750"
-        trend="-2.3%"
-        positive={false}
-        icon={<Wallet className="w-4 h-4" />}
-      />
-      <MetricCard
-        title="Properties"
-        value="12"
-        trend="+2"
-        positive
-        icon={<Building className="w-4 h-4" />}
       />
     </div>
   );

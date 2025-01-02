@@ -57,6 +57,11 @@ export default {
           DEFAULT: "#D4AF37",
           dark: "#996515",
         },
+        ai: {
+          light: "#6EE7B7",
+          DEFAULT: "#10B981",
+          dark: "#047857",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -80,12 +85,17 @@ export default {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
         "fade-up": "fade-up 0.5s ease-out",
+        "pulse-glow": "pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },

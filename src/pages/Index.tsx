@@ -6,6 +6,7 @@ import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { PropertyMetrics } from "@/components/PropertyMetrics";
 import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
 import { PortfolioDashboard } from "@/components/PortfolioDashboard";
+import { DocumentManager } from "@/components/DocumentManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -57,9 +58,10 @@ const Index = () => {
         </section>
 
         <Tabs defaultValue="portfolio" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 h-14">
+          <TabsList className="grid w-full grid-cols-6 h-14">
             <TabsTrigger value="portfolio" className="text-base">Portfolio</TabsTrigger>
             <TabsTrigger value="properties" className="text-base">Properties</TabsTrigger>
+            <TabsTrigger value="documents" className="text-base">Documents</TabsTrigger>
             <TabsTrigger value="analysis" className="text-base">Analysis</TabsTrigger>
             <TabsTrigger value="location" className="text-base">Location</TabsTrigger>
             <TabsTrigger value="evaluation" className="text-base">Evaluation</TabsTrigger>
@@ -102,6 +104,10 @@ const Index = () => {
               </h2>
               <PropertyForm />
             </div>
+          </TabsContent>
+          
+          <TabsContent value="documents" className="space-y-6">
+            <DocumentManager />
           </TabsContent>
           
           <TabsContent value="analysis" className="space-y-6 pt-6">

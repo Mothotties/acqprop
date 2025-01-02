@@ -8,6 +8,7 @@ import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
 import { PortfolioDashboard } from "@/components/PortfolioDashboard";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
+import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, ChevronRight, Brain, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -64,12 +65,17 @@ const Index = () => {
         </section>
 
         <section className="animate-fade-up">
+          <AIPredictiveAnalytics />
+        </section>
+
+        <section className="animate-fade-up">
           <PropertyMetrics metrics={sampleProperty.metrics} />
         </section>
 
         <Tabs defaultValue="portfolio" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 h-14">
+          <TabsList className="grid w-full grid-cols-8 h-14">
             <TabsTrigger value="portfolio" className="text-base">Portfolio</TabsTrigger>
+            <TabsTrigger value="ai" className="text-base">AI Analysis</TabsTrigger>
             <TabsTrigger value="properties" className="text-base">Properties</TabsTrigger>
             <TabsTrigger value="documents" className="text-base">Documents</TabsTrigger>
             <TabsTrigger value="maintenance" className="text-base">Maintenance</TabsTrigger>
@@ -80,6 +86,10 @@ const Index = () => {
           
           <TabsContent value="portfolio" className="space-y-6">
             <PortfolioDashboard />
+          </TabsContent>
+
+          <TabsContent value="ai" className="space-y-6">
+            <AIPredictiveAnalytics />
           </TabsContent>
 
           <TabsContent value="properties" className="space-y-6">

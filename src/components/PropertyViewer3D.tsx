@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Cube, Maximize2, Minimize2 } from 'lucide-react';
+import { Box, Maximize2, Minimize2 } from 'lucide-react';
 import { useState } from 'react';
 
 export function PropertyViewer3D() {
@@ -94,7 +94,7 @@ export function PropertyViewer3D() {
     <Card className="border-gold/10">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-bold flex items-center gap-2">
-          <Cube className="w-5 h-5" />
+          <Box className="w-5 h-5" />
           3D Property Preview
         </CardTitle>
         <Button

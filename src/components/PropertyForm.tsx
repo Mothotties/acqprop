@@ -63,7 +63,7 @@ export function PropertyForm() {
       return;
     }
 
-    // Simulate form submission with the collected data
+    // Simulate form submission
     console.log("Submitting property data:", formData);
     
     setTimeout(() => {
@@ -100,13 +100,16 @@ export function PropertyForm() {
                 placeholder="Enter property name"
                 value={formData.propertyName}
                 onChange={handleInputChange}
-                required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="propertyType">Property Type</Label>
-              <Select value={formData.propertyType} onValueChange={handleTypeChange}>
-                <SelectTrigger>
+              <Select
+                value={formData.propertyType}
+                onValueChange={handleTypeChange}
+                name="propertyType"
+              >
+                <SelectTrigger id="propertyType">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -128,7 +131,6 @@ export function PropertyForm() {
                 placeholder="Enter purchase price"
                 value={formData.price}
                 onChange={handleInputChange}
-                required
               />
             </div>
             <div className="space-y-2">
@@ -138,7 +140,6 @@ export function PropertyForm() {
                 placeholder="Enter property location"
                 value={formData.location}
                 onChange={handleInputChange}
-                required
               />
             </div>
             <div className="space-y-2">
@@ -149,7 +150,6 @@ export function PropertyForm() {
                 placeholder="Enter square footage"
                 value={formData.squareFeet}
                 onChange={handleInputChange}
-                required
               />
             </div>
             <div className="space-y-2">
@@ -160,7 +160,6 @@ export function PropertyForm() {
                 placeholder="Enter year built"
                 value={formData.yearBuilt}
                 onChange={handleInputChange}
-                required
               />
             </div>
           </div>

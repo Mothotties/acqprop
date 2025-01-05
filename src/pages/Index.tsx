@@ -9,6 +9,7 @@ import { PortfolioDashboard } from "@/components/PortfolioDashboard";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
+import { PropertyViewer3D } from "@/components/PropertyViewer3D";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, ChevronRight, Brain, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -62,6 +63,10 @@ const Index = () => {
 
         <section className="animate-fade-up">
           <AnalyticsDashboard />
+        </section>
+
+        <section className="animate-fade-up">
+          <PropertyViewer3D />
         </section>
 
         <section className="animate-fade-up">

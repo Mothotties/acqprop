@@ -52,7 +52,6 @@ export function PropertyForm() {
     e.preventDefault();
     setLoading(true);
 
-    // Validate form data
     if (!Object.values(formData).every(value => value)) {
       toast({
         title: "Error",
@@ -63,7 +62,6 @@ export function PropertyForm() {
       return;
     }
 
-    // Simulate form submission
     console.log("Submitting property data:", formData);
     
     setTimeout(() => {
@@ -73,7 +71,6 @@ export function PropertyForm() {
         description: "The property has been successfully added to your portfolio.",
       });
       
-      // Reset form
       setFormData({
         propertyName: "",
         propertyType: "",
@@ -105,7 +102,7 @@ export function PropertyForm() {
             <div className="space-y-2">
               <Label htmlFor="propertyType">Property Type</Label>
               <Select
-                value={formData.propertyType}
+                defaultValue={formData.propertyType}
                 onValueChange={handleTypeChange}
                 name="propertyType"
               >

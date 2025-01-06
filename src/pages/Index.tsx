@@ -11,8 +11,9 @@ import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
 import { PropertyViewer3D } from "@/components/PropertyViewer3D";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, ChevronRight, Brain, Sparkles } from "lucide-react";
+import { Building2, ChevronRight, Brain, Sparkles, Building, BarChart3, FileText, Tool, MapPin, Calculator } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PropertySearch } from "@/components/PropertySearch";
 
 const sampleProperty = {
   title: "Luxury Apartment Complex",
@@ -39,75 +40,102 @@ const Index = () => {
       </div>
       
       <main className="container py-12 space-y-8">
-        <div className="space-y-2 text-center md:text-left">
-          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 mb-4 text-sm font-medium text-gold-dark bg-gold-light/10 rounded-full">
+        <div className="space-y-4 text-center md:text-left max-w-4xl mx-auto">
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 mb-4 text-sm font-medium text-gold-dark bg-gold-light/10 rounded-full animate-fade-in">
             <Sparkles className="w-4 h-4" />
             Next-Generation Real Estate Platform
           </div>
-          <h1 className="text-4xl font-bold tracking-tight lg:text-5xl xl:text-6xl animate-fade-up">
-            <span className="text-gold">AcuProp</span> AI
+          <h1 className="text-4xl font-bold tracking-tight lg:text-5xl xl:text-6xl bg-gradient-to-r from-gold to-gold-dark bg-clip-text text-transparent animate-fade-up">
+            <span>AcuProp</span> AI
           </h1>
-          <p className="max-w-[42rem] text-lg text-muted-foreground animate-fade-up">
+          <p className="max-w-[42rem] text-lg text-muted-foreground animate-fade-up delay-100">
             The world's first fully integrated, AI-powered real estate ecosystem
           </p>
-          <div className="flex flex-wrap gap-4 justify-center md:justify-start mt-6">
-            <Button className="gap-2" size="lg">
+          <div className="flex flex-wrap gap-4 justify-center md:justify-start mt-6 animate-fade-up delay-200">
+            <Button className="gap-2 bg-gold hover:bg-gold-dark" size="lg">
               <Brain className="w-4 h-4" />
               AI Analysis
             </Button>
-            <Button variant="outline" className="gap-2" size="lg">
+            <Button variant="outline" className="gap-2 border-gold/20 hover:bg-gold/5" size="lg">
               Learn More <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
-        <section className="animate-fade-up">
-          <AnalyticsDashboard />
-        </section>
+        <div className="grid gap-6 animate-fade-up delay-300">
+          <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <AnalyticsDashboard />
+          </section>
 
-        <section className="animate-fade-up">
-          <PropertyViewer3D />
-        </section>
+          <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            <PropertyViewer3D />
+          </section>
 
-        <section className="animate-fade-up">
-          <AIPredictiveAnalytics />
-        </section>
+          <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+            <AIPredictiveAnalytics />
+          </section>
 
-        <section className="animate-fade-up">
-          <PropertyMetrics metrics={sampleProperty.metrics} />
-        </section>
+          <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+            <PropertyMetrics metrics={sampleProperty.metrics} />
+          </section>
+        </div>
 
-        <Tabs defaultValue="portfolio" className="w-full">
-          <TabsList className="grid w-full grid-cols-8 h-14">
-            <TabsTrigger value="portfolio" className="text-base">Portfolio</TabsTrigger>
-            <TabsTrigger value="ai" className="text-base">AI Analysis</TabsTrigger>
-            <TabsTrigger value="properties" className="text-base">Properties</TabsTrigger>
-            <TabsTrigger value="documents" className="text-base">Documents</TabsTrigger>
-            <TabsTrigger value="maintenance" className="text-base">Maintenance</TabsTrigger>
-            <TabsTrigger value="analysis" className="text-base">Analysis</TabsTrigger>
-            <TabsTrigger value="location" className="text-base">Location</TabsTrigger>
-            <TabsTrigger value="evaluation" className="text-base">Evaluation</TabsTrigger>
+        <Tabs defaultValue="portfolio" className="w-full animate-fade-up delay-400">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 h-auto gap-2 bg-muted/50 p-2">
+            <TabsTrigger value="portfolio" className="gap-2">
+              <Building className="w-4 h-4" />
+              <span className="hidden md:inline">Portfolio</span>
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="gap-2">
+              <Brain className="w-4 h-4" />
+              <span className="hidden md:inline">AI Analysis</span>
+            </TabsTrigger>
+            <TabsTrigger value="properties" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              <span className="hidden md:inline">Properties</span>
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="gap-2">
+              <FileText className="w-4 h-4" />
+              <span className="hidden md:inline">Documents</span>
+            </TabsTrigger>
+            <TabsTrigger value="maintenance" className="gap-2">
+              <Tool className="w-4 h-4" />
+              <span className="hidden md:inline">Maintenance</span>
+            </TabsTrigger>
+            <TabsTrigger value="analysis" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden md:inline">Analysis</span>
+            </TabsTrigger>
+            <TabsTrigger value="location" className="gap-2">
+              <MapPin className="w-4 h-4" />
+              <span className="hidden md:inline">Location</span>
+            </TabsTrigger>
+            <TabsTrigger value="evaluation" className="gap-2">
+              <Calculator className="w-4 h-4" />
+              <span className="hidden md:inline">Evaluation</span>
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="portfolio" className="space-y-6">
+          <TabsContent value="portfolio" className="space-y-6 mt-6">
             <PortfolioDashboard />
           </TabsContent>
 
-          <TabsContent value="ai" className="space-y-6">
+          <TabsContent value="ai" className="space-y-6 mt-6">
             <AIPredictiveAnalytics />
           </TabsContent>
 
-          <TabsContent value="properties" className="space-y-6">
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-6">
+          <TabsContent value="properties" className="space-y-6 mt-6">
+            <div className="space-y-8">
+              <PropertySearch onSearch={() => {}} onFilterChange={() => {}} />
+              <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-semibold tracking-tight">
                   Premium Properties
                 </h2>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 border-gold/20 hover:bg-gold/5">
                   View All <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="grid gap-6 mt-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <PropertyCard {...sampleProperty} />
                 <PropertyCard
                   {...sampleProperty}
@@ -122,40 +150,42 @@ const Index = () => {
                   type="Retail"
                 />
               </div>
-            </div>
 
-            <div className="p-8 mt-8 border rounded-lg bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/50">
-              <h2 className="mb-6 text-2xl font-semibold tracking-tight">
-                Add New Property
-              </h2>
-              <PropertyForm />
+              <div className="rounded-lg border bg-card">
+                <div className="p-6">
+                  <h2 className="text-2xl font-semibold tracking-tight mb-6">
+                    Add New Property
+                  </h2>
+                  <PropertyForm />
+                </div>
+              </div>
             </div>
           </TabsContent>
           
-          <TabsContent value="documents" className="space-y-6">
+          <TabsContent value="documents" className="space-y-6 mt-6">
             <DocumentManager />
           </TabsContent>
           
-          <TabsContent value="maintenance" className="space-y-6 pt-6">
+          <TabsContent value="maintenance" className="space-y-6 mt-6">
             <MaintenanceTracker />
           </TabsContent>
           
-          <TabsContent value="analysis" className="space-y-6 pt-6">
+          <TabsContent value="analysis" className="space-y-6 mt-6">
             <LocationAnalysis />
           </TabsContent>
           
-          <TabsContent value="location" className="space-y-6 pt-6">
+          <TabsContent value="location" className="space-y-6 mt-6">
             <div className="grid gap-4">
-              <div className="p-8 border rounded-lg bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/50">
-                <h3 className="mb-6 text-2xl font-semibold">Location Score: 85/100</h3>
+              <div className="p-8 rounded-lg border bg-card">
+                <h3 className="text-2xl font-semibold mb-6">Location Score: 85/100</h3>
                 <div className="space-y-6">
                   <div className="grid gap-6 md:grid-cols-2">
-                    <div className="p-6 border rounded-lg">
-                      <h4 className="mb-3 text-lg font-medium">Neighborhood Rating</h4>
+                    <div className="p-6 rounded-lg border bg-card/50">
+                      <h4 className="text-lg font-medium mb-3">Neighborhood Rating</h4>
                       <p className="text-3xl font-bold text-gold">A+</p>
                     </div>
-                    <div className="p-6 border rounded-lg">
-                      <h4 className="mb-3 text-lg font-medium">School District</h4>
+                    <div className="p-6 rounded-lg border bg-card/50">
+                      <h4 className="text-lg font-medium mb-3">School District</h4>
                       <p className="text-3xl font-bold text-gold">9/10</p>
                     </div>
                   </div>
@@ -164,7 +194,7 @@ const Index = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="evaluation" className="space-y-6 pt-6">
+          <TabsContent value="evaluation" className="space-y-6 mt-6">
             <PropertyEvaluationTools />
           </TabsContent>
         </Tabs>

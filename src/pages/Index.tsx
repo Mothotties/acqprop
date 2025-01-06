@@ -11,7 +11,7 @@ import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
 import { PropertyViewer3D } from "@/components/PropertyViewer3D";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, ChevronRight, Brain, Sparkles, Building, BarChart3, FileText, Tool, MapPin, Calculator } from "lucide-react";
+import { Building2, ChevronRight, Brain, Sparkles, Building, BarChart3, FileText, Wrench, MapPin, Calculator } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PropertySearch } from "@/components/PropertySearch";
 
@@ -99,7 +99,7 @@ const Index = () => {
               <span className="hidden md:inline">Documents</span>
             </TabsTrigger>
             <TabsTrigger value="maintenance" className="gap-2">
-              <Tool className="w-4 h-4" />
+              <Wrench className="w-4 h-4" />
               <span className="hidden md:inline">Maintenance</span>
             </TabsTrigger>
             <TabsTrigger value="analysis" className="gap-2">

@@ -102,8 +102,8 @@ export function PropertyForm() {
             <div className="space-y-2">
               <Label htmlFor="propertyType">Property Type</Label>
               <Select
-                onValueChange={handleTypeChange}
                 value={formData.propertyType}
+                onValueChange={handleTypeChange}
               >
                 <SelectTrigger id="propertyType">
                   <SelectValue placeholder="Select type" />

@@ -52,6 +52,7 @@ export function PropertyForm() {
     e.preventDefault();
     setLoading(true);
 
+    // Validate all fields are filled
     if (!Object.values(formData).every(value => value)) {
       toast({
         title: "Error",
@@ -62,6 +63,7 @@ export function PropertyForm() {
       return;
     }
 
+    // Log form data and simulate API call
     console.log("Submitting property data:", formData);
     
     setTimeout(() => {
@@ -71,6 +73,7 @@ export function PropertyForm() {
         description: "The property has been successfully added to your portfolio.",
       });
       
+      // Reset form after successful submission
       setFormData({
         propertyName: "",
         propertyType: "",

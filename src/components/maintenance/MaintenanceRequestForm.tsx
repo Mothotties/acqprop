@@ -13,10 +13,14 @@ interface MaintenanceRequestFormProps {
 }
 
 export function MaintenanceRequestForm({ onSubmit }: MaintenanceRequestFormProps) {
-  const [newRequest, setNewRequest] = useState({
+  const [newRequest, setNewRequest] = useState<{
+    property: string;
+    description: string;
+    priority: "High" | "Medium" | "Low";
+  }>({
     property: "",
     description: "",
-    priority: "Medium" as const,
+    priority: "Medium",
   });
 
   const handleSubmit = (e: React.FormEvent) => {

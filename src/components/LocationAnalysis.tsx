@@ -9,6 +9,9 @@ import {
   ShoppingBag,
   Car,
   Heart,
+  Brain,
+  Target,
+  Activity,
 } from "lucide-react";
 import {
   BarChart,
@@ -28,36 +31,45 @@ const populationData = [
   { year: "2023", population: 52000 },
 ];
 
+const marketTrendData = [
+  { month: "Jan", value: 100 },
+  { month: "Feb", value: 105 },
+  { month: "Mar", value: 108 },
+  { month: "Apr", value: 112 },
+  { month: "May", value: 115 },
+  { month: "Jun", value: 120 },
+];
+
 export function LocationAnalysis() {
   return (
     <div className="space-y-6 animate-fade-up">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="Population Growth"
-          value="+4.0%"
-          icon={<Users className="w-4 h-4" />}
-          trend="Growing"
+          title="AI Confidence Score"
+          value="92%"
+          icon={<Brain className="w-4 h-4" />}
+          trend="High Confidence"
           positive={true}
         />
         <MetricCard
-          title="Property Value Trend"
-          value="+8.2%"
-          icon={<Home className="w-4 h-4" />}
-          trend="Rising"
+          title="Market Growth"
+          value="+15.2%"
+          icon={<TrendingUp className="w-4 h-4" />}
+          trend="Outperforming"
           positive={true}
         />
         <MetricCard
-          title="School Rating"
-          value="8.5/10"
-          icon={<School className="w-4 h-4" />}
-          trend="Top 10%"
+          title="Investment Risk"
+          value="Low"
+          icon={<Target className="w-4 h-4" />}
+          trend="Stable"
           positive={true}
         />
         <MetricCard
-          title="Business Growth"
-          value="+12"
-          icon={<ShoppingBag className="w-4 h-4" />}
-          trend="Expanding"
+          title="Market Volatility"
+          value="8.5%"
+          icon={<Activity className="w-4 h-4" />}
+          trend="Below Average"
           positive={true}
         />
       </div>
@@ -65,17 +77,17 @@ export function LocationAnalysis() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Population Growth Trend</CardTitle>
+            <CardTitle>Market Value Trend</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={populationData}>
+                <BarChart data={marketTrendData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="population" fill="#D4AF37" />
+                  <Bar dataKey="value" fill="#D4AF37" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -84,33 +96,37 @@ export function LocationAnalysis() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Neighborhood Analysis</CardTitle>
+            <CardTitle>AI-Powered Location Analysis</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <NeighborhoodMetric
                 icon={<Car className="w-4 h-4" />}
                 title="Transit Score"
-                value="85/100"
-                description="Excellent public transportation"
-              />
-              <NeighborhoodMetric
-                icon={<Heart className="w-4 h-4" />}
-                title="Quality of Life"
                 value="92/100"
-                description="High livability score"
-              />
-              <NeighborhoodMetric
-                icon={<ShoppingBag className="w-4 h-4" />}
-                title="Amenities"
-                value="95/100"
-                description="Abundant shopping and dining"
+                description="Excellent public transportation"
+                trend="+5% YoY"
               />
               <NeighborhoodMetric
                 icon={<School className="w-4 h-4" />}
-                title="Education"
+                title="Education Quality"
+                value="95/100"
+                description="Top-rated school district"
+                trend="+8% YoY"
+              />
+              <NeighborhoodMetric
+                icon={<ShoppingBag className="w-4 h-4" />}
+                title="Amenities Score"
                 value="88/100"
-                description="Strong school district"
+                description="High-end shopping and dining"
+                trend="+12% YoY"
+              />
+              <NeighborhoodMetric
+                icon={<Heart className="w-4 h-4" />}
+                title="Lifestyle Score"
+                value="90/100"
+                description="Premium quality of life"
+                trend="+7% YoY"
               />
             </div>
           </CardContent>
@@ -153,9 +169,10 @@ interface NeighborhoodMetricProps {
   title: string;
   value: string;
   description: string;
+  trend: string;
 }
 
-function NeighborhoodMetric({ icon, title, value, description }: NeighborhoodMetricProps) {
+function NeighborhoodMetric({ icon, title, value, description, trend }: NeighborhoodMetricProps) {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
       <div className="flex items-center gap-3">
@@ -167,6 +184,9 @@ function NeighborhoodMetric({ icon, title, value, description }: NeighborhoodMet
       </div>
       <div className="text-right">
         <span className="font-bold">{value}</span>
+        <Badge variant="secondary" className="ml-2 bg-gold-light/10 text-gold-dark">
+          {trend}
+        </Badge>
       </div>
     </div>
   );

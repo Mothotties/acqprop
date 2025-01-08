@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Building2, TrendingUp, DollarSign, Calendar } from "lucide-react";
+import { ChevronRight, Building2, TrendingUp, DollarSign, Calendar, Brain, Target, Activity } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { PropertyMetrics } from "@/components/PropertyMetrics";
 
@@ -17,6 +17,11 @@ interface PropertyCardProps {
     occupancyRate?: number;
     daysOnMarket?: number;
     appreciationRate?: number;
+    riskScore?: number;
+    marketTrend?: string;
+    aiConfidenceScore?: number;
+    predictedGrowth?: number;
+    marketVolatility?: number;
   };
 }
 
@@ -29,6 +34,12 @@ export function PropertyCard({ title, price, type, location, metrics }: Property
       description: `Viewing details for ${title}`,
     });
     console.log("Viewing property details:", { title, price, type, location, metrics });
+  };
+
+  const getAIScoreBadge = (score: number) => {
+    if (score >= 90) return { text: "High Confidence", class: "bg-green-100 text-green-800" };
+    if (score >= 70) return { text: "Medium Confidence", class: "bg-yellow-100 text-yellow-800" };
+    return { text: "Low Confidence", class: "bg-red-100 text-red-800" };
   };
 
   return (
@@ -52,46 +63,64 @@ export function PropertyCard({ title, price, type, location, metrics }: Property
             <span className="text-3xl font-bold text-primary">
               ${price.toLocaleString()}
             </span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gold hover:text-gold-dark hover:bg-gold-light/10"
-              onClick={handleViewDetails}
-            >
-              View Details <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
+            {metrics.aiConfidenceScore && (
+              <Badge 
+                variant="secondary" 
+                className={getAIScoreBadge(metrics.aiConfidenceScore).class}
+              >
+                <Brain className="w-4 h-4 mr-1" />
+                {getAIScoreBadge(metrics.aiConfidenceScore).text}
+              </Badge>
+            )}
           </div>
           
           <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-            <MetricItem label="Cap Rate" value={`${metrics.capRate}%`} icon={<TrendingUp className="w-4 h-4" />} />
-            <MetricItem label="ROI" value={`${metrics.roi}%`} icon={<DollarSign className="w-4 h-4" />} />
+            <MetricItem 
+              label="Cap Rate" 
+              value={`${metrics.capRate}%`} 
+              icon={<TrendingUp className="w-4 h-4" />} 
+            />
+            <MetricItem 
+              label="ROI" 
+              value={`${metrics.roi}%`} 
+              icon={<DollarSign className="w-4 h-4" />} 
+            />
             <MetricItem
               label="Cash Flow"
               value={`$${metrics.cashFlow.toLocaleString()}`}
               icon={<DollarSign className="w-4 h-4" />}
             />
-            {metrics.occupancyRate && (
+            {metrics.predictedGrowth && (
               <MetricItem
-                label="Occupancy"
-                value={`${metrics.occupancyRate}%`}
-                icon={<Building2 className="w-4 h-4" />}
+                label="AI Growth Prediction"
+                value={`${metrics.predictedGrowth}%`}
+                icon={<Brain className="w-4 h-4" />}
+                positive={metrics.predictedGrowth > 0}
               />
             )}
-            {metrics.daysOnMarket && (
+            {metrics.marketVolatility && (
               <MetricItem
-                label="Days Listed"
-                value={metrics.daysOnMarket.toString()}
-                icon={<Calendar className="w-4 h-4" />}
-              />
-            )}
-            {metrics.appreciationRate && (
-              <MetricItem
-                label="Appreciation"
-                value={`${metrics.appreciationRate}%`}
-                icon={<TrendingUp className="w-4 h-4" />}
+                label="Market Volatility"
+                value={`${metrics.marketVolatility}%`}
+                icon={<Activity className="w-4 h-4" />}
+                badge={{
+                  text: metrics.marketVolatility <= 15 ? "Low" : metrics.marketVolatility <= 30 ? "Medium" : "High",
+                  className: metrics.marketVolatility <= 15 ? "bg-green-100 text-green-800" : 
+                            metrics.marketVolatility <= 30 ? "bg-yellow-100 text-yellow-800" : 
+                            "bg-red-100 text-red-800"
+                }}
               />
             )}
           </div>
+
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full text-gold hover:text-gold-dark hover:bg-gold-light/10"
+            onClick={handleViewDetails}
+          >
+            View Details <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -102,14 +131,28 @@ interface MetricItemProps {
   label: string;
   value: string;
   icon?: React.ReactNode;
+  positive?: boolean;
+  badge?: {
+    text: string;
+    className: string;
+  };
 }
 
-function MetricItem({ label, value, icon }: MetricItemProps) {
+function MetricItem({ label, value, icon, positive, badge }: MetricItemProps) {
   return (
     <div className="space-y-1 text-center">
       {icon && <div className="flex justify-center text-muted-foreground mb-1">{icon}</div>}
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-lg font-semibold">{value}</p>
+      <div className="flex items-center justify-center gap-2">
+        <p className={`text-lg font-semibold ${positive !== undefined ? (positive ? 'text-green-600' : 'text-red-600') : ''}`}>
+          {value}
+        </p>
+        {badge && (
+          <Badge variant="secondary" className={badge.className}>
+            {badge.text}
+          </Badge>
+        )}
+      </div>
     </div>
   );
 }

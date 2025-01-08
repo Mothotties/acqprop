@@ -8,6 +8,9 @@ import {
   PieChart,
   ArrowUpRight,
   AlertTriangle,
+  Target,
+  Activity,
+  TrendingDown,
 } from "lucide-react";
 
 interface PropertyMetricsProps {
@@ -20,6 +23,9 @@ interface PropertyMetricsProps {
     appreciationRate?: number;
     riskScore?: number;
     marketTrend?: string;
+    aiConfidenceScore?: number;
+    predictedGrowth?: number;
+    marketVolatility?: number;
   };
 }
 
@@ -30,6 +36,14 @@ export function PropertyMetrics({ metrics }: PropertyMetricsProps) {
     return "bg-red-100 text-red-800";
   };
 
+  const getGrowthIndicator = (growth: number) => {
+    return growth >= 0 ? (
+      <TrendingUp className="w-4 h-4 text-green-500" />
+    ) : (
+      <TrendingDown className="w-4 h-4 text-red-500" />
+    );
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <MetricCard
@@ -38,23 +52,66 @@ export function PropertyMetrics({ metrics }: PropertyMetricsProps) {
           { label: "Cap Rate", value: `${metrics.capRate}%`, icon: <TrendingUp className="w-4 h-4" /> },
           { label: "ROI", value: `${metrics.roi}%`, icon: <DollarSign className="w-4 h-4" /> },
           { label: "Cash Flow", value: `$${metrics.cashFlow.toLocaleString()}`, icon: <DollarSign className="w-4 h-4" /> },
-        ]}
+          metrics.predictedGrowth !== undefined && {
+            label: "Predicted Growth",
+            value: `${metrics.predictedGrowth}%`,
+            icon: getGrowthIndicator(metrics.predictedGrowth),
+          },
+        ].filter(Boolean)}
       />
       
       <MetricCard
         title="Property Status"
         metrics={[
-          { label: "Occupancy", value: `${metrics.occupancyRate || 0}%`, icon: <Building2 className="w-4 h-4" /> },
-          { label: "Days Listed", value: metrics.daysOnMarket?.toString() || "N/A", icon: <Calendar className="w-4 h-4" /> },
-        ]}
+          metrics.occupancyRate && { 
+            label: "Occupancy", 
+            value: `${metrics.occupancyRate}%`, 
+            icon: <Building2 className="w-4 h-4" /> 
+          },
+          metrics.daysOnMarket && { 
+            label: "Days Listed", 
+            value: metrics.daysOnMarket.toString(), 
+            icon: <Calendar className="w-4 h-4" /> 
+          },
+          metrics.marketVolatility && {
+            label: "Market Volatility",
+            value: `${metrics.marketVolatility}%`,
+            icon: <Activity className="w-4 h-4" />,
+            badge: {
+              text: metrics.marketVolatility <= 15 ? "Low" : metrics.marketVolatility <= 30 ? "Medium" : "High",
+              className: metrics.marketVolatility <= 15 ? "bg-green-100 text-green-800" : 
+                        metrics.marketVolatility <= 30 ? "bg-yellow-100 text-yellow-800" : 
+                        "bg-red-100 text-red-800",
+            },
+          },
+        ].filter(Boolean)}
       />
       
       <MetricCard
         title="Market Analysis"
         metrics={[
-          { label: "Appreciation", value: `${metrics.appreciationRate || 0}%`, icon: <ArrowUpRight className="w-4 h-4" /> },
-          { label: "Market Trend", value: metrics.marketTrend || "Stable", icon: <PieChart className="w-4 h-4" /> },
-        ]}
+          metrics.appreciationRate && { 
+            label: "Appreciation", 
+            value: `${metrics.appreciationRate}%`, 
+            icon: <ArrowUpRight className="w-4 h-4" /> 
+          },
+          metrics.marketTrend && { 
+            label: "Market Trend", 
+            value: metrics.marketTrend, 
+            icon: <PieChart className="w-4 h-4" /> 
+          },
+          metrics.aiConfidenceScore && {
+            label: "AI Confidence",
+            value: `${metrics.aiConfidenceScore}%`,
+            icon: <Target className="w-4 h-4" />,
+            badge: {
+              text: metrics.aiConfidenceScore >= 90 ? "High" : metrics.aiConfidenceScore >= 70 ? "Medium" : "Low",
+              className: metrics.aiConfidenceScore >= 90 ? "bg-green-100 text-green-800" : 
+                        metrics.aiConfidenceScore >= 70 ? "bg-yellow-100 text-yellow-800" : 
+                        "bg-red-100 text-red-800",
+            },
+          },
+        ].filter(Boolean)}
       />
       
       {metrics.riskScore && (

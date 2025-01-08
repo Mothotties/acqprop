@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, TrendingUp, DollarSign, ChartBar } from "lucide-react";
+import { Brain, TrendingUp, DollarSign, ChartBar, Activity, Target, AlertTriangle } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -10,29 +10,40 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  Area,
+  AreaChart,
 } from "recharts";
 
 const forecastData = [
-  { month: "Jan", actual: 500000, predicted: 510000 },
-  { month: "Feb", actual: 520000, predicted: 525000 },
-  { month: "Mar", actual: 530000, predicted: 535000 },
-  { month: "Apr", actual: 540000, predicted: 545000 },
-  { month: "May", actual: 550000, predicted: 560000 },
-  { month: "Jun", actual: 570000, predicted: 575000 },
+  { month: "Jan", actual: 500000, predicted: 510000, confidence: 95 },
+  { month: "Feb", actual: 520000, predicted: 525000, confidence: 93 },
+  { month: "Mar", actual: 530000, predicted: 535000, confidence: 94 },
+  { month: "Apr", actual: 540000, predicted: 545000, confidence: 92 },
+  { month: "May", actual: 550000, predicted: 560000, confidence: 96 },
+  { month: "Jun", actual: 570000, predicted: 575000, confidence: 95 },
 ];
 
 const marketTrends = [
-  { period: "Q1", sentiment: 85, volume: 120, price: 100 },
-  { period: "Q2", sentiment: 75, volume: 110, price: 95 },
-  { period: "Q3", sentiment: 90, volume: 130, price: 110 },
-  { period: "Q4", sentiment: 95, volume: 140, price: 115 },
+  { period: "Q1", sentiment: 85, volume: 120, price: 100, volatility: 12 },
+  { period: "Q2", sentiment: 75, volume: 110, price: 95, volatility: 15 },
+  { period: "Q3", sentiment: 90, volume: 130, price: 110, volatility: 8 },
+  { period: "Q4", sentiment: 95, volume: 140, price: 115, volatility: 10 },
+];
+
+const realTimeData = [
+  { time: "9:00", value: 100, volume: 500 },
+  { time: "10:00", value: 102, volume: 520 },
+  { time: "11:00", value: 101, volume: 510 },
+  { time: "12:00", value: 103, volume: 525 },
+  { time: "13:00", value: 105, volume: 530 },
+  { time: "14:00", value: 106, volume: 535 },
 ];
 
 export function AIPredictiveAnalytics() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <Brain className="w-6 h-6 text-ai" />
+        <Brain className="w-6 h-6 text-blue-500" />
         <h2 className="text-2xl font-bold">AI Predictive Analytics</h2>
       </div>
       
@@ -41,41 +52,48 @@ export function AIPredictiveAnalytics() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Property Value Forecast
+              Real-Time Market Analysis
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={forecastData}>
+                <AreaChart data={realTimeData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="time" />
                   <YAxis />
                   <Tooltip />
-                  <Line
+                  <Area
                     type="monotone"
-                    dataKey="actual"
-                    stroke="#D4AF37"
-                    name="Actual Value"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="predicted"
+                    dataKey="value"
                     stroke="#10B981"
-                    strokeDasharray="5 5"
-                    name="AI Prediction"
+                    fill="#10B98133"
+                    name="Market Value"
                   />
-                </LineChart>
+                  <Area
+                    type="monotone"
+                    dataKey="volume"
+                    stroke="#6366F1"
+                    fill="#6366F133"
+                    name="Trading Volume"
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Confidence Score</p>
-                <p className="text-2xl font-bold text-ai">98.5%</p>
+                <p className="text-sm text-muted-foreground">Market Sentiment</p>
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-green-500" />
+                  <p className="text-2xl font-bold">Bullish</p>
+                </div>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Forecast Horizon</p>
-                <p className="text-2xl font-bold">6 months</p>
+                <p className="text-sm text-muted-foreground">AI Confidence</p>
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-blue-500" />
+                  <p className="text-2xl font-bold">95%</p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -85,7 +103,7 @@ export function AIPredictiveAnalytics() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ChartBar className="w-4 h-4" />
-              Market Trend Analysis
+              Market Risk Analysis
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -97,24 +115,27 @@ export function AIPredictiveAnalytics() {
                   <YAxis />
                   <Tooltip />
                   <Bar dataKey="sentiment" fill="#10B981" name="Market Sentiment" />
-                  <Bar dataKey="volume" fill="#D4AF37" name="Trading Volume" />
-                  <Bar dataKey="price" fill="#6EE7B7" name="Price Index" />
+                  <Bar dataKey="volatility" fill="#F43F5E" name="Volatility" />
+                  <Bar dataKey="volume" fill="#6366F1" name="Trading Volume" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Sentiment</p>
-                <p className="text-2xl font-bold text-ai">95%</p>
+                <p className="text-sm text-muted-foreground">Risk Level</p>
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                  <p className="text-2xl font-bold">Low</p>
+                </div>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Volume</p>
-                <p className="text-2xl font-bold text-gold">+40%</p>
+                <p className="text-sm text-muted-foreground">Volatility</p>
+                <p className="text-2xl font-bold text-red-500">8.5%</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Trend</p>
                 <div className="flex items-center gap-1">
-                  <TrendingUp className="w-4 h-4 text-ai" />
+                  <TrendingUp className="w-4 h-4 text-green-500" />
                   <p className="text-2xl font-bold">Up</p>
                 </div>
               </div>

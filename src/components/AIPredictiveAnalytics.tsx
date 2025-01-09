@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, TrendingUp, DollarSign, ChartBar, Activity, Target, AlertTriangle } from "lucide-react";
+import { MarketSentimentChart } from "./MarketSentimentChart";
 import {
   BarChart,
   Bar,
@@ -48,56 +49,7 @@ export function AIPredictiveAnalytics() {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Real-Time Market Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={realTimeData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#10B981"
-                    fill="#10B98133"
-                    name="Market Value"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="volume"
-                    stroke="#6366F1"
-                    fill="#6366F133"
-                    name="Trading Volume"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Market Sentiment</p>
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-green-500" />
-                  <p className="text-2xl font-bold">Bullish</p>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">AI Confidence</p>
-                <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-blue-500" />
-                  <p className="text-2xl font-bold">95%</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <MarketSentimentChart />
 
         <Card>
           <CardHeader>

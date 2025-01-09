@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Building2,
+  Brain,
   TrendingUp,
   Users,
   Home,
@@ -9,9 +9,10 @@ import {
   ShoppingBag,
   Car,
   Heart,
-  Brain,
   Target,
   Activity,
+  Building2,
+  DollarSign,
 } from "lucide-react";
 import {
   BarChart,
@@ -21,6 +22,11 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 
 const populationData = [
@@ -39,6 +45,15 @@ const marketTrendData = [
   { month: "May", value: 115 },
   { month: "Jun", value: 120 },
 ];
+
+const propertyTypeData = [
+  { name: "Residential", value: 45 },
+  { name: "Commercial", value: 25 },
+  { name: "Industrial", value: 15 },
+  { name: "Mixed-Use", value: 15 },
+];
+
+const COLORS = ["#D4AF37", "#996515", "#F4BD76", "#8B7355"];
 
 export function LocationAnalysis() {
   return (
@@ -74,21 +89,24 @@ export function LocationAnalysis() {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-2">
           <CardHeader>
-            <CardTitle>Market Value Trend</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              Property Value Trends
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={marketTrendData}>
+                <LineChart data={marketTrendData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="value" fill="#D4AF37" />
-                </BarChart>
+                  <Line type="monotone" dataKey="value" stroke="#D4AF37" strokeWidth={2} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -96,42 +114,74 @@ export function LocationAnalysis() {
 
         <Card>
           <CardHeader>
-            <CardTitle>AI-Powered Location Analysis</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              Property Distribution
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <NeighborhoodMetric
-                icon={<Car className="w-4 h-4" />}
-                title="Transit Score"
-                value="92/100"
-                description="Excellent public transportation"
-                trend="+5% YoY"
-              />
-              <NeighborhoodMetric
-                icon={<School className="w-4 h-4" />}
-                title="Education Quality"
-                value="95/100"
-                description="Top-rated school district"
-                trend="+8% YoY"
-              />
-              <NeighborhoodMetric
-                icon={<ShoppingBag className="w-4 h-4" />}
-                title="Amenities Score"
-                value="88/100"
-                description="High-end shopping and dining"
-                trend="+12% YoY"
-              />
-              <NeighborhoodMetric
-                icon={<Heart className="w-4 h-4" />}
-                title="Lifestyle Score"
-                value="90/100"
-                description="Premium quality of life"
-                trend="+7% YoY"
-              />
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={propertyTypeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {propertyTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>AI-Powered Location Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <NeighborhoodMetric
+              icon={<Car className="w-4 h-4" />}
+              title="Transit Score"
+              value="92/100"
+              description="Excellent public transportation"
+              trend="+5% YoY"
+            />
+            <NeighborhoodMetric
+              icon={<School className="w-4 h-4" />}
+              title="Education Quality"
+              value="95/100"
+              description="Top-rated school district"
+              trend="+8% YoY"
+            />
+            <NeighborhoodMetric
+              icon={<ShoppingBag className="w-4 h-4" />}
+              title="Amenities Score"
+              value="88/100"
+              description="High-end shopping and dining"
+              trend="+12% YoY"
+            />
+            <NeighborhoodMetric
+              icon={<Heart className="w-4 h-4" />}
+              title="Lifestyle Score"
+              value="90/100"
+              description="Premium quality of life"
+              trend="+7% YoY"
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

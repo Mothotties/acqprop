@@ -1,41 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Brain,
   TrendingUp,
-  Users,
-  Home,
-  School,
-  ShoppingBag,
-  Car,
-  Heart,
   Target,
   Activity,
-  Building2,
-  DollarSign,
+  Car,
+  School,
+  ShoppingBag,
+  Heart,
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-
-const populationData = [
-  { year: "2019", population: 45000 },
-  { year: "2020", population: 47000 },
-  { year: "2021", population: 48500 },
-  { year: "2022", population: 50000 },
-  { year: "2023", population: 52000 },
-];
+import { MetricCard } from "./location/MetricCard";
+import { PropertyTrends } from "./location/PropertyTrends";
+import { PropertyDistribution } from "./location/PropertyDistribution";
+import { NeighborhoodMetric } from "./location/NeighborhoodMetric";
 
 const marketTrendData = [
   { month: "Jan", value: 100 },
@@ -52,8 +29,6 @@ const propertyTypeData = [
   { name: "Industrial", value: 15 },
   { name: "Mixed-Use", value: 15 },
 ];
-
-const COLORS = ["#D4AF37", "#996515", "#F4BD76", "#8B7355"];
 
 export function LocationAnalysis() {
   return (
@@ -90,59 +65,8 @@ export function LocationAnalysis() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              Property Value Trends
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={marketTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#D4AF37" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5" />
-              Property Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={propertyTypeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {propertyTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <PropertyTrends data={marketTrendData} />
+        <PropertyDistribution data={propertyTypeData} />
       </div>
 
       <Card>
@@ -182,62 +106,6 @@ export function LocationAnalysis() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-interface MetricCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  trend: string;
-  positive: boolean;
-}
-
-function MetricCard({ title, value, icon, trend, positive }: MetricCardProps) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <Badge
-          variant="secondary"
-          className={positive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}
-        >
-          {trend}
-        </Badge>
-      </CardContent>
-    </Card>
-  );
-}
-
-interface NeighborhoodMetricProps {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-  description: string;
-  trend: string;
-}
-
-function NeighborhoodMetric({ icon, title, value, description, trend }: NeighborhoodMetricProps) {
-  return (
-    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-      <div className="flex items-center gap-3">
-        {icon}
-        <div>
-          <h3 className="font-medium">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-      </div>
-      <div className="text-right">
-        <span className="font-bold">{value}</span>
-        <Badge variant="secondary" className="ml-2 bg-gold-light/10 text-gold-dark">
-          {trend}
-        </Badge>
-      </div>
     </div>
   );
 }

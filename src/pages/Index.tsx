@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { PropertyViewer3D } from "@/components/PropertyViewer3D";
 import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
@@ -11,7 +11,6 @@ import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Header } from "@/components/Header";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
 import { LocationSection } from "@/components/LocationSection";
@@ -35,77 +34,69 @@ const sampleProperty = {
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
+    <DashboardLayout>
+      <div className="grid gap-6 animate-fade-up delay-300">
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
+          <AnalyticsDashboard />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
+          <PropertyViewer3D />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <AIPredictiveAnalytics />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <MarketIntelligenceDashboard />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <RiskAssessmentDashboard />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <PropertyMetrics metrics={sampleProperty.metrics} />
+        </section>
       </div>
-      
-      <main className="container py-12 space-y-8">
-        <Header />
 
-        <div className="grid gap-6 animate-fade-up delay-300">
-          <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
-            <AnalyticsDashboard />
-          </section>
+      <Tabs defaultValue="portfolio" className="w-full animate-fade-up delay-400">
+        <NavigationTabs />
+        
+        <TabsContent value="portfolio" className="space-y-6 mt-6">
+          <PortfolioDashboard />
+        </TabsContent>
 
-          <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
-            <PropertyViewer3D />
-          </section>
+        <TabsContent value="ai" className="space-y-6 mt-6">
+          <AIPredictiveAnalytics />
+        </TabsContent>
 
-          <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-            <AIPredictiveAnalytics />
-          </section>
-
-          <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-            <MarketIntelligenceDashboard />
-          </section>
-
-          <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-            <RiskAssessmentDashboard />
-          </section>
-
-          <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-            <PropertyMetrics metrics={sampleProperty.metrics} />
-          </section>
-        </div>
-
-        <Tabs defaultValue="portfolio" className="w-full animate-fade-up delay-400">
-          <NavigationTabs />
-          
-          <TabsContent value="portfolio" className="space-y-6 mt-6">
-            <PortfolioDashboard />
-          </TabsContent>
-
-          <TabsContent value="ai" className="space-y-6 mt-6">
-            <AIPredictiveAnalytics />
-          </TabsContent>
-
-          <TabsContent value="properties" className="space-y-6 mt-6">
-            <PropertiesSection />
-          </TabsContent>
-          
-          <TabsContent value="documents" className="space-y-6 mt-6">
-            <DocumentManager />
-          </TabsContent>
-          
-          <TabsContent value="maintenance" className="space-y-6 mt-6">
-            <MaintenanceTracker />
-          </TabsContent>
-          
-          <TabsContent value="analysis" className="space-y-6 mt-6">
-            <LocationAnalysis />
-          </TabsContent>
-          
-          <TabsContent value="location" className="space-y-6 mt-6">
-            <LocationSection />
-          </TabsContent>
-          
-          <TabsContent value="evaluation" className="space-y-6 mt-6">
-            <PropertyEvaluationTools />
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+        <TabsContent value="properties" className="space-y-6 mt-6">
+          <PropertiesSection />
+        </TabsContent>
+        
+        <TabsContent value="documents" className="space-y-6 mt-6">
+          <DocumentManager />
+        </TabsContent>
+        
+        <TabsContent value="maintenance" className="space-y-6 mt-6">
+          <MaintenanceTracker />
+        </TabsContent>
+        
+        <TabsContent value="analysis" className="space-y-6 mt-6">
+          <LocationAnalysis />
+        </TabsContent>
+        
+        <TabsContent value="location" className="space-y-6 mt-6">
+          <LocationSection />
+        </TabsContent>
+        
+        <TabsContent value="evaluation" className="space-y-6 mt-6">
+          <PropertyEvaluationTools />
+        </TabsContent>
+      </Tabs>
+    </DashboardLayout>
   );
 };
 

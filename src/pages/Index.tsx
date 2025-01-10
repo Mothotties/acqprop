@@ -8,6 +8,7 @@ import { PortfolioDashboard } from "@/components/PortfolioDashboard";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
+import { LocationSection } from "@/components/LocationSection";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { PortfolioDiversification } from "@/components/PortfolioDiversification";

@@ -10,6 +10,7 @@ import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
+import { PortfolioDiversification } from "@/components/PortfolioDiversification";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
@@ -54,6 +55,10 @@ const Index = () => {
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <RiskAssessmentDashboard />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <PortfolioDiversification />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">

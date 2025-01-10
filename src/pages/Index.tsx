@@ -12,6 +12,7 @@ import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { PortfolioDiversification } from "@/components/PortfolioDiversification";
 import { PortfolioPerformanceMetrics } from "@/components/PortfolioPerformanceMetrics";
+import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
@@ -64,6 +65,10 @@ const Index = () => {
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <PortfolioPerformanceMetrics />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <InvestmentOpportunityScoring />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">

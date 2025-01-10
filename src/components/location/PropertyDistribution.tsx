@@ -1,21 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign } from "lucide-react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-
-const COLORS = ["#D4AF37", "#996515", "#F4BD76", "#8B7355"];
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 interface PropertyDistributionProps {
-  data: Array<{ name: string; value: number }>;
+  data: Array<{
+    name: string;
+    value: number;
+  }>;
 }
+
+const COLORS = ["#10B981", "#6366F1", "#F43F5E", "#FBBF24"];
 
 export function PropertyDistribution({ data }: PropertyDistributionProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <DollarSign className="w-5 h-5" />
-          Property Distribution
-        </CardTitle>
+        <CardTitle>Property Type Distribution</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -25,11 +24,11 @@ export function PropertyDistribution({ data }: PropertyDistributionProps) {
                 data={data}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
+                innerRadius={60}
                 outerRadius={80}
                 fill="#8884d8"
+                paddingAngle={5}
                 dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

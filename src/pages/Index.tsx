@@ -16,7 +16,6 @@ import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunity
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
-import { LocationSection } from "@/components/LocationSection";
 
 const sampleProperty = {
   title: "Luxury Apartment Complex",
@@ -77,6 +76,10 @@ const Index = () => {
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <PropertyMetrics metrics={sampleProperty.metrics} />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <LocationAnalysis />
         </section>
       </div>
 

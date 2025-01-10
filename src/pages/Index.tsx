@@ -48,6 +48,10 @@ const Index = () => {
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <PropertyEvaluationTools />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <AIPredictiveAnalytics />
         </section>
 

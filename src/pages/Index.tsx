@@ -16,6 +16,7 @@ import { PortfolioPerformanceMetrics } from "@/components/PortfolioPerformanceMe
 import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
 import { InvestmentOpportunities } from "@/components/InvestmentOpportunities";
 import { MarketSentimentChart } from "@/components/MarketSentimentChart";
+import { PredictiveTrendAnalysis } from "@/components/PredictiveTrendAnalysis";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
@@ -59,6 +60,10 @@ const Index = () => {
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <InvestmentOpportunities />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <PredictiveTrendAnalysis />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">

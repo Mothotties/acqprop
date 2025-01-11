@@ -15,6 +15,7 @@ import { PortfolioDiversification } from "@/components/PortfolioDiversification"
 import { PortfolioPerformanceMetrics } from "@/components/PortfolioPerformanceMetrics";
 import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
 import { InvestmentOpportunities } from "@/components/InvestmentOpportunities";
+import { MarketSentimentChart } from "@/components/MarketSentimentChart";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
@@ -46,6 +47,10 @@ const Index = () => {
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
           <PropertyViewer3D />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <MarketSentimentChart />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
@@ -91,6 +96,7 @@ const Index = () => {
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <LocationSection />
         </section>
+
       </div>
 
       <Tabs defaultValue="portfolio" className="w-full animate-fade-up delay-400">
@@ -98,6 +104,10 @@ const Index = () => {
         
         <TabsContent value="portfolio" className="space-y-6 mt-6">
           <PortfolioDashboard />
+        </TabsContent>
+
+        <TabsContent value="market" className="space-y-6 mt-6">
+          <MarketIntelligenceDashboard />
         </TabsContent>
 
         <TabsContent value="ai" className="space-y-6 mt-6">
@@ -127,6 +137,7 @@ const Index = () => {
         <TabsContent value="evaluation" className="space-y-6 mt-6">
           <PropertyEvaluationTools />
         </TabsContent>
+        
       </Tabs>
     </DashboardLayout>
   );

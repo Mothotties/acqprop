@@ -54,6 +54,10 @@ const Index = () => {
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <RiskAssessmentDashboard />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <InvestmentOpportunities />
         </section>
 
@@ -67,10 +71,6 @@ const Index = () => {
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <MarketIntelligenceDashboard />
-        </section>
-
-        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <RiskAssessmentDashboard />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
@@ -96,7 +96,6 @@ const Index = () => {
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <LocationSection />
         </section>
-
       </div>
 
       <Tabs defaultValue="portfolio" className="w-full animate-fade-up delay-400">
@@ -137,7 +136,6 @@ const Index = () => {
         <TabsContent value="evaluation" className="space-y-6 mt-6">
           <PropertyEvaluationTools />
         </TabsContent>
-        
       </Tabs>
     </DashboardLayout>
   );

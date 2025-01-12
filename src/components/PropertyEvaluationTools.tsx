@@ -1,148 +1,129 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Calculator, DollarSign } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Brain, Calculator, TrendingUp, DollarSign } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts";
+
+const evaluationData = [
+  { month: "Jan", actual: 850000, predicted: 855000 },
+  { month: "Feb", actual: 860000, predicted: 865000 },
+  { month: "Mar", actual: 870000, predicted: 875000 },
+  { month: "Apr", actual: 885000, predicted: 880000 },
+  { month: "May", actual: 890000, predicted: 895000 },
+  { month: "Jun", actual: 900000, predicted: 905000 },
+];
+
+const metrics = [
+  {
+    title: "AI Confidence Score",
+    value: "95%",
+    trend: "+2.5%",
+    icon: <Brain className="w-4 h-4 text-blue-500" />,
+  },
+  {
+    title: "ROI Potential",
+    value: "15.2%",
+    trend: "+1.8%",
+    icon: <TrendingUp className="w-4 h-4 text-green-500" />,
+  },
+  {
+    title: "Market Value",
+    value: "$900,000",
+    trend: "+5.2%",
+    icon: <DollarSign className="w-4 h-4 text-amber-500" />,
+  },
+  {
+    title: "Cap Rate",
+    value: "6.8%",
+    trend: "+0.5%",
+    icon: <Calculator className="w-4 h-4 text-purple-500" />,
+  },
+];
 
 export function PropertyEvaluationTools() {
-  const { toast } = useToast();
-  const [values, setValues] = useState({
-    purchasePrice: "",
-    annualIncome: "",
-    operatingExpenses: "",
-    downPayment: "",
-  });
-
-  const calculateNOI = () => {
-    const income = parseFloat(values.annualIncome);
-    const expenses = parseFloat(values.operatingExpenses);
-    if (isNaN(income) || isNaN(expenses)) return 0;
-    return income - expenses;
-  };
-
-  const calculateCapRate = () => {
-    const noi = calculateNOI();
-    const price = parseFloat(values.purchasePrice);
-    if (isNaN(price) || price === 0) return 0;
-    return (noi / price) * 100;
-  };
-
-  const calculateCoCReturn = () => {
-    const noi = calculateNOI();
-    const downPayment = parseFloat(values.downPayment);
-    if (isNaN(downPayment) || downPayment === 0) return 0;
-    return (noi / downPayment) * 100;
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleCalculate = () => {
-    const noi = calculateNOI();
-    const capRate = calculateCapRate();
-    const cocReturn = calculateCoCReturn();
-
-    toast({
-      title: "Calculation Results",
-      description: (
-        <div className="mt-2 space-y-2">
-          <p>NOI: ${noi.toLocaleString()}</p>
-          <p>Cap Rate: {capRate.toFixed(2)}%</p>
-          <p>Cash-on-Cash Return: {cocReturn.toFixed(2)}%</p>
-        </div>
-      ),
-    });
-  };
-
   return (
-    <Card className="w-full animate-fade-up">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calculator className="h-5 w-5" />
-          Property Evaluation Tools
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="purchasePrice">Purchase Price</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="purchasePrice"
-                  name="purchasePrice"
-                  placeholder="Enter purchase price"
-                  type="number"
-                  className="pl-9"
-                  value={values.purchasePrice}
-                  onChange={handleInputChange}
-                />
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Calculator className="w-6 h-6 text-blue-500" />
+        <h2 className="text-2xl font-bold">Property Evaluation Tools</h2>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        {metrics.map((metric, index) => (
+          <Card key={index}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">{metric.title}</p>
+                {metric.icon}
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="annualIncome">Annual Income</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="annualIncome"
-                  name="annualIncome"
-                  placeholder="Enter annual income"
-                  type="number"
-                  className="pl-9"
-                  value={values.annualIncome}
-                  onChange={handleInputChange}
-                />
+              <div className="mt-2">
+                <p className="text-2xl font-bold">{metric.value}</p>
+                <p className="text-sm text-green-600">{metric.trend}</p>
               </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Value Prediction Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={evaluationData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="actual"
+                    stroke="#10B981"
+                    name="Actual Value"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="predicted"
+                    stroke="#6366F1"
+                    name="Predicted Value"
+                    strokeDasharray="5 5"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="operatingExpenses">Operating Expenses</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="operatingExpenses"
-                  name="operatingExpenses"
-                  placeholder="Enter operating expenses"
-                  type="number"
-                  className="pl-9"
-                  value={values.operatingExpenses}
-                  onChange={handleInputChange}
-                />
-              </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Market Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={evaluationData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="actual" fill="#10B981" name="Property Value" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="downPayment">Down Payment</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="downPayment"
-                  name="downPayment"
-                  placeholder="Enter down payment"
-                  type="number"
-                  className="pl-9"
-                  value={values.downPayment}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-          </div>
-          <Button 
-            onClick={handleCalculate}
-            className="w-full"
-            size="lg"
-          >
-            <Calculator className="mr-2 h-4 w-4" />
-            Calculate Metrics
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

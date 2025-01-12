@@ -12,11 +12,11 @@ import { InvestmentOpportunities } from "@/components/InvestmentOpportunities";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
+import { LocationSection } from "@/components/LocationSection";
+import { LocationAnalysis } from "@/components/LocationAnalysis";
+import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
-import { LocationAnalysis } from "@/components/LocationAnalysis";
-import { LocationSection } from "@/components/LocationSection";
-import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
 
 const Index = () => {
   return (

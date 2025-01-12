@@ -21,13 +21,6 @@ import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
 const Index = () => {
   return (
     <DashboardLayout>
-      <div className="grid gap-6 animate-fade-up delay-300">
-        <MainDashboardAnalytics />
-        <PropertyAnalytics />
-        <InvestmentAnalytics />
-        <LocationAnalytics />
-      </div>
-
       <Tabs defaultValue="portfolio" className="w-full animate-fade-up delay-400">
         <NavigationTabs />
         
@@ -38,12 +31,9 @@ const Index = () => {
           <InvestmentOpportunities />
         </TabsContent>
 
-        <TabsContent value="market" className="space-y-6 mt-6">
-          <MarketIntelligenceDashboard />
-        </TabsContent>
-
         <TabsContent value="ai" className="space-y-6 mt-6">
           <AIPredictiveAnalytics />
+          <MarketIntelligenceDashboard />
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-6 mt-6">
@@ -60,10 +50,12 @@ const Index = () => {
         
         <TabsContent value="analysis" className="space-y-6 mt-6">
           <LocationAnalysis />
+          <PropertyAnalytics />
         </TabsContent>
         
         <TabsContent value="location" className="space-y-6 mt-6">
           <LocationSection />
+          <LocationAnalysis />
         </TabsContent>
 
         <TabsContent value="evaluation" className="space-y-6 mt-6">

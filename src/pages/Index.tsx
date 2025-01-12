@@ -7,6 +7,7 @@ import { PortfolioDashboard } from "@/components/PortfolioDashboard";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { PropertyAnalyticsDashboard } from "@/components/PropertyAnalyticsDashboard";
+import { PropertyListingView } from "@/components/PropertyListingView";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { useState } from "react";
@@ -34,6 +35,7 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-6">
+          <PropertyListingView />
           <PropertyAnalytics />
         </TabsContent>
         

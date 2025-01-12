@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@supabase/auth-helpers-react";
 
 interface PropertyFormData {
   propertyName: string;
@@ -23,6 +25,7 @@ interface PropertyFormData {
 
 export function PropertyForm() {
   const { toast } = useToast();
+  const session = useSession();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<PropertyFormData>({
     propertyName: "",
@@ -48,7 +51,7 @@ export function PropertyForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -63,11 +66,22 @@ export function PropertyForm() {
       return;
     }
 
-    // Log form data and simulate API call
-    console.log("Submitting property data:", formData);
-    
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Insert the property into the database
+      const { error } = await supabase
+        .from('properties')
+        .insert({
+          title: formData.propertyName,
+          property_type: formData.propertyType,
+          price: parseFloat(formData.price),
+          location: formData.location,
+          square_feet: parseFloat(formData.squareFeet),
+          year_built: parseInt(formData.yearBuilt),
+          owner_id: session?.user?.id,
+        });
+
+      if (error) throw error;
+
       toast({
         title: "Property Added",
         description: "The property has been successfully added to your portfolio.",
@@ -82,7 +96,16 @@ export function PropertyForm() {
         squareFeet: "",
         yearBuilt: "",
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Error adding property:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add property. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

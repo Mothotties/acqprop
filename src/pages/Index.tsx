@@ -6,17 +6,9 @@ import { LocationAnalytics } from "@/components/dashboard/LocationAnalytics";
 import { PortfolioDashboard } from "@/components/PortfolioDashboard";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
-import { PortfolioPerformanceMetrics } from "@/components/PortfolioPerformanceMetrics";
-import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
-import { InvestmentOpportunities } from "@/components/InvestmentOpportunities";
+import { PropertyAnalyticsDashboard } from "@/components/PropertyAnalyticsDashboard";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
-import { PropertiesSection } from "@/components/PropertiesSection";
-import { LocationSection } from "@/components/LocationSection";
-import { LocationAnalysis } from "@/components/LocationAnalysis";
-import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
-import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
-import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
 import { useState } from "react";
 
 const Index = () => {
@@ -34,18 +26,15 @@ const Index = () => {
         
         <TabsContent value="portfolio" className="space-y-6">
           <PortfolioDashboard />
-          <PortfolioPerformanceMetrics />
-          <InvestmentOpportunityScoring />
-          <InvestmentOpportunities />
+          <PropertyAnalyticsDashboard />
         </TabsContent>
 
         <TabsContent value="ai" className="space-y-6">
-          <AIPredictiveAnalytics />
-          <MarketIntelligenceDashboard />
+          <MainDashboardAnalytics />
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-6">
-          <PropertiesSection />
+          <PropertyAnalytics />
         </TabsContent>
         
         <TabsContent value="documents" className="space-y-6">
@@ -57,17 +46,15 @@ const Index = () => {
         </TabsContent>
         
         <TabsContent value="analysis" className="space-y-6">
-          <LocationAnalysis />
-          <PropertyAnalytics />
+          <LocationAnalytics />
         </TabsContent>
         
         <TabsContent value="location" className="space-y-6">
-          <LocationSection />
-          <LocationAnalysis />
+          <LocationAnalytics />
         </TabsContent>
 
         <TabsContent value="evaluation" className="space-y-6">
-          <PropertyEvaluationTools />
+          <PropertyAnalytics />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

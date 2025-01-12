@@ -21,32 +21,57 @@ const sentimentData = [
 
 export function MarketSentimentChart() {
   return (
-    <Card>
+    <Card className="border-gold/10 hover:border-gold/20 transition-all duration-300">
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-ai/5 opacity-50" />
+      
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Brain className="w-4 h-4" />
+          <Brain className="w-4 h-4 text-ai animate-pulse" />
           Real-Time Market Sentiment
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
+        <div className="h-[300px] relative">
+          {/* Chart background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background opacity-75" />
+          
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sentimentData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+              <XAxis 
+                dataKey="time" 
+                stroke="currentColor" 
+                className="text-muted-foreground text-xs"
+              />
+              <YAxis 
+                stroke="currentColor" 
+                className="text-muted-foreground text-xs"
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: "hsl(var(--background))",
+                  borderColor: "hsl(var(--border))",
+                  borderRadius: "var(--radius)",
+                }}
+              />
               <Line
                 type="monotone"
                 dataKey="sentiment"
-                stroke="#10B981"
+                stroke="hsl(var(--ai))"
+                strokeWidth={2}
+                dot={false}
                 name="Market Sentiment"
+                className="animate-pulse"
               />
               <Line
                 type="monotone"
                 dataKey="confidence"
-                stroke="#6366F1"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                dot={false}
                 name="AI Confidence"
+                className="animate-pulse"
               />
             </LineChart>
           </ResponsiveContainer>

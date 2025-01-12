@@ -9,7 +9,192 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      investment_opportunities: {
+        Row: {
+          created_at: string
+          expected_return: number | null
+          id: string
+          investment_period: number | null
+          minimum_investment: number | null
+          property_id: string | null
+          risk_level: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expected_return?: number | null
+          id?: string
+          investment_period?: number | null
+          minimum_investment?: number | null
+          property_id?: string | null
+          risk_level?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expected_return?: number | null
+          id?: string
+          investment_period?: number | null
+          minimum_investment?: number | null
+          property_id?: string | null
+          risk_level?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_opportunities_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          amenities: string[] | null
+          bathrooms: number | null
+          bedrooms: number | null
+          coordinates: unknown | null
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          location: string
+          owner_id: string | null
+          price: number
+          property_type: string
+          square_feet: number | null
+          status: string | null
+          title: string
+          updated_at: string
+          year_built: number | null
+        }
+        Insert: {
+          amenities?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          coordinates?: unknown | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location: string
+          owner_id?: string | null
+          price: number
+          property_type: string
+          square_feet?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          year_built?: number | null
+        }
+        Update: {
+          amenities?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          coordinates?: unknown | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          location?: string
+          owner_id?: string | null
+          price?: number
+          property_type?: string
+          square_feet?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          year_built?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_analytics: {
+        Row: {
+          ai_confidence_score: number | null
+          cap_rate: number | null
+          created_at: string
+          id: string
+          market_trend: string | null
+          occupancy_rate: number | null
+          predicted_growth: number | null
+          property_id: string | null
+          risk_score: number | null
+          roi: number | null
+          updated_at: string
+        }
+        Insert: {
+          ai_confidence_score?: number | null
+          cap_rate?: number | null
+          created_at?: string
+          id?: string
+          market_trend?: string | null
+          occupancy_rate?: number | null
+          predicted_growth?: number | null
+          property_id?: string | null
+          risk_score?: number | null
+          roi?: number | null
+          updated_at?: string
+        }
+        Update: {
+          ai_confidence_score?: number | null
+          cap_rate?: number | null
+          created_at?: string
+          id?: string
+          market_trend?: string | null
+          occupancy_rate?: number | null
+          predicted_growth?: number | null
+          property_id?: string | null
+          risk_score?: number | null
+          roi?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_analytics_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

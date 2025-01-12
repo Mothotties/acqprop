@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { MainDashboardAnalytics } from "@/components/dashboard/MainDashboardAnalytics";
 import { PropertyAnalytics } from "@/components/dashboard/PropertyAnalytics";
@@ -13,7 +16,19 @@ import { NavigationTabs } from "@/components/NavigationTabs";
 import { useState } from "react";
 
 const Index = () => {
+  const session = useSession();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("portfolio");
+
+  useEffect(() => {
+    if (!session) {
+      navigate("/auth");
+    }
+  }, [session, navigate]);
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <DashboardLayout>

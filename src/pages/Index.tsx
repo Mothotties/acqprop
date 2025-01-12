@@ -27,7 +27,7 @@ const Index = () => {
       <Tabs 
         value={activeTab} 
         onValueChange={setActiveTab} 
-        className="w-full animate-fade-up delay-400"
+        className="w-full"
       >
         <NavigationTabs />
         

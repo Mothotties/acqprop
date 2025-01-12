@@ -11,12 +11,6 @@ import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { LocationSection } from "@/components/LocationSection";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
-import { PortfolioDiversification } from "@/components/PortfolioDiversification";
-import { PortfolioPerformanceMetrics } from "@/components/PortfolioPerformanceMetrics";
-import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
-import { InvestmentOpportunities } from "@/components/InvestmentOpportunities";
-import { MarketSentimentChart } from "@/components/MarketSentimentChart";
-import { PredictiveTrendAnalysis } from "@/components/PredictiveTrendAnalysis";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
@@ -51,19 +45,11 @@ const Index = () => {
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <MarketSentimentChart />
+          <MarketIntelligenceDashboard />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <RiskAssessmentDashboard />
-        </section>
-
-        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <InvestmentOpportunities />
-        </section>
-
-        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <PredictiveTrendAnalysis />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
@@ -72,22 +58,6 @@ const Index = () => {
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <AIPredictiveAnalytics />
-        </section>
-
-        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <MarketIntelligenceDashboard />
-        </section>
-
-        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <PortfolioDiversification />
-        </section>
-
-        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <PortfolioPerformanceMetrics />
-        </section>
-
-        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-          <InvestmentOpportunityScoring />
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
@@ -136,10 +106,6 @@ const Index = () => {
         
         <TabsContent value="location" className="space-y-6 mt-6">
           <LocationSection />
-        </TabsContent>
-        
-        <TabsContent value="evaluation" className="space-y-6 mt-6">
-          <PropertyEvaluationTools />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

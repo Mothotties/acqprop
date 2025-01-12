@@ -29,31 +29,31 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#221F26", // Deep navy blue
-          light: "#403E43",
-          dark: "#0F0E11",
+          DEFAULT: "#1a2942", // Deep navy blue
+          light: "#2a3b5a",
+          dark: "#0f1725",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#FFFFFF", // White
-          foreground: "#221F26",
+          DEFAULT: "#FFFFFF", // Pure white
+          foreground: "#1a2942", // Deep navy blue for contrast
         },
         gold: {
-          light: "#F4BD76",
-          DEFAULT: "#D4AF37", // Gold accent
-          dark: "#996515",
+          light: "#F5D485", // Lighter gold
+          DEFAULT: "#D4AF37", // Classic gold
+          dark: "#B4941F", // Darker gold
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "#F1F1F1",
+          DEFAULT: "#F5F5F7", // Light gray for backgrounds
           foreground: "#6B7280",
         },
         accent: {
           DEFAULT: "#D4AF37", // Gold accent
-          foreground: "#221F26",
+          foreground: "#1a2942", // Deep navy blue for contrast
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",

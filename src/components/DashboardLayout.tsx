@@ -9,14 +9,20 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gold/5 to-transparent pointer-events-none" />
+      
+      {/* Floating theme toggle */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
       
-      <main className="container py-12 space-y-8">
+      <main className="relative container py-12 space-y-8">
         <Header />
-        {children}
+        <div className="space-y-8 backdrop-blur-sm bg-background/50 rounded-lg border border-gold/10 p-6 shadow-xl">
+          {children}
+        </div>
       </main>
     </div>
   );

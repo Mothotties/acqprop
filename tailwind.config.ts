@@ -35,12 +35,12 @@ export default {
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#FFFFFF",
+          DEFAULT: "#FFFFFF", // White
           foreground: "#221F26",
         },
         gold: {
           light: "#F4BD76",
-          DEFAULT: "#D4AF37",
+          DEFAULT: "#D4AF37", // Gold accent
           dark: "#996515",
         },
         destructive: {

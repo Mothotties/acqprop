@@ -48,7 +48,8 @@ const Index = () => {
         </TabsContent>
         
         <TabsContent value="analysis" className="space-y-6">
-          <LocationAnalytics />
+          <MainDashboardAnalytics />
+          <PropertyAnalytics />
         </TabsContent>
         
         <TabsContent value="location" className="space-y-6">

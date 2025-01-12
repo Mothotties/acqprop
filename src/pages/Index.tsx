@@ -17,57 +17,64 @@ import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("portfolio");
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value);
+  }, []);
 
   return (
     <DashboardLayout>
       <Tabs 
         value={activeTab} 
-        onValueChange={setActiveTab} 
+        onValueChange={handleTabChange} 
+        defaultValue="portfolio"
         className="w-full"
       >
         <NavigationTabs />
         
-        <TabsContent value="portfolio" className="space-y-6 mt-6">
-          <PortfolioDashboard />
-          <PortfolioPerformanceMetrics />
-          <InvestmentOpportunityScoring />
-          <InvestmentOpportunities />
-        </TabsContent>
+        <div className="mt-6">
+          <TabsContent value="portfolio" className="space-y-6">
+            <PortfolioDashboard />
+            <PortfolioPerformanceMetrics />
+            <InvestmentOpportunityScoring />
+            <InvestmentOpportunities />
+          </TabsContent>
 
-        <TabsContent value="ai" className="space-y-6 mt-6">
-          <AIPredictiveAnalytics />
-          <MarketIntelligenceDashboard />
-        </TabsContent>
+          <TabsContent value="ai" className="space-y-6">
+            <AIPredictiveAnalytics />
+            <MarketIntelligenceDashboard />
+          </TabsContent>
 
-        <TabsContent value="properties" className="space-y-6 mt-6">
-          <PropertiesSection />
-        </TabsContent>
-        
-        <TabsContent value="documents" className="space-y-6 mt-6">
-          <DocumentManager />
-        </TabsContent>
-        
-        <TabsContent value="maintenance" className="space-y-6 mt-6">
-          <MaintenanceTracker />
-        </TabsContent>
-        
-        <TabsContent value="analysis" className="space-y-6 mt-6">
-          <LocationAnalysis />
-          <PropertyAnalytics />
-        </TabsContent>
-        
-        <TabsContent value="location" className="space-y-6 mt-6">
-          <LocationSection />
-          <LocationAnalysis />
-        </TabsContent>
+          <TabsContent value="properties" className="space-y-6">
+            <PropertiesSection />
+          </TabsContent>
+          
+          <TabsContent value="documents" className="space-y-6">
+            <DocumentManager />
+          </TabsContent>
+          
+          <TabsContent value="maintenance" className="space-y-6">
+            <MaintenanceTracker />
+          </TabsContent>
+          
+          <TabsContent value="analysis" className="space-y-6">
+            <LocationAnalysis />
+            <PropertyAnalytics />
+          </TabsContent>
+          
+          <TabsContent value="location" className="space-y-6">
+            <LocationSection />
+            <LocationAnalysis />
+          </TabsContent>
 
-        <TabsContent value="evaluation" className="space-y-6 mt-6">
-          <PropertyEvaluationTools />
-        </TabsContent>
+          <TabsContent value="evaluation" className="space-y-6">
+            <PropertyEvaluationTools />
+          </TabsContent>
+        </div>
       </Tabs>
     </DashboardLayout>
   );

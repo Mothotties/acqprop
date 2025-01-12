@@ -12,6 +12,7 @@ import { LocationSection } from "@/components/LocationSection";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { PortfolioDiversification } from "@/components/PortfolioDiversification";
+import { PortfolioPerformanceMetrics } from "@/components/PortfolioPerformanceMetrics";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { PropertiesSection } from "@/components/PropertiesSection";
@@ -70,6 +71,10 @@ const Index = () => {
         </section>
 
         <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <PortfolioPerformanceMetrics />
+        </section>
+
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
           <LocationAnalysis />
         </section>
 
@@ -83,6 +88,7 @@ const Index = () => {
         
         <TabsContent value="portfolio" className="space-y-6 mt-6">
           <PortfolioDashboard />
+          <PortfolioPerformanceMetrics />
         </TabsContent>
 
         <TabsContent value="market" className="space-y-6 mt-6">

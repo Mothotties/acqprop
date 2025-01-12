@@ -18,6 +18,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ['Playfair Display', 'serif'],
+        sans: ['Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -25,24 +29,31 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
+          DEFAULT: "#221F26", // Deep navy blue
+          light: "#403E43",
+          dark: "#0F0E11",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#FFFFFF",
+          foreground: "#221F26",
+        },
+        gold: {
+          light: "#F4BD76",
+          DEFAULT: "#D4AF37",
+          dark: "#996515",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#F1F1F1",
+          foreground: "#6B7280",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#D4AF37", // Gold accent
+          foreground: "#221F26",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -51,16 +62,6 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
-        },
-        gold: {
-          light: "#F4BD76",
-          DEFAULT: "#D4AF37",
-          dark: "#996515",
-        },
-        ai: {
-          light: "#6EE7B7",
-          DEFAULT: "#10B981",
-          dark: "#047857",
         },
       },
       borderRadius: {

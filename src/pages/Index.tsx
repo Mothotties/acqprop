@@ -17,11 +17,18 @@ import { LocationAnalysis } from "@/components/LocationAnalysis";
 import { PropertyEvaluationTools } from "@/components/PropertyEvaluationTools";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { AIPredictiveAnalytics } from "@/components/AIPredictiveAnalytics";
+import { useState } from "react";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("portfolio");
+
   return (
     <DashboardLayout>
-      <Tabs defaultValue="portfolio" className="w-full animate-fade-up delay-400">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={setActiveTab} 
+        className="w-full animate-fade-up delay-400"
+      >
         <NavigationTabs />
         
         <TabsContent value="portfolio" className="space-y-6 mt-6">

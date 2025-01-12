@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, Building2, TrendingUp, DollarSign, Calendar, Brain, Target, Activity } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { PropertyMetrics } from "@/components/PropertyMetrics";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyCardProps {
   title: string;
@@ -27,13 +28,10 @@ interface PropertyCardProps {
 
 export function PropertyCard({ title, price, type, location, metrics }: PropertyCardProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleViewDetails = () => {
-    toast({
-      title: "Property Details",
-      description: `Viewing details for ${title}`,
-    });
-    console.log("Viewing property details:", { title, price, type, location, metrics });
+    navigate(`/properties/${title}`);
   };
 
   const getAIScoreBadge = (score: number) => {

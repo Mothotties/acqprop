@@ -4,11 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import { createClient } from "@supabase/supabase-js";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { supabase } from "./integrations/supabase/client";
+import { PropertyDetails } from "./components/PropertyDetails";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +24,7 @@ const App = () => {
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={<Index />} />
+                <Route path="/properties/:id" element={<PropertyDetails />} />
               </Routes>
             </BrowserRouter>
           </TooltipProvider>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { PropertyFormFields } from "./property/PropertyFormFields";
+import { generatePropertyAnalytics } from "@/utils/propertyAnalytics";
 
 interface PropertyFormData {
   propertyName: string;
@@ -47,7 +48,6 @@ export function PropertyForm() {
     e.preventDefault();
     setLoading(true);
 
-    // Validate all fields are filled
     if (!Object.values(formData).every(value => value)) {
       toast({
         title: "Error",
@@ -60,7 +60,7 @@ export function PropertyForm() {
 
     try {
       // Insert the property into the database
-      const { error } = await supabase
+      const { data: propertyData, error: propertyError } = await supabase
         .from('properties')
         .insert({
           title: formData.propertyName,
@@ -70,13 +70,24 @@ export function PropertyForm() {
           square_feet: parseFloat(formData.squareFeet),
           year_built: parseInt(formData.yearBuilt),
           owner_id: session?.user?.id,
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (propertyError) throw propertyError;
+
+      // Generate and store analytics for the new property
+      await generatePropertyAnalytics(propertyData.id, {
+        price: parseFloat(formData.price),
+        location: formData.location,
+        property_type: formData.propertyType,
+        square_feet: parseFloat(formData.squareFeet),
+        year_built: parseInt(formData.yearBuilt),
+      });
 
       toast({
         title: "Property Added",
-        description: "The property has been successfully added to your portfolio.",
+        description: "The property has been successfully added to your portfolio with analytics data.",
       });
       
       // Reset form after successful submission

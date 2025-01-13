@@ -3,18 +3,20 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 
-interface PropertyFormFieldsProps {
-  form: UseFormReturn<{
-    title: string;
-    description?: string;
-    price: number;
-    location: string;
-    property_type: string;
-    bedrooms?: number;
-    bathrooms?: number;
-    square_feet?: number;
-    year_built?: number;
-  }>;
+interface PropertyFormData {
+  title: string;
+  description?: string;
+  price: number;
+  location: string;
+  property_type: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  square_feet?: number;
+  year_built?: number;
+}
+
+export interface PropertyFormFieldsProps {
+  form: UseFormReturn<PropertyFormData>;
 }
 
 export function PropertyFormFields({ form }: PropertyFormFieldsProps) {

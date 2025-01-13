@@ -6,69 +6,62 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { PropertyFormFields } from "./property/PropertyFormFields";
 import { generatePropertyAnalytics } from "@/utils/propertyAnalytics";
+import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface PropertyFormData {
-  propertyName: string;
-  propertyType: string;
-  price: string;
-  location: string;
-  squareFeet: string;
-  yearBuilt: string;
-}
+const propertyFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  price: z.coerce.number().min(1, "Price is required"),
+  location: z.string().min(1, "Location is required"),
+  property_type: z.string().min(1, "Property type is required"),
+  bedrooms: z.coerce.number().optional(),
+  bathrooms: z.coerce.number().optional(),
+  square_feet: z.coerce.number().optional(),
+  year_built: z.coerce.number().optional(),
+});
+
+type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
 export function PropertyForm() {
   const { toast } = useToast();
   const session = useSession();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<PropertyFormData>({
-    propertyName: "",
-    propertyType: "",
-    price: "",
-    location: "",
-    squareFeet: "",
-    yearBuilt: "",
+
+  const form = useForm<PropertyFormData>({
+    resolver: zodResolver(propertyFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      price: undefined,
+      location: "",
+      property_type: "",
+      bedrooms: undefined,
+      bathrooms: undefined,
+      square_feet: undefined,
+      year_built: undefined,
+    },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-  };
-
-  const handleTypeChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      propertyType: value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: PropertyFormData) => {
     setLoading(true);
-
-    if (!Object.values(formData).every(value => value)) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
 
     try {
       // Insert the property into the database
       const { data: propertyData, error: propertyError } = await supabase
         .from('properties')
         .insert({
-          title: formData.propertyName,
-          property_type: formData.propertyType,
-          price: parseFloat(formData.price),
-          location: formData.location,
-          square_feet: parseFloat(formData.squareFeet),
-          year_built: parseInt(formData.yearBuilt),
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          location: data.location,
+          property_type: data.property_type,
+          bedrooms: data.bedrooms,
+          bathrooms: data.bathrooms,
+          square_feet: data.square_feet,
+          year_built: data.year_built,
           owner_id: session?.user?.id,
         })
         .select()
@@ -78,11 +71,11 @@ export function PropertyForm() {
 
       // Generate and store analytics for the new property
       await generatePropertyAnalytics(propertyData.id, {
-        price: parseFloat(formData.price),
-        location: formData.location,
-        property_type: formData.propertyType,
-        square_feet: parseFloat(formData.squareFeet),
-        year_built: parseInt(formData.yearBuilt),
+        price: data.price,
+        location: data.location,
+        property_type: data.property_type,
+        square_feet: data.square_feet,
+        year_built: data.year_built,
       });
 
       toast({
@@ -90,15 +83,7 @@ export function PropertyForm() {
         description: "The property has been successfully added to your portfolio with analytics data.",
       });
       
-      // Reset form after successful submission
-      setFormData({
-        propertyName: "",
-        propertyType: "",
-        price: "",
-        location: "",
-        squareFeet: "",
-        yearBuilt: "",
-      });
+      form.reset();
     } catch (error) {
       console.error('Error adding property:', error);
       toast({
@@ -117,16 +102,14 @@ export function PropertyForm() {
         <CardTitle>Property Details</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6 animate-fade-up">
-          <PropertyFormFields
-            formData={formData}
-            handleInputChange={handleInputChange}
-            handleTypeChange={handleTypeChange}
-          />
-          <Button className="w-full" type="submit" disabled={loading}>
-            {loading ? "Adding Property..." : "Add Property"}
-          </Button>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 animate-fade-up">
+            <PropertyFormFields form={form} />
+            <Button className="w-full" type="submit" disabled={loading}>
+              {loading ? "Adding Property..." : "Add Property"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

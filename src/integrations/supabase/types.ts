@@ -195,6 +195,53 @@ export type Database = {
           },
         ]
       }
+      property_market_data: {
+        Row: {
+          comparable_sales: Json | null
+          created_at: string | null
+          id: string
+          last_updated: string | null
+          local_market_trend: string | null
+          market_demand_score: number | null
+          market_value: number | null
+          price_per_sqft: number | null
+          property_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comparable_sales?: Json | null
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          local_market_trend?: string | null
+          market_demand_score?: number | null
+          market_value?: number | null
+          price_per_sqft?: number | null
+          property_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comparable_sales?: Json | null
+          created_at?: string | null
+          id?: string
+          last_updated?: string | null
+          local_market_trend?: string | null
+          market_demand_score?: number | null
+          market_value?: number | null
+          price_per_sqft?: number | null
+          property_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_market_data_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

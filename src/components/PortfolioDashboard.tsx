@@ -10,6 +10,7 @@ import { PortfolioDiversification } from "./PortfolioDiversification";
 import { PredictiveTrendAnalysis } from "./PredictiveTrendAnalysis";
 import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
 import { MarketCharts } from "./analytics/MarketCharts";
+import { PortfolioDashboardSkeleton } from "./portfolio/PortfolioDashboardSkeleton";
 
 const ITEMS_PER_PAGE = 6;
 

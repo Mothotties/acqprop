@@ -1,110 +1,118 @@
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface PropertyFormData {
-  propertyName: string;
-  propertyType: string;
-  price: string;
-  location: string;
-  squareFeet: string;
-  yearBuilt: string;
-}
+import { UseFormReturn } from "react-hook-form";
 
 interface PropertyFormFieldsProps {
-  formData: PropertyFormData;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleTypeChange: (value: string) => void;
+  form: UseFormReturn<{
+    title: string;
+    description?: string;
+    price: number;
+    location: string;
+    property_type: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    square_feet?: number;
+    year_built?: number;
+  }>;
 }
 
-export function PropertyFormFields({ formData, handleInputChange, handleTypeChange }: PropertyFormFieldsProps) {
+export function PropertyFormFields({ form }: PropertyFormFieldsProps) {
   return (
     <>
-      <FormItem>
-        <FormLabel>Property Name</FormLabel>
-        <FormControl>
-          <Input
-            id="propertyName"
-            placeholder="Enter property name"
-            value={formData.propertyName}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
+      <FormField
+        control={form.control}
+        name="title"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Property Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter property name" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <FormItem>
-        <FormLabel>Property Type</FormLabel>
-        <Select onValueChange={handleTypeChange} value={formData.propertyType}>
-          <FormControl>
-            <SelectTrigger>
-              <SelectValue placeholder="Select property type" />
-            </SelectTrigger>
-          </FormControl>
-          <SelectContent>
-            <SelectItem value="residential">Residential</SelectItem>
-            <SelectItem value="commercial">Commercial</SelectItem>
-            <SelectItem value="industrial">Industrial</SelectItem>
-            <SelectItem value="land">Land</SelectItem>
-          </SelectContent>
-        </Select>
-        <FormMessage />
-      </FormItem>
+      <FormField
+        control={form.control}
+        name="property_type"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Property Type</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="residential">Residential</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+                <SelectItem value="industrial">Industrial</SelectItem>
+                <SelectItem value="land">Land</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <FormItem>
-        <FormLabel>Price</FormLabel>
-        <FormControl>
-          <Input
-            id="price"
-            type="number"
-            placeholder="Enter price"
-            value={formData.price}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
+      <FormField
+        control={form.control}
+        name="price"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Price</FormLabel>
+            <FormControl>
+              <Input type="number" placeholder="Enter price" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <FormItem>
-        <FormLabel>Location</FormLabel>
-        <FormControl>
-          <Input
-            id="location"
-            placeholder="Enter location"
-            value={formData.location}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
+      <FormField
+        control={form.control}
+        name="location"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Location</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter location" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <FormItem>
-        <FormLabel>Square Feet</FormLabel>
-        <FormControl>
-          <Input
-            id="squareFeet"
-            type="number"
-            placeholder="Enter square feet"
-            value={formData.squareFeet}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
+      <FormField
+        control={form.control}
+        name="square_feet"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Square Feet</FormLabel>
+            <FormControl>
+              <Input type="number" placeholder="Enter square feet" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <FormItem>
-        <FormLabel>Year Built</FormLabel>
-        <FormControl>
-          <Input
-            id="yearBuilt"
-            type="number"
-            placeholder="Enter year built"
-            value={formData.yearBuilt}
-            onChange={handleInputChange}
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
+      <FormField
+        control={form.control}
+        name="year_built"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Year Built</FormLabel>
+            <FormControl>
+              <Input type="number" placeholder="Enter year built" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </>
   );
 }

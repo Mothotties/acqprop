@@ -1,115 +1,59 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { History, TrendingUp } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp } from "lucide-react";
 
-const fetchHistoricalData = async () => {
-  const { data, error } = await supabase
-    .from('property_market_data')
-    .select('*')
-    .order('created_at', { ascending: true });
-
-  if (error) throw error;
-
-  return data.map(item => ({
-    date: new Date(item.created_at).toLocaleDateString(),
-    marketValue: item.market_value || 0,
-    demandScore: item.market_demand_score || 0,
-  }));
-};
+const sampleData = [
+  { month: "Jan", value: 850000, trend: 12 },
+  { month: "Feb", value: 875000, trend: 15 },
+  { month: "Mar", value: 890000, trend: 18 },
+  { month: "Apr", value: 920000, trend: 22 },
+  { month: "May", value: 950000, trend: 25 },
+  { month: "Jun", value: 980000, trend: 28 },
+];
 
 export function HistoricalTrends() {
-  const { data: historicalData = [], isLoading } = useQuery({
-    queryKey: ['historicalMarketData'],
-    queryFn: fetchHistoricalData,
-  });
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="w-4 h-4 text-purple-500" />
-            Historical Market Trends
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Loading historical data...
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!historicalData || historicalData.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="w-4 h-4 text-purple-500" />
-            Historical Market Trends
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            No historical data available
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <History className="w-4 h-4 text-purple-500" />
+          <TrendingUp className="w-4 h-4 text-primary" />
           Historical Market Trends
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart 
-              data={historicalData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+            <LineChart
+              data={sampleData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 25 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
+              <CartesianGrid strokeDasharray="3 3" className="opacity-50" />
+              <XAxis
+                dataKey="month"
                 tick={{ fontSize: 12 }}
-                interval={0}
                 angle={-45}
                 textAnchor="end"
                 height={60}
               />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
+              <YAxis />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "hsl(var(--background))",
+                  borderColor: "hsl(var(--border))",
+                }}
+              />
               <Line
-                yAxisId="left"
                 type="monotone"
-                dataKey="marketValue"
-                stroke="#10B981"
+                dataKey="value"
                 name="Market Value"
+                stroke="#10B981"
                 strokeWidth={2}
               />
               <Line
-                yAxisId="right"
                 type="monotone"
-                dataKey="demandScore"
+                dataKey="trend"
+                name="Market Trend"
                 stroke="#6366F1"
-                name="Demand Score"
                 strokeWidth={2}
               />
             </LineChart>

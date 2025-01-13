@@ -12,6 +12,8 @@ export interface Property {
   price: number;
   location: string;
   property_type: string;
-  coordinates?: { x: number; y: number };
+  coordinates?: { x: number; y: number } | null;
   property_analytics?: PropertyAnalytics[];
+  square_feet?: number;
+  year_built?: number;
 }

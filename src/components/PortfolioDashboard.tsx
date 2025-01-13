@@ -11,6 +11,7 @@ import { PropertyFilters } from "./portfolio/PropertyFilters";
 import { useState } from "react";
 import { SortOption } from "./analytics/PropertySorting";
 import { PropertyList } from "./portfolio/PropertyList";
+import { Property } from "@/types/property";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -46,7 +47,7 @@ export function PortfolioDashboard() {
 
       query = query.order(sort.field, { ascending: sort.direction === 'asc' });
       
-      const { data, error, count } = await query;
+      const { data: rawData, error, count } = await query;
       
       if (error) {
         toast({
@@ -56,7 +57,25 @@ export function PortfolioDashboard() {
         });
         throw error;
       }
-      return { properties: data, totalCount: count || 0 };
+
+      // Transform the data to match our Property type
+      const properties = rawData?.map(property => ({
+        ...property,
+        coordinates: property.coordinates ? {
+          x: parseFloat(property.coordinates.x),
+          y: parseFloat(property.coordinates.y)
+        } : null,
+        property_analytics: property.property_analytics?.map(analytics => ({
+          ...analytics,
+          ai_confidence_score: analytics.ai_confidence_score || null,
+          cap_rate: analytics.cap_rate || null,
+          roi: analytics.roi || null,
+          predicted_growth: analytics.predicted_growth || null,
+          market_volatility: analytics.market_volatility || null
+        }))
+      })) as Property[];
+
+      return { properties, totalCount: count || 0 };
     },
   });
 

@@ -11,12 +11,14 @@ import {
   Legend,
 } from "recharts";
 
+interface MarketData {
+  property: string;
+  marketValue: number;
+  pricePerSqft: number;
+}
+
 export interface OccupancyChartProps {
-  data: Array<{
-    property: string;
-    marketValue: number;
-    pricePerSqft: number;
-  }>;
+  data: MarketData[];
 }
 
 export function OccupancyChart({ data }: OccupancyChartProps) {

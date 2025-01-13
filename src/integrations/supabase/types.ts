@@ -198,6 +198,60 @@ export type Database = {
           },
         ]
       }
+      property_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_type: string
+          file_path: string | null
+          id: string
+          name: string
+          property_id: string | null
+          status: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_type: string
+          file_path?: string | null
+          id?: string
+          name: string
+          property_id?: string | null
+          status?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          file_path?: string | null
+          id?: string
+          name?: string
+          property_id?: string | null
+          status?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_market_data: {
         Row: {
           comparable_sales: Json | null

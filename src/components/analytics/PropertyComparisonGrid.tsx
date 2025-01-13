@@ -8,6 +8,7 @@ import { PropertyBasicInfo } from "./PropertyBasicInfo";
 import { PropertyAnalyticsInfo } from "./PropertyAnalyticsInfo";
 import { PropertyMarketInfo } from "./PropertyMarketInfo";
 import { PropertyFilters, type PropertyFilters as Filters } from "./PropertyFilters";
+import { PropertySorting, type SortOption } from "./PropertySorting";
 import { useState } from "react";
 
 interface PropertyComparisonGridProps {
@@ -21,8 +22,13 @@ export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridPr
     location: '',
   });
 
+  const [sort, setSort] = useState<SortOption>({
+    field: 'created_at',
+    direction: 'desc',
+  });
+
   const { data: properties, isLoading } = useQuery({
-    queryKey: ['propertyComparison', propertyIds, filters],
+    queryKey: ['propertyComparison', propertyIds, filters, sort],
     queryFn: async () => {
       if (!propertyIds.length) return [];
       
@@ -76,6 +82,15 @@ export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridPr
         query = query.ilike('location', `%${filters.location}%`);
       }
 
+      // Apply sorting
+      if (sort.field.includes('_score') || sort.field === 'roi') {
+        // For fields in the property_analytics table
+        query = query.order(`property_analytics.${sort.field}`, { ascending: sort.direction === 'asc' });
+      } else {
+        // For fields in the main properties table
+        query = query.order(sort.field, { ascending: sort.direction === 'asc' });
+      }
+
       const { data, error } = await query;
       if (error) throw error;
       return data || [];
@@ -92,7 +107,10 @@ export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridPr
 
   return (
     <div className="space-y-6">
-      <PropertyFilters onFilterChange={setFilters} />
+      <div className="flex items-center justify-between">
+        <PropertyFilters onFilterChange={setFilters} />
+        <PropertySorting onSortChange={setSort} />
+      </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {properties.map((property) => (

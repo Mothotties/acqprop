@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PropertyCard } from "@/components/PropertyCard";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +20,17 @@ interface PropertyGridProps {
 
 export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
   const { toast } = useToast();
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return Number(params.get("page")) || 1;
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", currentPage.toString());
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({}, "", newUrl);
+  }, [currentPage]);
 
   const { data: propertiesData, isLoading, error } = useQuery({
     queryKey: ["properties", filters, sortOption, currentPage],

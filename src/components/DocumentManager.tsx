@@ -136,15 +136,15 @@ export function DocumentManager() {
 
       if (error) throw error;
 
-      // Create download link
+      // Create download link using window.document
       const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
+      const a = window.document.createElement('a');
       a.href = url;
       a.download = document.name;
-      document.body.appendChild(a);
+      window.document.body.appendChild(a);
       a.click();
       URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      window.document.body.removeChild(a);
     } catch (error) {
       console.error('Download error:', error);
       toast({

@@ -2,78 +2,92 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
 } from "recharts";
-import { Building2, TrendingUp } from "lucide-react";
+import { Building2, TrendingUp, Users, AlertTriangle } from "lucide-react";
 
-interface MarketData {
-  property: string;
-  marketValue: number;
-  pricePerSqft: number;
-}
-
-interface MarketChartsProps {
-  data: MarketData[];
-}
-
-// Enhanced sample data
-const sampleMarketData = [
-  { property: "Luxury Condo A", marketValue: 850000, pricePerSqft: 425, roi: 8.5, occupancy: 95 },
-  { property: "Downtown Office B", marketValue: 1200000, pricePerSqft: 380, roi: 7.2, occupancy: 88 },
-  { property: "Retail Space C", marketValue: 750000, pricePerSqft: 350, roi: 6.8, occupancy: 92 },
-  { property: "Residential Complex D", marketValue: 950000, pricePerSqft: 290, roi: 9.1, occupancy: 96 },
-  { property: "Industrial Park E", marketValue: 1500000, pricePerSqft: 275, roi: 7.9, occupancy: 89 },
-  { property: "Mixed-Use Building F", marketValue: 2000000, pricePerSqft: 410, roi: 8.8, occupancy: 94 },
-  { property: "Suburban Office G", marketValue: 1100000, pricePerSqft: 325, roi: 7.5, occupancy: 91 },
+// Sample data for different charts
+const propertyValueData = [
+  { month: "Jan", currentValue: 850000, predictedValue: 855000, marketAverage: 840000 },
+  { month: "Feb", currentValue: 860000, predictedValue: 870000, marketAverage: 845000 },
+  { month: "Mar", currentValue: 870000, predictedValue: 885000, marketAverage: 855000 },
+  { month: "Apr", currentValue: 885000, predictedValue: 900000, marketAverage: 870000 },
+  { month: "May", currentValue: 890000, predictedValue: 915000, marketAverage: 880000 },
+  { month: "Jun", currentValue: 900000, predictedValue: 925000, marketAverage: 895000 },
 ];
 
-export function MarketCharts({ data = sampleMarketData }: Partial<MarketChartsProps>) {
+const roiTrendsData = [
+  { month: "Jan", roi: 7.2, marketValue: 850000 },
+  { month: "Feb", roi: 7.5, marketValue: 860000 },
+  { month: "Mar", roi: 7.8, marketValue: 870000 },
+  { month: "Apr", roi: 8.1, marketValue: 885000 },
+  { month: "May", roi: 8.4, marketValue: 890000 },
+  { month: "Jun", roi: 8.7, marketValue: 900000 },
+];
+
+const occupancyData = [
+  { month: "Jan", occupancy: 92, pricePerSqft: 425 },
+  { month: "Feb", occupancy: 94, pricePerSqft: 430 },
+  { month: "Mar", occupancy: 95, pricePerSqft: 435 },
+  { month: "Apr", occupancy: 93, pricePerSqft: 440 },
+  { month: "May", occupancy: 96, pricePerSqft: 445 },
+  { month: "Jun", occupancy: 97, pricePerSqft: 450 },
+];
+
+const riskAnalysisData = [
+  { month: "Jan", riskScore: 65, volatility: 12 },
+  { month: "Feb", riskScore: 68, volatility: 14 },
+  { month: "Mar", riskScore: 72, volatility: 15 },
+  { month: "Apr", riskScore: 75, volatility: 13 },
+  { month: "May", riskScore: 70, volatility: 11 },
+  { month: "Jun", riskScore: 73, volatility: 12 },
+];
+
+export function MarketCharts() {
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-purple-500" />
-            Market Value & ROI Trends
+            <Building2 className="h-5 w-5 text-blue-500" />
+            Property Value Comparison
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
+              <LineChart data={propertyValueData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="property" 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={60}
-                  interval={0}
-                  tick={{ fontSize: 12 }}
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value) => `$${value.toLocaleString()}`}
                 />
-                <YAxis yAxisId="left" orientation="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
                 <Line
-                  yAxisId="left"
                   type="monotone"
-                  dataKey="marketValue"
+                  dataKey="currentValue"
                   stroke="#10B981"
-                  name="Market Value"
-                  strokeWidth={2}
+                  name="Current Value"
                 />
                 <Line
-                  yAxisId="right"
                   type="monotone"
-                  dataKey="roi"
+                  dataKey="predictedValue"
                   stroke="#6366F1"
-                  name="ROI %"
-                  strokeWidth={2}
+                  name="Predicted Value"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="marketAverage"
+                  stroke="#F43F5E"
+                  name="Market Average"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -81,45 +95,125 @@ export function MarketCharts({ data = sampleMarketData }: Partial<MarketChartsPr
         </CardContent>
       </Card>
 
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              Market Value & ROI Trends
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={roiTrendsData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis yAxisId="left" />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <Tooltip />
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="marketValue"
+                    stroke="#10B981"
+                    fill="#10B98133"
+                    name="Market Value"
+                  />
+                  <Area
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="roi"
+                    stroke="#6366F1"
+                    fill="#6366F133"
+                    name="ROI %"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-amber-500" />
+              Price per Square Foot & Occupancy
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={occupancyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis yAxisId="left" />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <Tooltip />
+                  <Bar
+                    yAxisId="left"
+                    dataKey="pricePerSqft"
+                    fill="#F59E0B"
+                    name="Price/sqft"
+                  />
+                  <Bar
+                    yAxisId="right"
+                    dataKey="occupancy"
+                    fill="#10B981"
+                    name="Occupancy %"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-amber-500" />
-            Price per Square Foot & Occupancy
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+            Market Risk Analysis
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
+              <AreaChart data={riskAnalysisData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="property" 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={60}
-                  interval={0}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis yAxisId="left" orientation="left" />
-                <YAxis yAxisId="right" orientation="right" />
+                <XAxis dataKey="month" />
+                <YAxis />
                 <Tooltip />
-                <Bar 
-                  yAxisId="left"
-                  dataKey="pricePerSqft" 
-                  fill="#F59E0B" 
-                  name="Price/sq ft"
-                  radius={[4, 4, 0, 0]}
+                <Area
+                  type="monotone"
+                  dataKey="riskScore"
+                  stroke="#F43F5E"
+                  fill="#F43F5E33"
+                  name="Risk Score"
                 />
-                <Bar 
-                  yAxisId="right"
-                  dataKey="occupancy" 
-                  fill="#10B981" 
-                  name="Occupancy %"
-                  radius={[4, 4, 0, 0]}
+                <Area
+                  type="monotone"
+                  dataKey="volatility"
+                  stroke="#6366F1"
+                  fill="#6366F133"
+                  name="Volatility %"
                 />
-              </BarChart>
+              </AreaChart>
             </ResponsiveContainer>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Risk Level</p>
+              <p className="font-semibold text-yellow-500">High</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Volatility</p>
+              <p className="font-semibold text-red-500">12.5%</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Trend</p>
+              <p className="font-semibold text-green-500">Down</p>
+            </div>
           </div>
         </CardContent>
       </Card>

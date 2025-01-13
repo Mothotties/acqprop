@@ -15,10 +15,9 @@ interface Property {
     ai_confidence_score: number;
     cap_rate: number;
     roi: number;
-    cash_flow: number;
     predicted_growth: number;
     market_volatility: number;
-  };
+  }[];
 }
 
 export function PropertyGrid() {
@@ -73,12 +72,12 @@ export function PropertyGrid() {
           type={property.property_type}
           location={property.location}
           metrics={{
-            capRate: property.property_analytics?.cap_rate || 0,
-            roi: property.property_analytics?.roi || 0,
+            capRate: property.property_analytics?.[0]?.cap_rate || 0,
+            roi: property.property_analytics?.[0]?.roi || 0,
             cashFlow: 0, // This would need to be calculated based on your business logic
-            aiConfidenceScore: property.property_analytics?.ai_confidence_score,
-            predictedGrowth: property.property_analytics?.predicted_growth,
-            marketVolatility: property.property_analytics?.market_volatility,
+            aiConfidenceScore: property.property_analytics?.[0]?.ai_confidence_score,
+            predictedGrowth: property.property_analytics?.[0]?.predicted_growth,
+            marketVolatility: property.property_analytics?.[0]?.market_volatility,
           }}
         />
       ))}

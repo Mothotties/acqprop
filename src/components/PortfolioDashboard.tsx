@@ -15,6 +15,11 @@ import { Property } from "@/types/property";
 
 const ITEMS_PER_PAGE = 6;
 
+interface SupabaseCoordinates {
+  x: string;
+  y: string;
+}
+
 export function PortfolioDashboard() {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
@@ -62,8 +67,8 @@ export function PortfolioDashboard() {
       const properties = rawData?.map(property => ({
         ...property,
         coordinates: property.coordinates ? {
-          x: parseFloat(property.coordinates.x),
-          y: parseFloat(property.coordinates.y)
+          x: parseFloat((property.coordinates as SupabaseCoordinates).x),
+          y: parseFloat((property.coordinates as SupabaseCoordinates).y)
         } : null,
         property_analytics: property.property_analytics?.map(analytics => ({
           ...analytics,

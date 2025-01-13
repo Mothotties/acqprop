@@ -1,26 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Brain, TrendingUp, DollarSign, Building2, Activity } from "lucide-react";
+import { Brain } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from "recharts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
+import { AnalyticsMetricCard } from "./analytics/AnalyticsMetricCard";
+import { AnalyticsFilters } from "./analytics/AnalyticsFilters";
+import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
 
-// Fetch property analytics data
 const fetchPropertyAnalytics = async (propertyType?: string, dateRange?: DateRange) => {
   let query = supabase
     .from('property_analytics')
@@ -61,26 +48,17 @@ export function PropertyAnalyticsDashboard() {
     queryFn: () => fetchPropertyAnalytics(propertyType, dateRange),
   });
 
-  // Calculate aggregated metrics
-  const calculateMetrics = () => {
-    if (!analyticsData || analyticsData.length === 0) return null;
+  if (isLoading) {
+    return <div className="p-4">Loading analytics...</div>;
+  }
 
-    const totalProperties = analyticsData.length;
-    const avgRoi = analyticsData.reduce((acc, curr) => acc + (curr.roi || 0), 0) / totalProperties;
-    const avgOccupancy = analyticsData.reduce((acc, curr) => acc + (curr.occupancy_rate || 0), 0) / totalProperties;
-    const avgConfidence = analyticsData.reduce((acc, curr) => acc + (curr.ai_confidence_score || 0), 0) / totalProperties;
+  const metrics = analyticsData?.length ? {
+    totalProperties: analyticsData.length,
+    avgRoi: (analyticsData.reduce((acc, curr) => acc + (curr.roi || 0), 0) / analyticsData.length).toFixed(1),
+    avgOccupancy: (analyticsData.reduce((acc, curr) => acc + (curr.occupancy_rate || 0), 0) / analyticsData.length).toFixed(1),
+    avgConfidence: (analyticsData.reduce((acc, curr) => acc + (curr.ai_confidence_score || 0), 0) / analyticsData.length).toFixed(1),
+  } : { totalProperties: 0, avgRoi: '0', avgOccupancy: '0', avgConfidence: '0' };
 
-    return {
-      totalProperties,
-      avgRoi: avgRoi.toFixed(1),
-      avgOccupancy: avgOccupancy.toFixed(1),
-      avgConfidence: avgConfidence.toFixed(1),
-    };
-  };
-
-  const metrics = calculateMetrics();
-
-  // Transform data for charts
   const performanceData = analyticsData?.map(item => ({
     property: item.property?.title?.substring(0, 15) + '...',
     roi: item.roi || 0,
@@ -90,37 +68,33 @@ export function PropertyAnalyticsDashboard() {
   const propertyMetrics = [
     {
       title: "Total Properties",
-      value: metrics?.totalProperties || 0,
+      value: metrics.totalProperties.toString(),
       trend: "+2",
-      icon: <Building2 className="w-4 h-4 text-blue-500" />,
+      icon: <Brain className="w-4 h-4 text-blue-500" />,
       positive: true,
     },
     {
       title: "Average ROI",
-      value: `${metrics?.avgRoi || 0}%`,
+      value: `${metrics.avgRoi}%`,
       trend: "+3.1%",
-      icon: <TrendingUp className="w-4 h-4 text-indigo-500" />,
+      icon: <Brain className="w-4 h-4 text-indigo-500" />,
       positive: true,
     },
     {
       title: "Avg Occupancy",
-      value: `${metrics?.avgOccupancy || 0}%`,
+      value: `${metrics.avgOccupancy}%`,
       trend: "+2.3%",
-      icon: <Building2 className="w-4 h-4 text-blue-500" />,
+      icon: <Brain className="w-4 h-4 text-blue-500" />,
       positive: true,
     },
     {
       title: "AI Confidence",
-      value: `${metrics?.avgConfidence || 0}%`,
+      value: `${metrics.avgConfidence}%`,
       trend: "+1.5%",
       icon: <Brain className="w-4 h-4 text-yellow-500" />,
       positive: true,
     },
   ];
-
-  if (isLoading) {
-    return <div className="p-4">Loading analytics...</div>;
-  }
 
   return (
     <div className="space-y-6">
@@ -129,103 +103,21 @@ export function PropertyAnalyticsDashboard() {
           <Brain className="w-6 h-6 text-primary" />
           <h2 className="text-2xl font-bold">Property Analytics</h2>
         </div>
-        <div className="flex items-center gap-4">
-          <Select onValueChange={setPropertyType}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Property Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="residential">Residential</SelectItem>
-              <SelectItem value="commercial">Commercial</SelectItem>
-              <SelectItem value="industrial">Industrial</SelectItem>
-            </SelectContent>
-          </Select>
-          <DatePickerWithRange
-            date={dateRange}
-            setDate={setDateRange}
-          />
-        </div>
+        <AnalyticsFilters
+          propertyType={propertyType}
+          dateRange={dateRange}
+          onPropertyTypeChange={setPropertyType}
+          onDateRangeChange={setDateRange}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {propertyMetrics.map((metric, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {metric.title}
-              </CardTitle>
-              {metric.icon}
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metric.value}</div>
-              <div className="flex items-center space-x-2">
-                <p
-                  className={`text-xs ${
-                    metric.positive ? "text-green-500" : "text-red-500"
-                  }`}
-                >
-                  {metric.trend}
-                </p>
-                <Badge
-                  variant="secondary"
-                  className={`${
-                    metric.positive
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {metric.positive ? "Increase" : "Decrease"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <AnalyticsMetricCard key={index} {...metric} />
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>ROI Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={performanceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="property" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="roi" fill="#10B981" name="ROI %" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Occupancy Trends</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={performanceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="property" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="occupancy"
-                    stroke="#6366F1"
-                    name="Occupancy Rate %"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AnalyticsCharts performanceData={performanceData} />
     </div>
   );
 }

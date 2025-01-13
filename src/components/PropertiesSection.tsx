@@ -3,6 +3,8 @@ import { PropertyCard } from "@/components/PropertyCard";
 import { PropertyForm } from "@/components/PropertyForm";
 import { PropertySearch } from "@/components/PropertySearch";
 import { ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { type PropertyFilters } from "@/components/PropertySearch";
 
 const sampleProperty = {
   title: "Luxury Apartment Complex",
@@ -22,9 +24,31 @@ const sampleProperty = {
 };
 
 export function PropertiesSection() {
+  const [filters, setFilters] = useState<PropertyFilters>({
+    searchQuery: "",
+    propertyType: "all",
+    priceRange: [0, 1000000],
+    minBeds: null,
+    minBaths: null,
+    minSqft: null,
+    nearMe: false,
+    newListings: false,
+  });
+
+  const handleSearch = () => {};
+  const handleFilterChange = () => {};
+  const handleFiltersChange = (newFilters: Partial<PropertyFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
   return (
     <div className="space-y-8">
-      <PropertySearch onSearch={() => {}} onFilterChange={() => {}} />
+      <PropertySearch 
+        onSearch={handleSearch} 
+        onFilterChange={handleFilterChange}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+      />
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold tracking-tight">
           Premium Properties

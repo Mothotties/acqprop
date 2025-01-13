@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useState } from "react";
+import { type PropertyFilters } from "@/components/PropertySearch";
 
 const performanceData = [
   { month: "Jan", revenue: 45000 },
@@ -52,6 +53,16 @@ const allProperties = [
 export function PortfolioDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [filters, setFilters] = useState<PropertyFilters>({
+    searchQuery: "",
+    propertyType: "all",
+    priceRange: [0, 1000000],
+    minBeds: null,
+    minBaths: null,
+    minSqft: null,
+    nearMe: false,
+    newListings: false,
+  });
 
   const filteredProperties = allProperties.filter((property) => {
     const matchesSearch = property.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -59,11 +70,19 @@ export function PortfolioDashboard() {
     return matchesSearch && matchesFilter;
   });
 
+  const handleFiltersChange = (newFilters: Partial<PropertyFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    if (newFilters.searchQuery !== undefined) setSearchQuery(newFilters.searchQuery);
+    if (newFilters.propertyType !== undefined) setFilterType(newFilters.propertyType);
+  };
+
   return (
     <div className="space-y-6 animate-fade-up">
       <PropertySearch
         onSearch={setSearchQuery}
         onFilterChange={setFilterType}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
       />
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

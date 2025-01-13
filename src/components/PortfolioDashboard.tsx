@@ -8,14 +8,19 @@ import { PortfolioDashboardSkeleton } from "./portfolio/PortfolioDashboardSkelet
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
+import { PropertyFilters } from "./portfolio/PropertyFilters";
+import { useState } from "react";
+import { SortOption } from "./analytics/PropertySorting";
 
 export function PortfolioDashboard() {
   const { toast } = useToast();
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortOption>({ field: "created_at", direction: "desc" });
   
   const { data: properties, isLoading, error } = useQuery({
-    queryKey: ["portfolio-properties"],
+    queryKey: ["portfolio-properties", search, sort],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("properties")
         .select(`
           *,
@@ -28,6 +33,16 @@ export function PortfolioDashboard() {
           )
         `)
         .limit(3);
+
+      // Apply search filter
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,location.ilike.%${search}%`);
+      }
+
+      // Apply sorting
+      query = query.order(sort.field, { ascending: sort.direction === 'asc' });
+      
+      const { data, error } = await query;
       
       if (error) {
         toast({
@@ -74,6 +89,10 @@ export function PortfolioDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <PropertyFilters 
+              onSearchChange={setSearch}
+              onSortChange={setSort}
+            />
             <div className="space-y-4">
               {properties?.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">

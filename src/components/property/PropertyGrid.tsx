@@ -1,42 +1,17 @@
 import { useState } from "react";
 import { PropertyCard } from "@/components/PropertyCard";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { type PropertyFilters } from "@/components/PropertySearch";
 import { type SortOption } from "@/components/analytics/PropertySorting";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-
-interface Property {
-  id: string;
-  title: string;
-  price: number;
-  location: string;
-  property_type: string;
-  status: string;
-  coordinates: { x: number, y: number } | null;
-  bedrooms?: number;
-  bathrooms?: number;
-  square_feet?: number;
-  property_analytics?: {
-    ai_confidence_score: number;
-    cap_rate: number;
-    roi: number;
-    predicted_growth: number;
-    market_volatility: number;
-  }[];
-}
-
-interface PropertyGridProps {
-  filters: PropertyFilters;
-  sortOption: SortOption;
-}
+import { PropertyPagination } from "./PropertyPagination";
+import { PropertyGridStates } from "./PropertyGridStates";
 
 const ITEMS_PER_PAGE = 9;
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371; // Earth's radius in kilometers
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = 
@@ -46,6 +21,11 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
 };
+
+interface PropertyGridProps {
+  filters: PropertyFilters;
+  sortOption: SortOption;
+}
 
 export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
   const { toast } = useToast();
@@ -68,7 +48,6 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
         `)
         .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
 
-      // Apply filters
       if (filters.searchQuery) {
         query = query.or(`title.ilike.%${filters.searchQuery}%,location.ilike.%${filters.searchQuery}%`);
       }
@@ -89,12 +68,10 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
         query = query.gte("square_feet", filters.minSqft);
       }
 
-      // Apply price range filter
       query = query
         .gte("price", filters.priceRange[0])
         .lte("price", filters.priceRange[1]);
 
-      // Apply sorting
       query = query.order(sortOption.field, {
         ascending: sortOption.direction === "asc",
       });
@@ -106,7 +83,6 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
         throw error;
       }
 
-      // If "Near me" filter is active, filter properties by distance
       if (filters.nearMe) {
         try {
           const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -114,7 +90,7 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
           });
 
           const { latitude, longitude } = position.coords;
-          const MAX_DISTANCE = 50; // Maximum distance in kilometers
+          const MAX_DISTANCE = 50;
 
           return {
             properties: (data as Property[]).filter(property => {
@@ -144,75 +120,43 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-gold" />
-      </div>
-    );
-  }
-
-  if (!propertiesData?.properties?.length) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No properties found matching your criteria</p>
-      </div>
-    );
-  }
-
-  const totalPages = Math.ceil(propertiesData.count / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil((propertiesData?.count || 0) / ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {propertiesData.properties.map((property) => (
-          <PropertyCard
-            key={property.id}
-            title={property.title}
-            price={property.price}
-            type={property.property_type}
-            location={property.location}
-            metrics={{
-              capRate: property.property_analytics?.[0]?.cap_rate || 0,
-              roi: property.property_analytics?.[0]?.roi || 0,
-              cashFlow: 0,
-              aiConfidenceScore: property.property_analytics?.[0]?.ai_confidence_score || 0,
-              predictedGrowth: property.property_analytics?.[0]?.predicted_growth || 0,
-              marketVolatility: property.property_analytics?.[0]?.market_volatility || 0,
-            }}
-          />
-        ))}
-      </div>
+      <PropertyGridStates 
+        isLoading={isLoading} 
+        isEmpty={!propertiesData?.properties?.length} 
+      />
 
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <div className="flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => (
-              <Button
-                key={i + 1}
-                variant={currentPage === i + 1 ? "default" : "outline"}
-                onClick={() => setCurrentPage(i + 1)}
-                className="w-10"
-              >
-                {i + 1}
-              </Button>
+      {propertiesData?.properties?.length > 0 && (
+        <>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {propertiesData.properties.map((property) => (
+              <PropertyCard
+                key={property.id}
+                title={property.title}
+                price={property.price}
+                type={property.property_type}
+                location={property.location}
+                metrics={{
+                  capRate: property.property_analytics?.[0]?.cap_rate || 0,
+                  roi: property.property_analytics?.[0]?.roi || 0,
+                  cashFlow: 0,
+                  aiConfidenceScore: property.property_analytics?.[0]?.ai_confidence_score || 0,
+                  predictedGrowth: property.property_analytics?.[0]?.predicted_growth || 0,
+                  marketVolatility: property.property_analytics?.[0]?.market_volatility || 0,
+                }}
+              />
             ))}
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
+
+          <PropertyPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
     </div>
   );

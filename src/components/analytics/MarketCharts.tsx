@@ -14,6 +14,14 @@ import {
 } from "recharts";
 import { Building2, TrendingUp, Users, AlertTriangle } from "lucide-react";
 
+interface MarketChartsProps {
+  data?: Array<{
+    property: string;
+    marketValue: number;
+    pricePerSqft: number;
+  }>;
+}
+
 // Sample data for different charts
 const propertyValueData = [
   { month: "Jan", currentValue: 850000, predictedValue: 855000, marketAverage: 840000 },
@@ -51,7 +59,7 @@ const riskAnalysisData = [
   { month: "Jun", riskScore: 73, volatility: 12 },
 ];
 
-export function MarketCharts() {
+export function MarketCharts({ data = [] }: MarketChartsProps) {
   return (
     <div className="space-y-6">
       <Card>

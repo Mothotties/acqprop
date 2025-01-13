@@ -1,55 +1,61 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 
-const occupancyData = [
-  { month: "Jan", occupancy: 92, pricePerSqft: 425 },
-  { month: "Feb", occupancy: 94, pricePerSqft: 430 },
-  { month: "Mar", occupancy: 95, pricePerSqft: 435 },
-  { month: "Apr", occupancy: 93, pricePerSqft: 440 },
-  { month: "May", occupancy: 96, pricePerSqft: 445 },
-  { month: "Jun", occupancy: 97, pricePerSqft: 450 },
-];
+export interface OccupancyChartProps {
+  data: Array<{
+    property: string;
+    marketValue: number;
+    pricePerSqft: number;
+  }>;
+}
 
-export function OccupancyChart() {
+export function OccupancyChart({ data }: OccupancyChartProps) {
+  const chartData = data.map(item => ({
+    name: item.property,
+    "Occupancy Rate": Math.random() * 30 + 70, // Simulated occupancy rate between 70-100%
+  }));
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-amber-500" />
-          Price per Square Foot & Occupancy
+          <Users className="h-5 w-5 text-purple-500" />
+          Occupancy Rates
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={occupancyData}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
+              <XAxis 
+                dataKey="name"
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                interval={0}
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis />
               <Tooltip />
-              <Bar
-                yAxisId="left"
-                dataKey="pricePerSqft"
-                fill="#F59E0B"
-                name="Price/sqft"
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="Occupancy Rate"
+                stroke="#9333EA"
+                strokeWidth={2}
               />
-              <Bar
-                yAxisId="right"
-                dataKey="occupancy"
-                fill="#10B981"
-                name="Occupancy %"
-              />
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

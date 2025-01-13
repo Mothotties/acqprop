@@ -13,7 +13,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-interface MarketValueChartProps {
+export interface MarketValueChartProps {
   data: Array<{
     property: string;
     marketValue: number;

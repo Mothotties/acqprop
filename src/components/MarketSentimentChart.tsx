@@ -22,12 +22,12 @@ const sentimentData = [
 export function MarketSentimentChart() {
   return (
     <Card className="border-gold/10 hover:border-gold/20 transition-all duration-300">
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-ai/5 opacity-50" />
+      {/* Gradient overlay with adjusted opacity and colors */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gold/20 via-transparent to-primary/10" />
       
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-ai animate-pulse" />
+          <Brain className="w-4 h-4 text-gold animate-pulse" />
           Real-Time Market Sentiment
         </CardTitle>
       </CardHeader>
@@ -58,7 +58,7 @@ export function MarketSentimentChart() {
               <Line
                 type="monotone"
                 dataKey="sentiment"
-                stroke="hsl(var(--ai))"
+                stroke="#D4AF37"
                 strokeWidth={2}
                 dot={false}
                 name="Market Sentiment"
@@ -67,7 +67,7 @@ export function MarketSentimentChart() {
               <Line
                 type="monotone"
                 dataKey="confidence"
-                stroke="hsl(var(--primary))"
+                stroke="#1a2942"
                 strokeWidth={2}
                 dot={false}
                 name="AI Confidence"

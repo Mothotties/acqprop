@@ -14,23 +14,23 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <SessionContextProvider supabaseClient={supabase}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
             <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/properties/:id" element={<PropertyDetails />} />
               </Routes>
+              <Toaster />
+              <Sonner />
             </BrowserRouter>
           </TooltipProvider>
         </QueryClientProvider>
-      </ThemeProvider>
-    </SessionContextProvider>
+      </SessionContextProvider>
+    </ThemeProvider>
   );
 };
 

@@ -1,4 +1,3 @@
-import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { PropertyViewer3D } from "@/components/PropertyViewer3D";
 import { MarketIntelligenceDashboard } from "@/components/MarketIntelligenceDashboard";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
@@ -37,19 +36,14 @@ export function MainDashboardAnalytics() {
     },
   ];
 
+  const handlePropertySelection = (propertyIds: string[]) => {
+    setSelectedPropertyIds(propertyIds);
+  };
+
   return (
     <div className="space-y-6">
       <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
-        <AnalyticsDashboard />
-      </section>
-
-      <section className="grid gap-6 md:grid-cols-2">
-        <RealTimeMarketUpdates />
-        <AIMarketPredictions />
-      </section>
-
-      <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-        <PropertyComparison />
+        <PropertyComparison onPropertySelect={handlePropertySelection} />
       </section>
 
       {selectedPropertyIds.length > 0 && (

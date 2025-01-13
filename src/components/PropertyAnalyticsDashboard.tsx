@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, TrendingUp, DollarSign, Building2, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart,
   Bar,
@@ -13,47 +15,90 @@ import {
   Line,
 } from "recharts";
 
-const performanceData = [
-  { month: "Jan", revenue: 45000, occupancy: 95 },
-  { month: "Feb", revenue: 52000, occupancy: 92 },
-  { month: "Mar", revenue: 48000, occupancy: 94 },
-  { month: "Apr", revenue: 61000, occupancy: 96 },
-  { month: "May", revenue: 55000, occupancy: 93 },
-  { month: "Jun", revenue: 67000, occupancy: 97 },
-];
+// Fetch property analytics data
+const fetchPropertyAnalytics = async () => {
+  const { data, error } = await supabase
+    .from('property_analytics')
+    .select(`
+      *,
+      property:properties(
+        title,
+        price,
+        location
+      )
+    `);
 
-const propertyMetrics = [
-  {
-    title: "Total Revenue",
-    value: "$328,000",
-    trend: "+12.5%",
-    icon: <DollarSign className="w-4 h-4 text-green-500" />,
-    positive: true,
-  },
-  {
-    title: "Occupancy Rate",
-    value: "94.5%",
-    trend: "+2.3%",
-    icon: <Building2 className="w-4 h-4 text-blue-500" />,
-    positive: true,
-  },
-  {
-    title: "ROI",
-    value: "15.2%",
-    trend: "+3.1%",
-    icon: <TrendingUp className="w-4 h-4 text-indigo-500" />,
-    positive: true,
-  },
-  {
-    title: "Market Growth",
-    value: "8.7%",
-    trend: "-1.2%",
-    icon: <Activity className="w-4 h-4 text-yellow-500" />,
-    positive: false,
-  },
-];
+  if (error) throw error;
+  return data;
+};
 
 export function PropertyAnalyticsDashboard() {
+  const { data: analyticsData, isLoading } = useQuery({
+    queryKey: ['propertyAnalytics'],
+    queryFn: fetchPropertyAnalytics,
+  });
+
+  // Calculate aggregated metrics
+  const calculateMetrics = () => {
+    if (!analyticsData || analyticsData.length === 0) return null;
+
+    const totalProperties = analyticsData.length;
+    const avgRoi = analyticsData.reduce((acc, curr) => acc + (curr.roi || 0), 0) / totalProperties;
+    const avgOccupancy = analyticsData.reduce((acc, curr) => acc + (curr.occupancy_rate || 0), 0) / totalProperties;
+    const avgConfidence = analyticsData.reduce((acc, curr) => acc + (curr.ai_confidence_score || 0), 0) / totalProperties;
+
+    return {
+      totalProperties,
+      avgRoi: avgRoi.toFixed(1),
+      avgOccupancy: avgOccupancy.toFixed(1),
+      avgConfidence: avgConfidence.toFixed(1),
+    };
+  };
+
+  const metrics = calculateMetrics();
+
+  // Transform data for charts
+  const performanceData = analyticsData?.map(item => ({
+    property: item.property?.title?.substring(0, 15) + '...',
+    roi: item.roi || 0,
+    occupancy: item.occupancy_rate || 0,
+  })) || [];
+
+  const propertyMetrics = [
+    {
+      title: "Total Properties",
+      value: metrics?.totalProperties || 0,
+      trend: "+2",
+      icon: <Building2 className="w-4 h-4 text-blue-500" />,
+      positive: true,
+    },
+    {
+      title: "Average ROI",
+      value: `${metrics?.avgRoi || 0}%`,
+      trend: "+3.1%",
+      icon: <TrendingUp className="w-4 h-4 text-indigo-500" />,
+      positive: true,
+    },
+    {
+      title: "Avg Occupancy",
+      value: `${metrics?.avgOccupancy || 0}%`,
+      trend: "+2.3%",
+      icon: <Building2 className="w-4 h-4 text-blue-500" />,
+      positive: true,
+    },
+    {
+      title: "AI Confidence",
+      value: `${metrics?.avgConfidence || 0}%`,
+      trend: "+1.5%",
+      icon: <Brain className="w-4 h-4 text-yellow-500" />,
+      positive: true,
+    },
+  ];
+
+  if (isLoading) {
+    return <div className="p-4">Loading analytics...</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -99,17 +144,17 @@ export function PropertyAnalyticsDashboard() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Revenue Performance</CardTitle>
+            <CardTitle>ROI Performance</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={performanceData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="property" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="revenue" fill="#10B981" name="Revenue" />
+                  <Bar dataKey="roi" fill="#10B981" name="ROI %" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -125,14 +170,14 @@ export function PropertyAnalyticsDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={performanceData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="property" />
                   <YAxis />
                   <Tooltip />
                   <Line
                     type="monotone"
                     dataKey="occupancy"
                     stroke="#6366F1"
-                    name="Occupancy Rate"
+                    name="Occupancy Rate %"
                   />
                 </LineChart>
               </ResponsiveContainer>

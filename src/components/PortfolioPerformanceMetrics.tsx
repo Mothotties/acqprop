@@ -4,12 +4,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, Brain, Target, Activity } from "lucide-react";
 
 const performanceData = [
-  { month: "Jan", actual: 100, predicted: 102, confidence: 95 },
-  { month: "Feb", actual: 105, predicted: 108, confidence: 94 },
-  { month: "Mar", actual: 115, predicted: 114, confidence: 96 },
-  { month: "Apr", actual: 120, predicted: 122, confidence: 93 },
-  { month: "May", actual: 125, predicted: 128, confidence: 95 },
-  { month: "Jun", actual: 135, predicted: 134, confidence: 97 },
+  { month: "Jan 2024", actual: 100, predicted: 102, confidence: 95, occupancy: 92 },
+  { month: "Feb 2024", actual: 105, predicted: 108, confidence: 94, occupancy: 94 },
+  { month: "Mar 2024", actual: 115, predicted: 114, confidence: 96, occupancy: 95 },
+  { month: "Apr 2024", actual: 120, predicted: 122, confidence: 93, occupancy: 93 },
+  { month: "May 2024", actual: 125, predicted: 128, confidence: 95, occupancy: 96 },
+  { month: "Jun 2024", actual: 135, predicted: 134, confidence: 97, occupancy: 97 },
+  { month: "Jul 2024", actual: 140, predicted: 142, confidence: 96, occupancy: 98 },
+  { month: "Aug 2024", actual: 145, predicted: 148, confidence: 94, occupancy: 96 },
 ];
 
 export function PortfolioPerformanceMetrics() {
@@ -28,7 +30,7 @@ export function PortfolioPerformanceMetrics() {
               <p className="text-sm text-muted-foreground">ROI Prediction</p>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-500" />
-                <p className="text-2xl font-bold">+12.5%</p>
+                <p className="text-2xl font-bold">+15.8%</p>
               </div>
               <Badge className="bg-green-100 text-green-800">High Confidence</Badge>
             </div>
@@ -36,17 +38,17 @@ export function PortfolioPerformanceMetrics() {
               <p className="text-sm text-muted-foreground">AI Accuracy</p>
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4 text-blue-500" />
-                <p className="text-2xl font-bold">95%</p>
+                <p className="text-2xl font-bold">96%</p>
               </div>
-              <Badge className="bg-blue-100 text-blue-800">Stable</Badge>
+              <Badge className="bg-blue-100 text-blue-800">Improving</Badge>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Market Volatility</p>
+              <p className="text-sm text-muted-foreground">Portfolio Health</p>
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-yellow-500" />
-                <p className="text-2xl font-bold">Low</p>
+                <Activity className="w-4 h-4 text-purple-500" />
+                <p className="text-2xl font-bold">Strong</p>
               </div>
-              <Badge className="bg-yellow-100 text-yellow-800">Monitored</Badge>
+              <Badge className="bg-purple-100 text-purple-800">Optimized</Badge>
             </div>
           </div>
 
@@ -54,7 +56,7 @@ export function PortfolioPerformanceMetrics() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="month" angle={-45} textAnchor="end" height={60} />
                 <YAxis />
                 <Tooltip />
                 <Line 
@@ -72,6 +74,13 @@ export function PortfolioPerformanceMetrics() {
                   strokeWidth={2}
                   strokeDasharray="5 5"
                 />
+                <Line 
+                  type="monotone" 
+                  dataKey="occupancy" 
+                  stroke="#F59E0B" 
+                  name="Occupancy Rate"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -79,8 +88,9 @@ export function PortfolioPerformanceMetrics() {
           <div className="space-y-2">
             <h4 className="font-semibold">AI Insights</h4>
             <p className="text-sm text-muted-foreground">
-              Based on current market trends and historical data, our AI predicts a strong positive trajectory
-              for your portfolio with a 95% confidence level. Market conditions remain favorable for expansion.
+              Portfolio performance shows strong growth with a 15.8% ROI prediction. Occupancy rates remain high at 96%, 
+              indicating robust demand. Market conditions and AI confidence levels suggest continued positive momentum 
+              for the next quarter.
             </p>
           </div>
         </div>

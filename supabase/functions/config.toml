@@ -1,3 +1,5 @@
+# project_id must be the first value in the toml
 project_id = "fldafqlezglfbmqrgcoj"
-[check-subscription]
-verify_jwt = true
+
+[global.env]
+STRIPE_SECRET_KEY = "vault:stripe-secret-key"

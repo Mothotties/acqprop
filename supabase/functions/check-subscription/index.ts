@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import Stripe from "https://esm.sh/stripe@11.17.0"
+import Stripe from "https://esm.sh/stripe@14.21.0"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 
 const corsHeaders = {
@@ -8,86 +8,69 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    )
+
+    // Get the session or user object
+    const authHeader = req.headers.get('Authorization')!
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
+
+    if (userError || !user) {
+      throw new Error('Not authenticated')
+    }
+
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
     })
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // Get customer by email
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1
+    })
 
-    // Get the user's JWT from the request header
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('No authorization header')
-    }
-
-    // Get the user from Supabase auth
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
-
-    if (userError || !user) {
-      throw new Error('Error getting user')
-    }
-
-    // Get customer ID from user metadata or profile
-    const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('stripe_customer_id')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError || !profile?.stripe_customer_id) {
-      console.log('No Stripe customer ID found for user')
+    if (customers.data.length === 0) {
       return new Response(
-        JSON.stringify({ 
-          hasActiveSubscription: false,
-          message: 'No subscription found' 
-        }),
-        { 
+        JSON.stringify({ subscribed: false }),
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
+          status: 200,
         }
       )
     }
 
-    // Get customer's subscriptions
     const subscriptions = await stripe.subscriptions.list({
-      customer: profile.stripe_customer_id,
+      customer: customers.data[0].id,
       status: 'active',
-      limit: 1,
+      limit: 1
     })
 
-    const hasActiveSubscription = subscriptions.data.length > 0
-
     return new Response(
-      JSON.stringify({
-        hasActiveSubscription,
-        subscription: hasActiveSubscription ? subscriptions.data[0] : null
+      JSON.stringify({ 
+        subscribed: subscriptions.data.length > 0,
+        subscription: subscriptions.data[0] || null
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200,
       }
     )
 
   } catch (error) {
-    console.error('Error:', error.message)
+    console.error('Error checking subscription:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
+        status: 500,
       }
     )
   }

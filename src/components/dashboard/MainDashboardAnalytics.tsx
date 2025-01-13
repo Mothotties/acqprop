@@ -5,6 +5,7 @@ import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { ComparativeAnalysis } from "@/components/analytics/ComparativeAnalysis";
 import { MarketMetricsGrid } from "@/components/analytics/MarketMetricsGrid";
 import { HistoricalTrends } from "@/components/analytics/HistoricalTrends";
+import { RealTimeMarketUpdates } from "@/components/analytics/RealTimeMarketUpdates";
 
 export function MainDashboardAnalytics() {
   const comparativeData = [
@@ -34,7 +35,8 @@ export function MainDashboardAnalytics() {
         <AnalyticsDashboard />
       </section>
 
-      <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
+      <section className="grid gap-6 md:grid-cols-2">
+        <RealTimeMarketUpdates />
         <PropertyViewer3D />
       </section>
 

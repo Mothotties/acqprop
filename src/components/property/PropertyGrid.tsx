@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PropertyCard } from "@/components/PropertyCard";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -98,7 +99,7 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
         ascending: sortOption.direction === "asc",
       });
 
-      const { data, error, count } = await query.select('*', { count: 'exact' });
+      const { data, error, count } = await query;
 
       if (error) {
         console.error("Error fetching properties:", error);

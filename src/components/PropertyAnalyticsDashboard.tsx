@@ -1,13 +1,11 @@
-import { Brain, Download } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { AnalyticsMetricCard } from "./analytics/AnalyticsMetricCard";
-import { AnalyticsFilters } from "./analytics/AnalyticsFilters";
+import { AnalyticsHeader } from "./analytics/AnalyticsHeader";
+import { AnalyticsMetricsGrid } from "./analytics/AnalyticsMetricsGrid";
 import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
-import { Button } from "./ui/button";
 import { exportToCSV } from "@/utils/exportUtils";
 import { toast } from "sonner";
 
@@ -87,68 +85,17 @@ export function PropertyAnalyticsDashboard() {
     occupancy: item.occupancy_rate || 0,
   })) || [];
 
-  const propertyMetrics = [
-    {
-      title: "Total Properties",
-      value: metrics.totalProperties.toString(),
-      trend: "+2",
-      icon: <Brain className="w-4 h-4 text-blue-500" />,
-      positive: true,
-    },
-    {
-      title: "Average ROI",
-      value: `${metrics.avgRoi}%`,
-      trend: "+3.1%",
-      icon: <Brain className="w-4 h-4 text-indigo-500" />,
-      positive: true,
-    },
-    {
-      title: "Avg Occupancy",
-      value: `${metrics.avgOccupancy}%`,
-      trend: "+2.3%",
-      icon: <Brain className="w-4 h-4 text-blue-500" />,
-      positive: true,
-    },
-    {
-      title: "AI Confidence",
-      value: `${metrics.avgConfidence}%`,
-      trend: "+1.5%",
-      icon: <Brain className="w-4 h-4 text-yellow-500" />,
-      positive: true,
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Brain className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold">Property Analytics</h2>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            className="flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Export Data
-          </Button>
-          <AnalyticsFilters
-            propertyType={propertyType}
-            dateRange={dateRange}
-            onPropertyTypeChange={setPropertyType}
-            onDateRangeChange={setDateRange}
-          />
-        </div>
-      </div>
+      <AnalyticsHeader
+        propertyType={propertyType}
+        dateRange={dateRange}
+        onPropertyTypeChange={setPropertyType}
+        onDateRangeChange={setDateRange}
+        onExport={handleExport}
+      />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {propertyMetrics.map((metric, index) => (
-          <AnalyticsMetricCard key={index} {...metric} />
-        ))}
-      </div>
+      <AnalyticsMetricsGrid metrics={metrics} />
 
       <AnalyticsCharts performanceData={performanceData} />
     </div>

@@ -5,7 +5,7 @@ import { RiskAnalysisChart } from "./charts/RiskAnalysisChart";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-interface MarketData {
+export interface MarketData {
   property: string;
   marketValue: number;
   pricePerSqft: number;

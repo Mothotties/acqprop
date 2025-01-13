@@ -11,7 +11,7 @@ import {
   Legend,
 } from "recharts";
 
-interface MarketData {
+export interface MarketData {
   property: string;
   marketValue: number;
   pricePerSqft: number;

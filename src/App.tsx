@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { supabase } from "./integrations/supabase/client";
 import { PropertyDetails } from "./components/PropertyDetails";
+import { PricingPage } from "./components/PricingPage";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={<Index />} />
                 <Route path="/properties/:id" element={<PropertyDetails />} />
+                <Route path="/pricing" element={<PricingPage />} />
               </Routes>
               <Toaster />
               <Sonner />

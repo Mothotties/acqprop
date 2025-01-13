@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 
-const propertyFormSchema = z.object({
+export const propertyFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   price: z.coerce.number().min(1, "Price is required"),

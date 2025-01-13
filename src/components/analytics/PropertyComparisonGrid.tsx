@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Building2, DollarSign, TrendingUp, Home } from "lucide-react";
+import { PropertyImageGallery } from "./PropertyImageGallery";
+import { PropertyMetricsComparison } from "./PropertyMetricsComparison";
 
 interface PropertyComparisonGridProps {
   propertyIds: string[];
@@ -46,92 +48,101 @@ export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridPr
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {properties.map((property) => (
-        <Card key={property.id} className="relative overflow-hidden">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-4 h-4" />
-              {property.title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Price</span>
-                <span className="font-medium">${property.price?.toLocaleString()}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Location</span>
-                <span className="font-medium">{property.location}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Property Type</span>
-                <span className="font-medium">{property.property_type}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Size</span>
-                <span className="font-medium">{property.square_feet} sq ft</span>
-              </div>
-            </div>
+    <div className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {properties.map((property) => (
+          <Card key={property.id} className="relative overflow-hidden">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="w-4 h-4" />
+                {property.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <PropertyImageGallery 
+                images={property.images || []} 
+                title={property.title} 
+              />
 
-            <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium mb-2">Analytics</h4>
-              <div className="grid gap-2">
+              <div className="grid gap-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">AI Score</span>
-                  <span className="font-medium">
-                    {property.property_analytics?.[0]?.ai_confidence_score || 'N/A'}%
-                  </span>
+                  <span className="text-sm text-muted-foreground">Price</span>
+                  <span className="font-medium">${property.price?.toLocaleString()}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">ROI</span>
-                  <span className="font-medium text-green-600">
-                    {property.property_analytics?.[0]?.roi || 'N/A'}%
-                  </span>
+                  <span className="text-sm text-muted-foreground">Location</span>
+                  <span className="font-medium">{property.location}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Risk Score</span>
-                  <span className="font-medium">
-                    {property.property_analytics?.[0]?.risk_score || 'N/A'}/10
-                  </span>
+                  <span className="text-sm text-muted-foreground">Property Type</span>
+                  <span className="font-medium">{property.property_type}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Size</span>
+                  <span className="font-medium">{property.square_feet} sq ft</span>
                 </div>
               </div>
-            </div>
 
-            <div className="pt-4 border-t">
-              <h4 className="text-sm font-medium mb-2">Market Data</h4>
-              <div className="grid gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Market Value</span>
-                  <span className="font-medium">
-                    ${property.property_market_data?.[0]?.market_value?.toLocaleString() || 'N/A'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Price per sq ft</span>
-                  <span className="font-medium">
-                    ${property.property_market_data?.[0]?.price_per_sqft?.toLocaleString() || 'N/A'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Demand Score</span>
-                  <span className="font-medium">
-                    {property.property_market_data?.[0]?.market_demand_score || 'N/A'}/100
-                  </span>
+              <div className="pt-4 border-t">
+                <h4 className="text-sm font-medium mb-2">Analytics</h4>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">AI Score</span>
+                    <span className="font-medium">
+                      {property.property_analytics?.[0]?.ai_confidence_score || 'N/A'}%
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">ROI</span>
+                    <span className="font-medium text-green-600">
+                      {property.property_analytics?.[0]?.roi || 'N/A'}%
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Risk Score</span>
+                    <span className="font-medium">
+                      {property.property_analytics?.[0]?.risk_score || 'N/A'}/10
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+
+              <div className="pt-4 border-t">
+                <h4 className="text-sm font-medium mb-2">Market Data</h4>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Market Value</span>
+                    <span className="font-medium">
+                      ${property.property_market_data?.[0]?.market_value?.toLocaleString() || 'N/A'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Price per sq ft</span>
+                    <span className="font-medium">
+                      ${property.property_market_data?.[0]?.price_per_sqft?.toLocaleString() || 'N/A'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Demand Score</span>
+                    <span className="font-medium">
+                      {property.property_market_data?.[0]?.market_demand_score || 'N/A'}/100
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <PropertyMetricsComparison properties={properties} />
     </div>
   );
 }

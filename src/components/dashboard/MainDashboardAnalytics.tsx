@@ -8,8 +8,16 @@ import { HistoricalTrends } from "@/components/analytics/HistoricalTrends";
 import { RealTimeMarketUpdates } from "@/components/analytics/RealTimeMarketUpdates";
 import { AIMarketPredictions } from "@/components/analytics/AIMarketPredictions";
 import { MarketAlerts } from "@/components/analytics/MarketAlerts";
+import { PropertyComparison } from "@/components/analytics/PropertyComparison";
 
 export function MainDashboardAnalytics() {
+  // Sample property IDs for comparison - in a real app, these would be selected by the user
+  const propertyIdsForComparison = [
+    '123e4567-e89b-12d3-a456-426614174000',
+    '123e4567-e89b-12d3-a456-426614174001',
+    '123e4567-e89b-12d3-a456-426614174002'
+  ];
+
   const comparativeData = [
     {
       property: "Property A",
@@ -40,6 +48,10 @@ export function MainDashboardAnalytics() {
       <section className="grid gap-6 md:grid-cols-2">
         <RealTimeMarketUpdates />
         <AIMarketPredictions />
+      </section>
+
+      <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+        <PropertyComparison propertyIds={propertyIdsForComparison} />
       </section>
 
       <section className="grid gap-6 md:grid-cols-2">

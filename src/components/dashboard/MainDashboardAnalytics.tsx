@@ -6,6 +6,8 @@ import { ComparativeAnalysis } from "@/components/analytics/ComparativeAnalysis"
 import { MarketMetricsGrid } from "@/components/analytics/MarketMetricsGrid";
 import { HistoricalTrends } from "@/components/analytics/HistoricalTrends";
 import { RealTimeMarketUpdates } from "@/components/analytics/RealTimeMarketUpdates";
+import { AIMarketPredictions } from "@/components/analytics/AIMarketPredictions";
+import { MarketAlerts } from "@/components/analytics/MarketAlerts";
 
 export function MainDashboardAnalytics() {
   const comparativeData = [
@@ -37,7 +39,12 @@ export function MainDashboardAnalytics() {
 
       <section className="grid gap-6 md:grid-cols-2">
         <RealTimeMarketUpdates />
+        <AIMarketPredictions />
+      </section>
+
+      <section className="grid gap-6 md:grid-cols-2">
         <PropertyViewer3D />
+        <MarketAlerts />
       </section>
 
       <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">

@@ -56,13 +56,15 @@ export function CreatePropertyForm() {
     }
 
     try {
+      const propertyData = {
+        ...data,
+        owner_id: session.user.id,
+        status: "available" as const,
+      };
+
       const { data: property, error } = await supabase
         .from("properties")
-        .insert({
-          ...data,
-          owner_id: session.user.id,
-          status: "available",
-        })
+        .insert(propertyData)
         .select()
         .single();
 

@@ -22,6 +22,35 @@ interface MarketChartsProps {
 }
 
 export function MarketCharts({ data }: MarketChartsProps) {
+  // Add a check for empty data
+  if (!data || data.length === 0) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Market Value Trends</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              No market data available
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Price per Square Foot Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              No price data available
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
@@ -29,11 +58,18 @@ export function MarketCharts({ data }: MarketChartsProps) {
           <CardTitle>Market Value Trends</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
+              <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="property" />
+                <XAxis 
+                  dataKey="property" 
+                  tick={{ fontSize: 12 }}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
                 <YAxis />
                 <Tooltip />
                 <Line
@@ -41,6 +77,7 @@ export function MarketCharts({ data }: MarketChartsProps) {
                   dataKey="marketValue"
                   stroke="#10B981"
                   name="Market Value"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -53,14 +90,26 @@ export function MarketCharts({ data }: MarketChartsProps) {
           <CardTitle>Price per Square Foot Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
+              <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="property" />
+                <XAxis 
+                  dataKey="property" 
+                  tick={{ fontSize: 12 }}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="pricePerSqft" fill="#6366F1" name="Price/sqft" />
+                <Bar 
+                  dataKey="pricePerSqft" 
+                  fill="#6366F1" 
+                  name="Price/sqft"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>

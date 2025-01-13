@@ -60,6 +60,8 @@ export function CreatePropertyForm() {
         ...data,
         owner_id: session.user.id,
         status: "available" as const,
+        amenities: [] as string[],
+        images: [] as string[],
       };
 
       const { data: property, error } = await supabase

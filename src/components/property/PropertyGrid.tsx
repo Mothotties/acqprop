@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { type PropertyFilters } from "@/components/PropertySearch";
 import { type SortOption } from "@/components/analytics/PropertySorting";
+import { useToast } from "@/hooks/use-toast";
 
 interface Property {
   id: string;
@@ -12,6 +13,7 @@ interface Property {
   location: string;
   property_type: string;
   status: string;
+  coordinates: { x: number, y: number } | null;
   bedrooms?: number;
   bathrooms?: number;
   square_feet?: number;
@@ -29,7 +31,21 @@ interface PropertyGridProps {
   sortOption: SortOption;
 }
 
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
 export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
+  const { toast } = useToast();
+
   const { data: properties, isLoading } = useQuery({
     queryKey: ["properties", filters, sortOption],
     queryFn: async () => {
@@ -82,6 +98,37 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
       if (error) {
         console.error("Error fetching properties:", error);
         throw error;
+      }
+
+      // If "Near me" filter is active, filter properties by distance
+      if (filters.nearMe) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
+
+          const { latitude, longitude } = position.coords;
+          const MAX_DISTANCE = 50; // Maximum distance in kilometers
+
+          return (data as Property[]).filter(property => {
+            if (!property.coordinates) return false;
+            const distance = calculateDistance(
+              latitude,
+              longitude,
+              property.coordinates.x,
+              property.coordinates.y
+            );
+            return distance <= MAX_DISTANCE;
+          });
+        } catch (error) {
+          console.error("Error getting location:", error);
+          toast({
+            title: "Location Error",
+            description: "Unable to access your location. Please check your browser settings.",
+            variant: "destructive",
+          });
+          return data as Property[];
+        }
       }
 
       return data as Property[];

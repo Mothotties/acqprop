@@ -18,9 +18,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 // Fetch property analytics data
-const fetchPropertyAnalytics = async (propertyType?: string, dateRange?: { from: Date; to: Date }) => {
+const fetchPropertyAnalytics = async (propertyType?: string, dateRange?: DateRange) => {
   let query = supabase
     .from('property_analytics')
     .select(`
@@ -50,7 +51,7 @@ const fetchPropertyAnalytics = async (propertyType?: string, dateRange?: { from:
 
 export function PropertyAnalyticsDashboard() {
   const [propertyType, setPropertyType] = useState<string>();
-  const [dateRange, setDateRange] = useState({
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
     to: new Date(),
   });

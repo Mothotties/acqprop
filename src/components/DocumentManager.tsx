@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { FileText, Upload, Trash2, Download } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Document {
   id: string;
@@ -13,65 +15,168 @@ interface Document {
   size: string;
   uploadDate: string;
   category: "lease" | "insurance" | "tax" | "maintenance" | "other";
+  filePath?: string;
 }
 
 export function DocumentManager() {
   const { toast } = useToast();
-  const [documents, setDocuments] = useState<Document[]>([
-    {
-      id: "1",
-      name: "Lease Agreement.pdf",
-      type: "PDF",
-      size: "2.5 MB",
-      uploadDate: "2024-03-15",
-      category: "lease",
+  const queryClient = useQueryClient();
+
+  const { data: documents = [], isLoading } = useQuery({
+    queryKey: ['property-documents'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('property_documents')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return data.map(doc => ({
+        id: doc.id,
+        name: doc.name,
+        type: doc.document_type,
+        size: "Calculating...", // We'll update this when we implement file storage
+        uploadDate: new Date(doc.created_at).toISOString().split('T')[0],
+        category: doc.document_type.toLowerCase() as Document['category'],
+        filePath: doc.file_path
+      }));
+    }
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      // Upload to Supabase Storage
+      const filePath = `${crypto.randomUUID()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('property-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Create document record
+      const { error: dbError } = await supabase
+        .from('property_documents')
+        .insert({
+          name: file.name,
+          document_type: file.type.split('/')[1].toUpperCase(),
+          file_path: filePath,
+          status: 'active'
+        });
+
+      if (dbError) throw dbError;
+
+      return filePath;
     },
-    {
-      id: "2",
-      name: "Insurance Policy.pdf",
-      type: "PDF",
-      size: "1.8 MB",
-      uploadDate: "2024-03-14",
-      category: "insurance",
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['property-documents'] });
+      toast({
+        title: "Document Uploaded",
+        description: "The document has been successfully uploaded.",
+      });
     },
-  ]);
+    onError: (error) => {
+      toast({
+        title: "Upload Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (document: Document) => {
+      if (document.filePath) {
+        const { error: storageError } = await supabase.storage
+          .from('property-documents')
+          .remove([document.filePath]);
+
+        if (storageError) throw storageError;
+      }
+
+      const { error: dbError } = await supabase
+        .from('property_documents')
+        .delete()
+        .eq('id', document.id);
+
+      if (dbError) throw dbError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['property-documents'] });
+      toast({
+        title: "Document Deleted",
+        description: "The document has been removed.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Deletion Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const newDoc: Document = {
-        id: Date.now().toString(),
-        name: file.name,
-        type: file.type.split("/")[1].toUpperCase(),
-        size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-        uploadDate: new Date().toISOString().split("T")[0],
-        category: "other",
-      };
+      uploadMutation.mutate(file);
+    }
+  };
 
-      setDocuments([...documents, newDoc]);
+  const handleDownload = async (doc: Document) => {
+    if (!doc.filePath) {
       toast({
-        title: "Document Uploaded",
-        description: `${file.name} has been successfully uploaded.`,
+        title: "Download Failed",
+        description: "File path not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('property-documents')
+        .download(doc.filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.name;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Started",
+        description: `Downloading ${doc.name}...`,
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: error.message,
+        variant: "destructive",
       });
     }
   };
 
-  const handleDelete = (id: string) => {
-    setDocuments(documents.filter((doc) => doc.id !== id));
-    toast({
-      title: "Document Deleted",
-      description: "The document has been removed.",
-    });
-  };
-
-  const handleDownload = (doc: Document) => {
-    toast({
-      title: "Download Started",
-      description: `Downloading ${doc.name}...`,
-    });
-    // In a real application, this would trigger an actual file download
-    console.log("Downloading:", doc.name);
-  };
+  if (isLoading) {
+    return (
+      <Card className="w-full animate-pulse">
+        <CardHeader>
+          <div className="h-7 bg-muted rounded w-1/3" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-20 bg-muted rounded" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full animate-fade-up">
@@ -131,7 +236,7 @@ export function DocumentManager() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(doc.id)}
+                    onClick={() => deleteMutation.mutate(doc)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

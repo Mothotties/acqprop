@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import { addDays } from "date-fns";
-import { DateRange } from "react-day-picker";
 import { AnalyticsHeader } from "./analytics/AnalyticsHeader";
 import { AnalyticsMetricsGrid } from "./analytics/AnalyticsMetricsGrid";
 import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
-import { exportToCSV } from "@/utils/exportUtils";
+import { ComparativeAnalysis } from "./analytics/ComparativeAnalysis";
+import { MarketTrendsRadar } from "./analytics/MarketTrendsRadar";
+import { DateRange } from "react-day-picker";
+import { addDays } from "date-fns";
 import { toast } from "sonner";
+import { exportToCSV } from "@/utils/exportUtils";
 
 const fetchPropertyAnalytics = async (propertyType?: string, dateRange?: DateRange) => {
   let query = supabase
@@ -85,6 +87,21 @@ export function PropertyAnalyticsDashboard() {
     occupancy: item.occupancy_rate || 0,
   })) || [];
 
+  const comparativeData = analyticsData?.map(item => ({
+    property: item.property?.title?.substring(0, 15) + '...',
+    currentValue: item.property?.price || 0,
+    predictedValue: (item.property?.price || 0) * (1 + (item.predicted_growth || 0) / 100),
+    marketAverage: (item.property?.price || 0) * 0.95, // Example market average calculation
+  })) || [];
+
+  const marketTrendsData = [
+    { metric: "Price Growth", current: 85, predicted: 92 },
+    { metric: "Demand", current: 75, predicted: 82 },
+    { metric: "Supply", current: 60, predicted: 55 },
+    { metric: "Market Sentiment", current: 70, predicted: 78 },
+    { metric: "Economic Factors", current: 65, predicted: 70 },
+  ];
+
   return (
     <div className="space-y-6">
       <AnalyticsHeader
@@ -97,7 +114,12 @@ export function PropertyAnalyticsDashboard() {
 
       <AnalyticsMetricsGrid metrics={metrics} />
 
-      <AnalyticsCharts performanceData={performanceData} />
+      <div className="grid gap-6 md:grid-cols-2">
+        <AnalyticsCharts performanceData={performanceData} />
+        <MarketTrendsRadar data={marketTrendsData} />
+      </div>
+
+      <ComparativeAnalysis data={comparativeData} />
     </div>
   );
 }

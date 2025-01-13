@@ -1,8 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { MapPin, Home, DollarSign, Calendar } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { PropertyCard } from "@/components/PropertyCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface Property {
   id: string;
@@ -11,34 +10,52 @@ interface Property {
   location: string;
   property_type: string;
   status: string;
-  year_built?: number;
-}
-
-interface PropertyGridProps {
-  properties: Property[];
-  isLoading: boolean;
-}
-
-export function PropertyGrid({ properties, isLoading }: PropertyGridProps) {
-  const navigate = useNavigate();
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(price);
+  images?: string[];
+  property_analytics?: {
+    ai_confidence_score: number;
+    cap_rate: number;
+    roi: number;
+    cash_flow: number;
+    predicted_growth: number;
+    market_volatility: number;
   };
+}
+
+export function PropertyGrid() {
+  const { data: properties, isLoading } = useQuery({
+    queryKey: ["properties"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select(`
+          *,
+          property_analytics (
+            ai_confidence_score,
+            cap_rate,
+            roi,
+            predicted_growth,
+            market_volatility
+          )
+        `);
+
+      if (error) {
+        console.error("Error fetching properties:", error);
+        return [];
+      }
+
+      return data || [];
+    },
+  });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
       </div>
     );
   }
 
-  if (properties.length === 0) {
+  if (!properties?.length) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">No properties found</p>
@@ -49,42 +66,21 @@ export function PropertyGrid({ properties, isLoading }: PropertyGridProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {properties.map((property) => (
-        <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">{property.title}</CardTitle>
-              <Badge variant="secondary">{property.status}</Badge>
-            </div>
-            <div className="flex items-center text-muted-foreground">
-              <MapPin className="w-4 h-4 mr-1" />
-              {property.location}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-2xl font-bold text-primary">
-              {formatPrice(property.price)}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <Home className="w-4 h-4 text-muted-foreground" />
-                <span>{property.property_type}</span>
-              </div>
-              {property.year_built && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span>Built {property.year_built}</span>
-                </div>
-              )}
-            </div>
-            <Button 
-              className="w-full" 
-              variant="outline"
-              onClick={() => navigate(`/properties/${property.id}`)}
-            >
-              View Details
-            </Button>
-          </CardContent>
-        </Card>
+        <PropertyCard
+          key={property.id}
+          title={property.title}
+          price={property.price}
+          type={property.property_type}
+          location={property.location}
+          metrics={{
+            capRate: property.property_analytics?.cap_rate || 0,
+            roi: property.property_analytics?.roi || 0,
+            cashFlow: 0, // This would need to be calculated based on your business logic
+            aiConfidenceScore: property.property_analytics?.ai_confidence_score,
+            predictedGrowth: property.property_analytics?.predicted_growth,
+            marketVolatility: property.property_analytics?.market_volatility,
+          }}
+        />
       ))}
     </div>
   );

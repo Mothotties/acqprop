@@ -2,6 +2,8 @@ import { PropertyCard } from "@/components/PropertyCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { type PropertyFilters } from "@/components/PropertySearch";
+import { type SortOption } from "@/components/analytics/PropertySorting";
 
 interface Property {
   id: string;
@@ -10,8 +12,11 @@ interface Property {
   location: string;
   property_type: string;
   status: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  square_feet?: number;
   images?: string[];
-  property_analytics?: {
+  property_analytics: {
     ai_confidence_score: number;
     cap_rate: number;
     roi: number;
@@ -20,11 +25,16 @@ interface Property {
   }[];
 }
 
-export function PropertyGrid() {
+interface PropertyGridProps {
+  filters: PropertyFilters;
+  sortOption: SortOption;
+}
+
+export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
   const { data: properties, isLoading } = useQuery({
-    queryKey: ["properties"],
+    queryKey: ["properties", filters, sortOption],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("properties")
         .select(`
           *,
@@ -37,12 +47,45 @@ export function PropertyGrid() {
           )
         `);
 
+      // Apply filters
+      if (filters.searchQuery) {
+        query = query.or(`title.ilike.%${filters.searchQuery}%,location.ilike.%${filters.searchQuery}%`);
+      }
+
+      if (filters.propertyType !== "all") {
+        query = query.eq("property_type", filters.propertyType);
+      }
+
+      if (filters.minBeds) {
+        query = query.gte("bedrooms", filters.minBeds);
+      }
+
+      if (filters.minBaths) {
+        query = query.gte("bathrooms", filters.minBaths);
+      }
+
+      if (filters.minSqft) {
+        query = query.gte("square_feet", filters.minSqft);
+      }
+
+      // Apply price range filter
+      query = query
+        .gte("price", filters.priceRange[0])
+        .lte("price", filters.priceRange[1]);
+
+      // Apply sorting
+      query = query.order(sortOption.field, {
+        ascending: sortOption.direction === "asc",
+      });
+
+      const { data, error } = await query;
+
       if (error) {
         console.error("Error fetching properties:", error);
         return [];
       }
 
-      return data || [];
+      return data as Property[];
     },
   });
 

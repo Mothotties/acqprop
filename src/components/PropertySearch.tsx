@@ -22,6 +22,8 @@ import { useState } from "react";
 interface PropertySearchProps {
   onSearch: (query: string) => void;
   onFilterChange: (filter: string) => void;
+  filters: PropertyFilters;
+  onFiltersChange: (filters: Partial<PropertyFilters>) => void;
 }
 
 export interface PropertyFilters {
@@ -35,25 +37,17 @@ export interface PropertyFilters {
   newListings: boolean;
 }
 
-export function PropertySearch({ onSearch, onFilterChange }: PropertySearchProps) {
-  const [filters, setFilters] = useState<PropertyFilters>({
-    searchQuery: "",
-    propertyType: "all",
-    priceRange: [0, 1000000],
-    minBeds: null,
-    minBaths: null,
-    minSqft: null,
-    nearMe: false,
-    newListings: false,
-  });
-
+export function PropertySearch({ onSearch, onFilterChange, filters, onFiltersChange }: PropertySearchProps) {
   const handleFilterChange = (updates: Partial<PropertyFilters>) => {
-    const newFilters = { ...filters, ...updates };
-    setFilters(newFilters);
+    onFiltersChange(updates);
     
     // Notify parent components of filter changes
-    onSearch(newFilters.searchQuery);
-    onFilterChange(newFilters.propertyType);
+    if (updates.searchQuery !== undefined) {
+      onSearch(updates.searchQuery);
+    }
+    if (updates.propertyType !== undefined) {
+      onFilterChange(updates.propertyType);
+    }
   };
 
   const toggleFilter = (key: keyof PropertyFilters, value: any) => {

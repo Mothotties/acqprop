@@ -1,1 +1,4 @@
 project_id = "fldafqlezglfbmqrgcoj"
+
+[functions.send-property-comparison]
+verify_jwt = false

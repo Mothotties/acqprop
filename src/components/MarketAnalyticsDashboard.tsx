@@ -7,6 +7,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { MarketMetricsGrid } from "./analytics/MarketMetricsGrid";
 import { MarketCharts } from "./analytics/MarketCharts";
 import { AIMarketInsights } from "./analytics/AIMarketInsights";
+import { MarketAlerts } from "./analytics/MarketAlerts";
+import { HistoricalTrends } from "./analytics/HistoricalTrends";
 
 const fetchMarketData = async () => {
   const { data, error } = await supabase
@@ -40,7 +42,6 @@ export function MarketAnalyticsDashboard() {
     }
   }, [initialData]);
 
-  // Subscribe to real-time updates
   useEffect(() => {
     const channel = supabase
       .channel('schema-db-changes')
@@ -98,8 +99,14 @@ export function MarketAnalyticsDashboard() {
             marketTrend={marketData?.[0]?.local_market_trend}
             totalProperties={marketData?.length || 0}
           />
-          <MarketCharts data={chartData} />
-          <AIMarketInsights data={marketData} />
+          <div className="grid gap-6 md:grid-cols-2">
+            <MarketCharts data={chartData} />
+            <HistoricalTrends />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <AIMarketInsights data={marketData} />
+            <MarketAlerts />
+          </div>
         </div>
       </CardContent>
     </Card>

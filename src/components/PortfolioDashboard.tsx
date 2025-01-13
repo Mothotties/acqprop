@@ -9,6 +9,7 @@ import { SortOption } from "./analytics/PropertySorting";
 import { PropertyOverviewCard } from "./portfolio/PropertyOverviewCard";
 import { usePortfolioProperties } from "@/hooks/usePortfolioProperties";
 import { PortfolioDiversification } from "./PortfolioDiversification";
+import { PredictiveTrendAnalysis } from "./PredictiveTrendAnalysis";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -47,6 +48,10 @@ export function PortfolioDashboard() {
       <div className="grid gap-6 md:grid-cols-2">
         <PortfolioPerformanceMetrics />
         <PortfolioDiversification />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <PredictiveTrendAnalysis />
       </div>
       
       <PropertyOverviewCard

@@ -14,28 +14,50 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { addDays } from "date-fns";
 
 // Fetch property analytics data
-const fetchPropertyAnalytics = async () => {
-  const { data, error } = await supabase
+const fetchPropertyAnalytics = async (propertyType?: string, dateRange?: { from: Date; to: Date }) => {
+  let query = supabase
     .from('property_analytics')
     .select(`
       *,
       property:properties(
         title,
         price,
-        location
+        location,
+        property_type
       )
     `);
+
+  if (propertyType) {
+    query = query.eq('property.property_type', propertyType);
+  }
+
+  if (dateRange?.from && dateRange?.to) {
+    query = query.gte('created_at', dateRange.from.toISOString())
+                .lte('created_at', dateRange.to.toISOString());
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return data;
 };
 
 export function PropertyAnalyticsDashboard() {
+  const [propertyType, setPropertyType] = useState<string>();
+  const [dateRange, setDateRange] = useState({
+    from: addDays(new Date(), -30),
+    to: new Date(),
+  });
+
   const { data: analyticsData, isLoading } = useQuery({
-    queryKey: ['propertyAnalytics'],
-    queryFn: fetchPropertyAnalytics,
+    queryKey: ['propertyAnalytics', propertyType, dateRange],
+    queryFn: () => fetchPropertyAnalytics(propertyType, dateRange),
   });
 
   // Calculate aggregated metrics
@@ -101,9 +123,27 @@ export function PropertyAnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Brain className="w-6 h-6 text-primary" />
-        <h2 className="text-2xl font-bold">Property Analytics</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Brain className="w-6 h-6 text-primary" />
+          <h2 className="text-2xl font-bold">Property Analytics</h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <Select onValueChange={setPropertyType}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Property Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="residential">Residential</SelectItem>
+              <SelectItem value="commercial">Commercial</SelectItem>
+              <SelectItem value="industrial">Industrial</SelectItem>
+            </SelectContent>
+          </Select>
+          <DatePickerWithRange
+            date={dateRange}
+            setDate={setDateRange}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -11,6 +11,28 @@ import { MarketAlerts } from "@/components/analytics/MarketAlerts";
 import { PropertyComparison } from "@/components/analytics/PropertyComparison";
 
 export function MainDashboardAnalytics() {
+  // Sample comparative data for the ComparativeAnalysis component
+  const comparativeData = [
+    {
+      property: "Property A",
+      currentValue: 500000,
+      predictedValue: 550000,
+      marketAverage: 525000,
+    },
+    {
+      property: "Property B",
+      currentValue: 750000,
+      predictedValue: 800000,
+      marketAverage: 775000,
+    },
+    {
+      property: "Property C",
+      currentValue: 600000,
+      predictedValue: 650000,
+      marketAverage: 625000,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <section className="rounded-xl border bg-card text-card-foreground shadow-sm">

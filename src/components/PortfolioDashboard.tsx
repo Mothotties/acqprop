@@ -8,6 +8,7 @@ import { useState } from "react";
 import { SortOption } from "./analytics/PropertySorting";
 import { PropertyOverviewCard } from "./portfolio/PropertyOverviewCard";
 import { usePortfolioProperties } from "@/hooks/usePortfolioProperties";
+import { PortfolioDiversification } from "./PortfolioDiversification";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -45,17 +46,18 @@ export function PortfolioDashboard() {
       
       <div className="grid gap-6 md:grid-cols-2">
         <PortfolioPerformanceMetrics />
-        
-        <PropertyOverviewCard
-          properties={data?.properties || []}
-          totalCount={data?.totalCount || 0}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          onSearchChange={setSearch}
-          onSortChange={setSort}
-          itemsPerPage={ITEMS_PER_PAGE}
-        />
+        <PortfolioDiversification />
       </div>
+      
+      <PropertyOverviewCard
+        properties={data?.properties || []}
+        totalCount={data?.totalCount || 0}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onSearchChange={setSearch}
+        onSortChange={setSort}
+        itemsPerPage={ITEMS_PER_PAGE}
+      />
     </div>
   );
 }

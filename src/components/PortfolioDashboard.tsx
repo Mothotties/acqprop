@@ -1,5 +1,5 @@
 import { PortfolioMetrics } from "./portfolio/PortfolioMetrics";
-import { PortfolioPerformance } from "./portfolio/PortfolioPerformance";
+import { PortfolioPerformanceMetrics } from "./PortfolioPerformanceMetrics";
 import { Card, CardContent } from "@/components/ui/card";
 import { PortfolioDashboardSkeleton } from "./portfolio/PortfolioDashboardSkeleton";
 import { AlertCircle } from "lucide-react";
@@ -44,7 +44,7 @@ export function PortfolioDashboard() {
       <PortfolioMetrics />
       
       <div className="grid gap-6 md:grid-cols-2">
-        <PortfolioPerformance />
+        <PortfolioPerformanceMetrics />
         
         <PropertyOverviewCard
           properties={data?.properties || []}

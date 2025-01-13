@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import { supabase } from "./integrations/supabase/client";
 import { PropertyDetails } from "./components/PropertyDetails";
 import { PricingPage } from "./components/PricingPage";
+import { CreatePropertyForm } from "./components/property/CreatePropertyForm";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => {
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={<Index />} />
+                <Route path="/properties/create" element={<CreatePropertyForm />} />
                 <Route path="/properties/:id" element={<PropertyDetails />} />
                 <Route path="/pricing" element={<PricingPage />} />
               </Routes>

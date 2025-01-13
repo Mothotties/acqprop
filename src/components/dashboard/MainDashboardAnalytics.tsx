@@ -9,8 +9,12 @@ import { RealTimeMarketUpdates } from "@/components/analytics/RealTimeMarketUpda
 import { AIMarketPredictions } from "@/components/analytics/AIMarketPredictions";
 import { MarketAlerts } from "@/components/analytics/MarketAlerts";
 import { PropertyComparison } from "@/components/analytics/PropertyComparison";
+import { PropertyHistoricalData } from "@/components/analytics/PropertyHistoricalData";
+import { useState } from "react";
 
 export function MainDashboardAnalytics() {
+  const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
+  
   // Sample comparative data for the ComparativeAnalysis component
   const comparativeData = [
     {
@@ -47,6 +51,12 @@ export function MainDashboardAnalytics() {
       <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
         <PropertyComparison />
       </section>
+
+      {selectedPropertyIds.length > 0 && (
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <PropertyHistoricalData propertyIds={selectedPropertyIds} />
+        </section>
+      )}
 
       <section className="grid gap-6 md:grid-cols-2">
         <PropertyViewer3D />

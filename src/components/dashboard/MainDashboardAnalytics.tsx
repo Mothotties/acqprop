@@ -11,34 +11,6 @@ import { MarketAlerts } from "@/components/analytics/MarketAlerts";
 import { PropertyComparison } from "@/components/analytics/PropertyComparison";
 
 export function MainDashboardAnalytics() {
-  // Sample property IDs for comparison - in a real app, these would be selected by the user
-  const propertyIdsForComparison = [
-    '123e4567-e89b-12d3-a456-426614174000',
-    '123e4567-e89b-12d3-a456-426614174001',
-    '123e4567-e89b-12d3-a456-426614174002'
-  ];
-
-  const comparativeData = [
-    {
-      property: "Property A",
-      currentValue: 500000,
-      predictedValue: 550000,
-      marketAverage: 525000,
-    },
-    {
-      property: "Property B",
-      currentValue: 750000,
-      predictedValue: 800000,
-      marketAverage: 775000,
-    },
-    {
-      property: "Property C",
-      currentValue: 1000000,
-      predictedValue: 1100000,
-      marketAverage: 1050000,
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <section className="rounded-xl border bg-card text-card-foreground shadow-sm">
@@ -51,7 +23,7 @@ export function MainDashboardAnalytics() {
       </section>
 
       <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
-        <PropertyComparison propertyIds={propertyIdsForComparison} />
+        <PropertyComparison />
       </section>
 
       <section className="grid gap-6 md:grid-cols-2">

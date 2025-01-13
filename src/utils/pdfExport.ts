@@ -2,6 +2,15 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatPrice } from '@/utils/formatters';
 
+// Extend the jsPDF type to include the lastAutoTable property
+declare module 'jspdf' {
+  interface jsPDF {
+    lastAutoTable: {
+      finalY: number;
+    };
+  }
+}
+
 export const exportPropertyComparison = (properties: any[]) => {
   const doc = new jsPDF();
   

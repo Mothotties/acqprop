@@ -14,13 +14,13 @@ import { useNavigate } from "react-router-dom";
 const propertyFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  price: z.string().min(1, "Price is required").transform(Number),
+  price: z.coerce.number().min(1, "Price is required"),
   location: z.string().min(1, "Location is required"),
   property_type: z.string().min(1, "Property type is required"),
-  bedrooms: z.string().transform(Number).optional(),
-  bathrooms: z.string().transform(Number).optional(),
-  square_feet: z.string().transform(Number).optional(),
-  year_built: z.string().transform(Number).optional(),
+  bedrooms: z.coerce.number().optional(),
+  bathrooms: z.coerce.number().optional(),
+  square_feet: z.coerce.number().optional(),
+  year_built: z.coerce.number().optional(),
 });
 
 type PropertyFormValues = z.infer<typeof propertyFormSchema>;
@@ -35,13 +35,13 @@ export function CreatePropertyForm() {
     defaultValues: {
       title: "",
       description: "",
-      price: "",
+      price: undefined,
       location: "",
       property_type: "",
-      bedrooms: "",
-      bathrooms: "",
-      square_feet: "",
-      year_built: "",
+      bedrooms: undefined,
+      bathrooms: undefined,
+      square_feet: undefined,
+      year_built: undefined,
     },
   });
 
@@ -58,13 +58,11 @@ export function CreatePropertyForm() {
     try {
       const { data: property, error } = await supabase
         .from("properties")
-        .insert([
-          {
-            ...data,
-            owner_id: session.user.id,
-            status: "available",
-          },
-        ])
+        .insert({
+          ...data,
+          owner_id: session.user.id,
+          status: "available",
+        })
         .select()
         .single();
 

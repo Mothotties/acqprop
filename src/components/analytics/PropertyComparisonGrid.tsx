@@ -23,15 +23,29 @@ export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridPr
         .select(`
           *,
           property_analytics (
+            id,
+            property_id,
             ai_confidence_score,
             risk_score,
             predicted_growth,
-            roi
+            market_trend,
+            cap_rate,
+            roi,
+            occupancy_rate,
+            created_at,
+            updated_at
           ),
           property_market_data (
+            id,
+            property_id,
             market_value,
             price_per_sqft,
-            market_demand_score
+            market_demand_score,
+            local_market_trend,
+            comparable_sales,
+            last_updated,
+            created_at,
+            updated_at
           )
         `)
         .in('id', propertyIds);

@@ -12,6 +12,7 @@ import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { PropertyAnalyticsDashboard } from "@/components/PropertyAnalyticsDashboard";
 import { PropertyListingView } from "@/components/PropertyListingView";
 import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
+import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { useState } from "react";
@@ -45,6 +46,7 @@ const Index = () => {
           <PortfolioDashboard />
           <PropertyAnalyticsDashboard />
           <InvestmentOpportunityScoring />
+          <RiskAssessmentDashboard />
         </TabsContent>
 
         <TabsContent value="ai" className="space-y-6">

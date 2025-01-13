@@ -7,38 +7,10 @@ import { type PropertyFilters } from "@/components/PropertySearch";
 import { type SortOption } from "@/components/analytics/PropertySorting";
 import { PropertyPagination } from "./PropertyPagination";
 import { PropertyGridStates } from "./PropertyGridStates";
+import { filterPropertiesByLocation } from "@/utils/propertyFilters";
+import { type Property } from "@/types/property";
 
 const ITEMS_PER_PAGE = 9;
-
-interface PropertyAnalytics {
-  ai_confidence_score: number | null;
-  cap_rate: number | null;
-  roi: number | null;
-  predicted_growth: number | null;
-  market_volatility: number | null;
-}
-
-interface Property {
-  id: string;
-  title: string;
-  price: number;
-  location: string;
-  property_type: string;
-  coordinates?: { x: number; y: number };
-  property_analytics?: PropertyAnalytics[];
-}
-
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-};
 
 interface PropertyGridProps {
   filters: PropertyFilters;
@@ -101,6 +73,8 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
         throw error;
       }
 
+      let filteredProperties = data as Property[];
+
       if (filters.nearMe) {
         try {
           const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -108,21 +82,7 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
           });
 
           const { latitude, longitude } = position.coords;
-          const MAX_DISTANCE = 50;
-
-          return {
-            properties: (data as Property[]).filter(property => {
-              if (!property.coordinates) return false;
-              const distance = calculateDistance(
-                latitude,
-                longitude,
-                property.coordinates.x,
-                property.coordinates.y
-              );
-              return distance <= MAX_DISTANCE;
-            }),
-            count: count || 0
-          };
+          filteredProperties = filterPropertiesByLocation(filteredProperties, latitude, longitude);
         } catch (error) {
           console.error("Error getting location:", error);
           toast({
@@ -130,11 +90,10 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
             description: "Unable to access your location. Please check your browser settings.",
             variant: "destructive",
           });
-          return { properties: data as Property[], count: count || 0 };
         }
       }
 
-      return { properties: data as Property[], count: count || 0 };
+      return { properties: filteredProperties, count: count || 0 };
     },
   });
 

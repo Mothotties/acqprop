@@ -152,6 +152,7 @@ export type Database = {
           created_at: string
           id: string
           market_trend: string | null
+          market_volatility: number | null
           occupancy_rate: number | null
           predicted_growth: number | null
           property_id: string | null
@@ -165,6 +166,7 @@ export type Database = {
           created_at?: string
           id?: string
           market_trend?: string | null
+          market_volatility?: number | null
           occupancy_rate?: number | null
           predicted_growth?: number | null
           property_id?: string | null
@@ -178,6 +180,7 @@ export type Database = {
           created_at?: string
           id?: string
           market_trend?: string | null
+          market_volatility?: number | null
           occupancy_rate?: number | null
           predicted_growth?: number | null
           property_id?: string | null

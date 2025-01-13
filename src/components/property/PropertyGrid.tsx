@@ -10,6 +10,24 @@ import { PropertyGridStates } from "./PropertyGridStates";
 
 const ITEMS_PER_PAGE = 9;
 
+interface PropertyAnalytics {
+  ai_confidence_score: number | null;
+  cap_rate: number | null;
+  roi: number | null;
+  predicted_growth: number | null;
+  market_volatility: number | null;
+}
+
+interface Property {
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+  property_type: string;
+  coordinates?: { x: number; y: number };
+  property_analytics?: PropertyAnalytics[];
+}
+
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;

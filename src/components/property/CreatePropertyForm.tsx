@@ -59,7 +59,7 @@ export function CreatePropertyForm() {
     }
 
     try {
-      const propertyData: Property = {
+      const propertyData = {
         title: data.title,
         description: data.description,
         price: data.price,
@@ -70,10 +70,10 @@ export function CreatePropertyForm() {
         square_feet: data.square_feet,
         year_built: data.year_built,
         owner_id: session.user.id,
-        status: "available",
-        amenities: [],
-        images: [],
-      };
+        status: "available" as const,
+        amenities: [] as string[],
+        images: [] as string[],
+      } satisfies Property;
 
       const { data: property, error } = await supabase
         .from("properties")

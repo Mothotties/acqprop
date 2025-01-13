@@ -15,8 +15,7 @@ interface Property {
   bedrooms?: number;
   bathrooms?: number;
   square_feet?: number;
-  images?: string[];
-  property_analytics: {
+  property_analytics?: {
     ai_confidence_score: number;
     cap_rate: number;
     roi: number;
@@ -82,7 +81,7 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
 
       if (error) {
         console.error("Error fetching properties:", error);
-        return [];
+        throw error;
       }
 
       return data as Property[];
@@ -100,7 +99,7 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
   if (!properties?.length) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No properties found</p>
+        <p className="text-muted-foreground">No properties found matching your criteria</p>
       </div>
     );
   }
@@ -118,9 +117,9 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
             capRate: property.property_analytics?.[0]?.cap_rate || 0,
             roi: property.property_analytics?.[0]?.roi || 0,
             cashFlow: 0, // This would need to be calculated based on your business logic
-            aiConfidenceScore: property.property_analytics?.[0]?.ai_confidence_score,
-            predictedGrowth: property.property_analytics?.[0]?.predicted_growth,
-            marketVolatility: property.property_analytics?.[0]?.market_volatility,
+            aiConfidenceScore: property.property_analytics?.[0]?.ai_confidence_score || 0,
+            predictedGrowth: property.property_analytics?.[0]?.predicted_growth || 0,
+            marketVolatility: property.property_analytics?.[0]?.market_volatility || 0,
           }}
         />
       ))}

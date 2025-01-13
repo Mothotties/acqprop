@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,17 +13,13 @@ interface EmailShareDialogProps {
   htmlContent: string;
 }
 
-export function EmailShareDialog({
-  open,
-  onOpenChange,
-  properties,
-  htmlContent,
-}: EmailShareDialogProps) {
+export function EmailShareDialog({ open, onOpenChange, properties, htmlContent }: EmailShareDialogProps) {
   const [email, setEmail] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSendEmail = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!email) {
       toast({
         title: "Error",
@@ -40,53 +29,43 @@ export function EmailShareDialog({
       return;
     }
 
-    setIsSending(true);
-
+    setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "send-property-comparison",
-        {
-          body: {
-            to: [email],
-            subject: `Property Comparison: ${properties
-              .map((p) => p.title)
-              .join(", ")}`,
-            html: htmlContent,
-          },
-        }
-      );
+      const { error } = await supabase.functions.invoke("send-property-comparison", {
+        body: {
+          to: [email],
+          subject: "Property Comparison Report",
+          html: htmlContent,
+        },
+      });
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Property comparison has been sent to your email",
+        description: "Property comparison report sent successfully!",
       });
       onOpenChange(false);
-    } catch (error) {
-      console.error("Error sending email:", error);
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to send email. Please try again.",
+        title: "Error sending email",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
-      setIsSending(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Share Property Comparison</DialogTitle>
-          <DialogDescription>
-            Enter an email address to share this property comparison
-          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email address</Label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               type="email"
@@ -95,19 +74,12 @@ export function EmailShareDialog({
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSending}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleSendEmail} disabled={isSending}>
-            {isSending ? "Sending..." : "Send"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Sending..." : "Send Comparison"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

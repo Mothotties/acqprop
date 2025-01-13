@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@12.0.0"; // Removing target=deno and using a stable version
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import Stripe from "https://esm.sh/stripe@11.17.0"
+import { createClient } from '@supabase/supabase-js'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,66 +8,86 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-  )
-
   try {
-    const authHeader = req.headers.get('Authorization')!
-    const token = authHeader.replace('Bearer ', '')
-    const { data } = await supabaseClient.auth.getUser(token)
-    const user = data.user
-    const email = user?.email
-
-    if (!email) {
-      throw new Error('No email found')
-    }
-
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    // Initialize Stripe
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
       apiVersion: '2023-10-16',
     })
 
-    const customers = await stripe.customers.list({
-      email: email,
-      limit: 1
-    })
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    if (customers.data.length === 0) {
+    // Get the user's JWT from the request header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('No authorization header')
+    }
+
+    // Get the user from Supabase auth
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    )
+
+    if (userError || !user) {
+      throw new Error('Error getting user')
+    }
+
+    // Get customer ID from user metadata or profile
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile?.stripe_customer_id) {
+      console.log('No Stripe customer ID found for user')
       return new Response(
-        JSON.stringify({ subscribed: false }),
+        JSON.stringify({ 
+          hasActiveSubscription: false,
+          message: 'No subscription found' 
+        }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
+          status: 200 
         }
       )
     }
 
+    // Get customer's subscriptions
     const subscriptions = await stripe.subscriptions.list({
-      customer: customers.data[0].id,
+      customer: profile.stripe_customer_id,
       status: 'active',
-      price: 'price_1Qgj4y03YCYlFW6DWO35RMwV',
-      limit: 1
+      limit: 1,
     })
 
+    const hasActiveSubscription = subscriptions.data.length > 0
+
     return new Response(
-      JSON.stringify({ subscribed: subscriptions.data.length > 0 }),
+      JSON.stringify({
+        hasActiveSubscription,
+        subscription: hasActiveSubscription ? subscriptions.data[0] : null
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 200 
       }
     )
+
   } catch (error) {
-    console.error('Error checking subscription:', error)
+    console.error('Error:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 400
       }
     )
   }

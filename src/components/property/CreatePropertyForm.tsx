@@ -60,7 +60,15 @@ export function CreatePropertyForm() {
 
     try {
       const propertyData: Property = {
-        ...data,
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        location: data.location,
+        property_type: data.property_type,
+        bedrooms: data.bedrooms,
+        bathrooms: data.bathrooms,
+        square_feet: data.square_feet,
+        year_built: data.year_built,
         owner_id: session.user.id,
         status: "available",
         amenities: [],

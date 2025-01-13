@@ -9,6 +9,7 @@ import { PropertyPagination } from "./PropertyPagination";
 import { PropertyGridStates } from "./PropertyGridStates";
 import { filterPropertiesByLocation } from "@/utils/propertyFilters";
 import { type Property } from "@/types/property";
+import { PropertyCardSkeleton } from "./PropertyCardSkeleton";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -21,83 +22,101 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: propertiesData, isLoading } = useQuery({
+  const { data: propertiesData, isLoading, error } = useQuery({
     queryKey: ["properties", filters, sortOption, currentPage],
     queryFn: async () => {
-      let query = supabase
-        .from("properties")
-        .select(`
-          *,
-          property_analytics (
-            ai_confidence_score,
-            cap_rate,
-            roi,
-            predicted_growth,
-            market_volatility
-          )
-        `)
-        .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
+      try {
+        let query = supabase
+          .from("properties")
+          .select(`
+            *,
+            property_analytics (
+              ai_confidence_score,
+              cap_rate,
+              roi,
+              predicted_growth,
+              market_volatility
+            )
+          `)
+          .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
 
-      if (filters.searchQuery) {
-        query = query.or(`title.ilike.%${filters.searchQuery}%,location.ilike.%${filters.searchQuery}%`);
-      }
+        if (filters.searchQuery) {
+          query = query.or(`title.ilike.%${filters.searchQuery}%,location.ilike.%${filters.searchQuery}%`);
+        }
 
-      if (filters.propertyType !== "all") {
-        query = query.eq("property_type", filters.propertyType);
-      }
+        if (filters.propertyType !== "all") {
+          query = query.eq("property_type", filters.propertyType);
+        }
 
-      if (filters.minBeds) {
-        query = query.gte("bedrooms", filters.minBeds);
-      }
+        if (filters.minBeds) {
+          query = query.gte("bedrooms", filters.minBeds);
+        }
 
-      if (filters.minBaths) {
-        query = query.gte("bathrooms", filters.minBaths);
-      }
+        if (filters.minBaths) {
+          query = query.gte("bathrooms", filters.minBaths);
+        }
 
-      if (filters.minSqft) {
-        query = query.gte("square_feet", filters.minSqft);
-      }
+        if (filters.minSqft) {
+          query = query.gte("square_feet", filters.minSqft);
+        }
 
-      query = query
-        .gte("price", filters.priceRange[0])
-        .lte("price", filters.priceRange[1]);
+        query = query
+          .gte("price", filters.priceRange[0])
+          .lte("price", filters.priceRange[1]);
 
-      query = query.order(sortOption.field, {
-        ascending: sortOption.direction === "asc",
-      });
+        query = query.order(sortOption.field, {
+          ascending: sortOption.direction === "asc",
+        });
 
-      const { data, error, count } = await query;
+        const { data, error, count } = await query;
 
-      if (error) {
-        console.error("Error fetching properties:", error);
+        if (error) {
+          console.error("Error fetching properties:", error);
+          throw error;
+        }
+
+        let filteredProperties = data as Property[];
+
+        if (filters.nearMe) {
+          try {
+            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject);
+            });
+
+            const { latitude, longitude } = position.coords;
+            filteredProperties = filterPropertiesByLocation(filteredProperties, latitude, longitude);
+          } catch (error) {
+            console.error("Error getting location:", error);
+            toast({
+              title: "Location Error",
+              description: "Unable to access your location. Please check your browser settings.",
+              variant: "destructive",
+            });
+          }
+        }
+
+        return { properties: filteredProperties, count: count || 0 };
+      } catch (error) {
+        console.error("Error in query:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch properties. Please try again later.",
+          variant: "destructive",
+        });
         throw error;
       }
-
-      let filteredProperties = data as Property[];
-
-      if (filters.nearMe) {
-        try {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-          });
-
-          const { latitude, longitude } = position.coords;
-          filteredProperties = filterPropertiesByLocation(filteredProperties, latitude, longitude);
-        } catch (error) {
-          console.error("Error getting location:", error);
-          toast({
-            title: "Location Error",
-            description: "Unable to access your location. Please check your browser settings.",
-            variant: "destructive",
-          });
-        }
-      }
-
-      return { properties: filteredProperties, count: count || 0 };
     },
   });
 
   const totalPages = Math.ceil((propertiesData?.count || 0) / ITEMS_PER_PAGE);
+
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to load properties. Please try again later.",
+      variant: "destructive",
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -106,7 +125,13 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
         isEmpty={!propertiesData?.properties?.length} 
       />
 
-      {propertiesData?.properties?.length > 0 && (
+      {isLoading ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array(6).fill(0).map((_, index) => (
+            <PropertyCardSkeleton key={index} />
+          ))}
+        </div>
+      ) : propertiesData?.properties?.length > 0 ? (
         <>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {propertiesData.properties.map((property) => (
@@ -134,7 +159,7 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
             onPageChange={setCurrentPage}
           />
         </>
-      )}
+      ) : null}
     </div>
   );
 }

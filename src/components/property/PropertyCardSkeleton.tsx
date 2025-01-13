@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function PropertyCardSkeleton() {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden animate-pulse">
       <CardHeader className="space-y-2">
         <div className="flex items-start justify-between">
           <div className="space-y-1">

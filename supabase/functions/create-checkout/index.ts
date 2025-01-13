@@ -39,9 +39,6 @@ serve(async (req) => {
       limit: 1
     })
 
-    // Replace with your actual price ID from Stripe
-    const price_id = "your_price_id_here"
-
     let customer_id = undefined
     if (customers.data.length > 0) {
       customer_id = customers.data[0].id
@@ -53,7 +50,7 @@ serve(async (req) => {
       customer_email: customer_id ? undefined : email,
       line_items: [
         {
-          price: price_id,
+          price: 'price_1Qgj4y03YCYlFW6DWO35RMwV',
           quantity: 1,
         },
       ],

@@ -1,4 +1,4 @@
-import { Brain } from "lucide-react";
+import { Brain, Download } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -7,6 +7,9 @@ import { DateRange } from "react-day-picker";
 import { AnalyticsMetricCard } from "./analytics/AnalyticsMetricCard";
 import { AnalyticsFilters } from "./analytics/AnalyticsFilters";
 import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
+import { Button } from "./ui/button";
+import { exportToCSV } from "@/utils/exportUtils";
+import { toast } from "sonner";
 
 const fetchPropertyAnalytics = async (propertyType?: string, dateRange?: DateRange) => {
   let query = supabase
@@ -47,6 +50,25 @@ export function PropertyAnalyticsDashboard() {
     queryKey: ['propertyAnalytics', propertyType, dateRange],
     queryFn: () => fetchPropertyAnalytics(propertyType, dateRange),
   });
+
+  const handleExport = () => {
+    if (!analyticsData?.length) {
+      toast.error("No data available to export");
+      return;
+    }
+
+    const exportData = analyticsData.map(item => ({
+      Property: item.property?.title || 'N/A',
+      ROI: item.roi || 0,
+      OccupancyRate: item.occupancy_rate || 0,
+      AIConfidence: item.ai_confidence_score || 0,
+      MarketTrend: item.market_trend || 'N/A',
+      CreatedAt: item.created_at
+    }));
+
+    exportToCSV(exportData, `property-analytics-${new Date().toISOString().split('T')[0]}`);
+    toast.success("Analytics data exported successfully");
+  };
 
   if (isLoading) {
     return <div className="p-4">Loading analytics...</div>;
@@ -103,12 +125,23 @@ export function PropertyAnalyticsDashboard() {
           <Brain className="w-6 h-6 text-primary" />
           <h2 className="text-2xl font-bold">Property Analytics</h2>
         </div>
-        <AnalyticsFilters
-          propertyType={propertyType}
-          dateRange={dateRange}
-          onPropertyTypeChange={setPropertyType}
-          onDateRangeChange={setDateRange}
-        />
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export Data
+          </Button>
+          <AnalyticsFilters
+            propertyType={propertyType}
+            dateRange={dateRange}
+            onPropertyTypeChange={setPropertyType}
+            onDateRangeChange={setDateRange}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -7,18 +7,26 @@ import { PropertyMetricsComparison } from "./PropertyMetricsComparison";
 import { PropertyBasicInfo } from "./PropertyBasicInfo";
 import { PropertyAnalyticsInfo } from "./PropertyAnalyticsInfo";
 import { PropertyMarketInfo } from "./PropertyMarketInfo";
+import { PropertyFilters, type PropertyFilters as Filters } from "./PropertyFilters";
+import { useState } from "react";
 
 interface PropertyComparisonGridProps {
   propertyIds: string[];
 }
 
 export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridProps) {
+  const [filters, setFilters] = useState<Filters>({
+    priceRange: '',
+    propertyType: '',
+    location: '',
+  });
+
   const { data: properties, isLoading } = useQuery({
-    queryKey: ['propertyComparison', propertyIds],
+    queryKey: ['propertyComparison', propertyIds, filters],
     queryFn: async () => {
       if (!propertyIds.length) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('properties')
         .select(`
           *,
@@ -50,10 +58,28 @@ export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridPr
         `)
         .in('id', propertyIds);
 
+      // Apply filters
+      if (filters.priceRange) {
+        const [min, max] = filters.priceRange.split('-');
+        if (max === 'plus') {
+          query = query.gte('price', parseInt(min));
+        } else {
+          query = query.gte('price', parseInt(min)).lte('price', parseInt(max));
+        }
+      }
+
+      if (filters.propertyType) {
+        query = query.eq('property_type', filters.propertyType);
+      }
+
+      if (filters.location) {
+        query = query.ilike('location', `%${filters.location}%`);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
-    enabled: propertyIds.length > 0,
   });
 
   if (isLoading) {
@@ -66,6 +92,8 @@ export function PropertyComparisonGrid({ propertyIds }: PropertyComparisonGridPr
 
   return (
     <div className="space-y-6">
+      <PropertyFilters onFilterChange={setFilters} />
+      
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {properties.map((property) => (
           <Card key={property.id} className="relative overflow-hidden">

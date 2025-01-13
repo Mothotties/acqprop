@@ -8,18 +8,40 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const propertyValueData = [
-  { month: "Jan", currentValue: 850000, predictedValue: 855000, marketAverage: 840000 },
-  { month: "Feb", currentValue: 860000, predictedValue: 870000, marketAverage: 845000 },
-  { month: "Mar", currentValue: 870000, predictedValue: 885000, marketAverage: 855000 },
-  { month: "Apr", currentValue: 885000, predictedValue: 900000, marketAverage: 870000 },
-  { month: "May", currentValue: 890000, predictedValue: 915000, marketAverage: 880000 },
-  { month: "Jun", currentValue: 900000, predictedValue: 925000, marketAverage: 895000 },
-];
+interface PropertyValueChartProps {
+  data: Array<{
+    property: string;
+    marketValue: number;
+    pricePerSqft: number;
+  }>;
+}
 
-export function PropertyValueChart() {
+export function PropertyValueChart({ data }: PropertyValueChartProps) {
+  const { data: analyticsData } = useQuery({
+    queryKey: ['property-analytics'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('property_analytics')
+        .select('*')
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const chartData = data.map(item => ({
+    name: item.property,
+    "Current Value": item.marketValue,
+    "Predicted Value": item.marketValue * (1 + (analyticsData?.[0]?.predicted_growth || 0.05)),
+    "Market Average": item.marketValue * 0.95, // Using 95% of market value as average
+  }));
+
   return (
     <Card>
       <CardHeader>
@@ -31,30 +53,38 @@ export function PropertyValueChart() {
       <CardContent>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={propertyValueData}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
+              <XAxis 
+                dataKey="name"
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                interval={0}
+                tick={{ fontSize: 12 }}
+              />
               <YAxis />
               <Tooltip 
                 formatter={(value) => `$${value.toLocaleString()}`}
               />
+              <Legend />
               <Line
                 type="monotone"
-                dataKey="currentValue"
+                dataKey="Current Value"
                 stroke="#10B981"
-                name="Current Value"
+                strokeWidth={2}
               />
               <Line
                 type="monotone"
-                dataKey="predictedValue"
+                dataKey="Predicted Value"
                 stroke="#6366F1"
-                name="Predicted Value"
+                strokeWidth={2}
               />
               <Line
                 type="monotone"
-                dataKey="marketAverage"
+                dataKey="Market Average"
                 stroke="#F43F5E"
-                name="Market Average"
+                strokeWidth={2}
               />
             </LineChart>
           </ResponsiveContainer>

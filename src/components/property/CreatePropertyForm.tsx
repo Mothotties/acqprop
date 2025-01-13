@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import type { Database } from "@/integrations/supabase/types";
+
+type Property = Database["public"]["Tables"]["properties"]["Insert"];
 
 const propertyFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -56,12 +59,12 @@ export function CreatePropertyForm() {
     }
 
     try {
-      const propertyData = {
+      const propertyData: Property = {
         ...data,
         owner_id: session.user.id,
-        status: "available" as const,
-        amenities: [] as string[],
-        images: [] as string[],
+        status: "available",
+        amenities: [],
+        images: [],
       };
 
       const { data: property, error } = await supabase

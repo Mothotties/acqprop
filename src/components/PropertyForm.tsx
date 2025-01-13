@@ -4,26 +4,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
-import { PropertyFormFields } from "./property/PropertyFormFields";
+import { PropertyFormFields, PropertyFormData, propertyFormSchema } from "./property/PropertyFormFields";
 import { generatePropertyAnalytics } from "@/utils/propertyAnalytics";
 import { useForm } from "react-hook-form";
 import { Form } from "@/components/ui/form";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-const propertyFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  price: z.coerce.number().min(1, "Price is required"),
-  location: z.string().min(1, "Location is required"),
-  property_type: z.string().min(1, "Property type is required"),
-  bedrooms: z.coerce.number().optional(),
-  bathrooms: z.coerce.number().optional(),
-  square_feet: z.coerce.number().optional(),
-  year_built: z.coerce.number().optional(),
-});
-
-type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
 export function PropertyForm() {
   const { toast } = useToast();
@@ -49,7 +34,6 @@ export function PropertyForm() {
     setLoading(true);
 
     try {
-      // Insert the property into the database
       const { data: propertyData, error: propertyError } = await supabase
         .from('properties')
         .insert({
@@ -69,7 +53,6 @@ export function PropertyForm() {
 
       if (propertyError) throw propertyError;
 
-      // Generate and store analytics for the new property
       await generatePropertyAnalytics(propertyData.id, {
         price: data.price,
         location: data.location,

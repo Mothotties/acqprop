@@ -1,10 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { PropertyFormFields } from "./PropertyFormFields";
+import { PropertyFormFields, PropertyFormData } from "./PropertyFormFields";
 import { usePropertyForm } from "@/hooks/usePropertyForm";
+import { UseFormReturn } from "react-hook-form";
 
 export function CreatePropertyForm() {
-  const { form, onSubmit } = usePropertyForm();
+  const { form, onSubmit } = usePropertyForm() as { 
+    form: UseFormReturn<PropertyFormData>, 
+    onSubmit: (data: PropertyFormData) => void 
+  };
 
   return (
     <Form {...form}>

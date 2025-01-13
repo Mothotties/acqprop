@@ -2,18 +2,21 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
+import * as z from "zod";
 
-interface PropertyFormData {
-  title: string;
-  description?: string;
-  price: number;
-  location: string;
-  property_type: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  square_feet?: number;
-  year_built?: number;
-}
+const propertyFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  price: z.coerce.number().min(1, "Price is required"),
+  location: z.string().min(1, "Location is required"),
+  property_type: z.string().min(1, "Property type is required"),
+  bedrooms: z.coerce.number().optional(),
+  bathrooms: z.coerce.number().optional(),
+  square_feet: z.coerce.number().optional(),
+  year_built: z.coerce.number().optional(),
+});
+
+export type PropertyFormData = z.infer<typeof propertyFormSchema>;
 
 export interface PropertyFormFieldsProps {
   form: UseFormReturn<PropertyFormData>;

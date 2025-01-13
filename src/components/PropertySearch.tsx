@@ -17,13 +17,49 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useState } from "react";
 
 interface PropertySearchProps {
   onSearch: (query: string) => void;
   onFilterChange: (filter: string) => void;
 }
 
+export interface PropertyFilters {
+  searchQuery: string;
+  propertyType: string;
+  priceRange: [number, number];
+  minBeds: number | null;
+  minBaths: number | null;
+  minSqft: number | null;
+  nearMe: boolean;
+  newListings: boolean;
+}
+
 export function PropertySearch({ onSearch, onFilterChange }: PropertySearchProps) {
+  const [filters, setFilters] = useState<PropertyFilters>({
+    searchQuery: "",
+    propertyType: "all",
+    priceRange: [0, 1000000],
+    minBeds: null,
+    minBaths: null,
+    minSqft: null,
+    nearMe: false,
+    newListings: false,
+  });
+
+  const handleFilterChange = (updates: Partial<PropertyFilters>) => {
+    const newFilters = { ...filters, ...updates };
+    setFilters(newFilters);
+    
+    // Notify parent components of filter changes
+    onSearch(newFilters.searchQuery);
+    onFilterChange(newFilters.propertyType);
+  };
+
+  const toggleFilter = (key: keyof PropertyFilters, value: any) => {
+    handleFilterChange({ [key]: filters[key] === value ? null : value });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-4">
@@ -32,11 +68,15 @@ export function PropertySearch({ onSearch, onFilterChange }: PropertySearchProps
           <Input
             placeholder="Search by location, property type, or keywords..."
             className="pl-9"
-            onChange={(e) => onSearch(e.target.value)}
+            value={filters.searchQuery}
+            onChange={(e) => handleFilterChange({ searchQuery: e.target.value })}
           />
         </div>
         
-        <Select onValueChange={onFilterChange} defaultValue="all">
+        <Select 
+          value={filters.propertyType}
+          onValueChange={(value) => handleFilterChange({ propertyType: value })}
+        >
           <SelectTrigger className="w-[200px]">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue placeholder="Property type" />
@@ -54,7 +94,7 @@ export function PropertySearch({ onSearch, onFilterChange }: PropertySearchProps
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-[200px]">
               <DollarSign className="w-4 h-4 mr-2" />
-              Price Range
+              ${filters.priceRange[0].toLocaleString()} - ${filters.priceRange[1].toLocaleString()}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80">
@@ -62,10 +102,11 @@ export function PropertySearch({ onSearch, onFilterChange }: PropertySearchProps
               <h4 className="font-medium">Price Range</h4>
               <div className="space-y-2">
                 <Slider
-                  defaultValue={[0, 1000000]}
+                  value={filters.priceRange}
                   max={5000000}
                   step={50000}
                   className="w-full"
+                  onValueChange={(value) => handleFilterChange({ priceRange: value as [number, number] })}
                 />
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>$0</span>
@@ -78,23 +119,48 @@ export function PropertySearch({ onSearch, onFilterChange }: PropertySearchProps
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" className="h-8">
+        <Button
+          variant={filters.minBeds === 2 ? "default" : "outline"}
+          size="sm"
+          className="h-8"
+          onClick={() => toggleFilter("minBeds", 2)}
+        >
           <BedDouble className="w-4 h-4 mr-2" />
           2+ Beds
         </Button>
-        <Button variant="outline" size="sm" className="h-8">
+        <Button
+          variant={filters.minBaths === 2 ? "default" : "outline"}
+          size="sm"
+          className="h-8"
+          onClick={() => toggleFilter("minBaths", 2)}
+        >
           <Bath className="w-4 h-4 mr-2" />
           2+ Baths
         </Button>
-        <Button variant="outline" size="sm" className="h-8">
+        <Button
+          variant={filters.minSqft === 1000 ? "default" : "outline"}
+          size="sm"
+          className="h-8"
+          onClick={() => toggleFilter("minSqft", 1000)}
+        >
           <Square className="w-4 h-4 mr-2" />
           1000+ sqft
         </Button>
-        <Button variant="outline" size="sm" className="h-8">
+        <Button
+          variant={filters.nearMe ? "default" : "outline"}
+          size="sm"
+          className="h-8"
+          onClick={() => toggleFilter("nearMe", true)}
+        >
           <MapPin className="w-4 h-4 mr-2" />
           Near me
         </Button>
-        <Button variant="outline" size="sm" className="h-8">
+        <Button
+          variant={filters.newListings ? "default" : "outline"}
+          size="sm"
+          className="h-8"
+          onClick={() => toggleFilter("newListings", true)}
+        >
           <Home className="w-4 h-4 mr-2" />
           New listings
         </Button>

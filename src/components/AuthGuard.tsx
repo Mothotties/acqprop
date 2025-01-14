@@ -1,43 +1,55 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession } from "@supabase/auth-helpers-react";
-import { useUserRole, type UserRole } from "@/hooks/useUserRole";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { Loader2 } from "lucide-react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole?: UserRole[];
 }
 
-export const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
+export function AuthGuard({ children }: AuthGuardProps) {
   const session = useSession();
   const navigate = useNavigate();
-  const { role, loading: roleLoading } = useUserRole();
+  const supabase = useSupabaseClient();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!session) {
-      navigate("/auth");
-    } else if (!roleLoading && requiredRole && role && !requiredRole.includes(role)) {
-      navigate("/"); // Redirect to home if user doesn't have required role
-    }
-  }, [session, navigate, role, roleLoading, requiredRole]);
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Auth error:", error);
+          navigate("/auth");
+          return;
+        }
+
+        if (!session) {
+          navigate("/auth");
+          return;
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        navigate("/auth");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, supabase.auth]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+      </div>
+    );
+  }
 
   if (!session) {
     return null;
   }
 
-  if (roleLoading) {
-    return (
-      <div className="p-4">
-        <Skeleton className="h-12 w-full mb-4" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
-
-  if (requiredRole && role && !requiredRole.includes(role)) {
-    return null;
-  }
-
   return <>{children}</>;
-};
+}

@@ -2,6 +2,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from "@/components/Header";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { UserMenu } from "@/components/UserMenu";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,8 +14,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 to-transparent pointer-events-none" />
       
-      {/* Floating theme toggle */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Header actions */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-4">
+        <UserMenu />
         <ThemeToggle />
       </div>
       

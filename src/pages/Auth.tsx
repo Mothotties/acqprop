@@ -1,72 +1,82 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Auth = () => {
+  const session = useSession();
   const navigate = useNavigate();
+  const supabase = useSupabaseClient();
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
-      }
-    };
-    checkUser();
+    if (session) {
+      navigate("/");
+    }
+  }, [session, navigate]);
 
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session) {
+      console.log("Auth state changed:", event);
+      
+      if (event === 'SIGNED_IN') {
         navigate("/");
       }
-      if (event === "SIGNED_OUT") {
-        navigate("/auth");
+      
+      if (event === 'USER_UPDATED') {
+        const { error } = await supabase.auth.getSession();
+        if (error) {
+          setErrorMessage(getErrorMessage(error));
+        }
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        setErrorMessage("");
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, navigate]);
 
   const getErrorMessage = (error: AuthError) => {
-    switch (error.message) {
-      case "Invalid login credentials":
-        return "Invalid email or password. Please check your credentials and try again.";
-      case "Email not confirmed":
-        return "Please verify your email address before signing in.";
-      case "User not found":
-        return "No user found with these credentials.";
-      default:
-        return error.message;
+    console.error("Auth error:", error);
+    
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          return 'Invalid credentials. Please check your email and password.';
+        case 422:
+          return 'Invalid email format. Please enter a valid email address.';
+        case 429:
+          return 'Too many attempts. Please try again later.';
+        default:
+          return error.message;
+      }
     }
+    return 'An unexpected error occurred. Please try again.';
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Welcome to{" "}
-            <span className="bg-gradient-to-r from-gold to-gold-dark bg-clip-text text-transparent">
-              AcqProp
-            </span>
-          </h1>
-          <p className="text-muted-foreground">
-            Sign in to access your real estate investment dashboard
-          </p>
-        </div>
-
-        {errorMessage && (
-          <Alert variant="destructive">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="bg-card rounded-lg shadow-xl border border-gold/10 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold">Welcome to ACQPROP</CardTitle>
+          <CardDescription>
+            Sign in to access your real estate portfolio
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
           <SupabaseAuth
             supabaseClient={supabase}
             appearance={{
@@ -75,15 +85,16 @@ const Auth = () => {
                 default: {
                   colors: {
                     brand: '#D4AF37',
-                    brandAccent: '#B8860B',
-                  }
-                }
-              }
+                    brandAccent: '#B4941F',
+                  },
+                },
+              },
             }}
-            providers={["google"]}
+            providers={['google', 'github']}
+            redirectTo={window.location.origin}
           />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

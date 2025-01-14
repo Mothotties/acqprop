@@ -22,15 +22,21 @@ function App() {
         <Router>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route element={<AuthGuard><DashboardLayout /></AuthGuard>}>
-              <Route path="/" element={<Index />} />
-              <Route path="/property/:id" element={<PropertyDetailsView />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/properties" element={<Properties />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
+            <Route path="/" element={
+              <AuthGuard>
+                <DashboardLayout>
+                  <Routes>
+                    <Route index element={<Index />} />
+                    <Route path="/property/:id" element={<PropertyDetailsView />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/properties" element={<Properties />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/profile" element={<Profile />} />
+                  </Routes>
+                </DashboardLayout>
+              </AuthGuard>
+            } />
           </Routes>
         </Router>
         <Toaster />

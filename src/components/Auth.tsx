@@ -50,6 +50,7 @@ export function Auth() {
     let mounted = true;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Step 1: Log authentication attempt
       console.log("[Auth] Auth state changed:", { 
         event, 
         userId: session?.user?.id,
@@ -60,6 +61,7 @@ export function Auth() {
       });
       
       if (event === "SIGNED_IN") {
+        // Step 2: Show loading state
         setIsLoading(true);
         console.log("[Auth] Sign in detected, attempting session setup", {
           timestamp: new Date().toISOString(),
@@ -67,7 +69,9 @@ export function Auth() {
         });
         
         try {
+          // Step 3: Handle Supabase response
           if (session?.access_token && session?.refresh_token) {
+            // Step 4: Check for successful authentication
             console.log("[Auth] Setting up session with valid tokens", {
               timestamp: new Date().toISOString(),
               tokenType: session.token_type,
@@ -77,6 +81,8 @@ export function Auth() {
               access_token: session.access_token,
               refresh_token: session.refresh_token,
             });
+            
+            // Step 5: Success notification and redirect
             toast.success("Successfully signed in!");
             console.log("[Auth] Redirecting to dashboard", {
               timestamp: new Date().toISOString(),
@@ -85,6 +91,7 @@ export function Auth() {
             navigate("/");
           }
         } catch (error) {
+          // Step 6: Handle and display errors
           console.error("[Auth] Session setup error:", {
             error,
             timestamp: new Date().toISOString(),

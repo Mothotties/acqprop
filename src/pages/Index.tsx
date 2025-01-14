@@ -17,8 +17,17 @@ const Index = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("portfolio");
   const mounted = useRef(true);
+  const lastCheck = useRef(Date.now());
+  const MIN_CHECK_INTERVAL = 2000; // 2 seconds minimum between checks
 
   useEffect(() => {
+    // Rate limiting check
+    const now = Date.now();
+    if (now - lastCheck.current < MIN_CHECK_INTERVAL) {
+      return;
+    }
+    lastCheck.current = now;
+
     // Check if not authenticated
     if (!session && mounted.current) {
       console.log("No session found in Index, redirecting to /auth");

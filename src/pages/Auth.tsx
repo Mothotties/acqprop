@@ -10,26 +10,36 @@ const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const mounted = useRef(true);
+  const lastCheck = useRef(Date.now());
+  const MIN_CHECK_INTERVAL = 2000; // 2 seconds minimum between checks
 
   useEffect(() => {
     const checkSession = async () => {
+      // Rate limiting check
+      const now = Date.now();
+      if (now - lastCheck.current < MIN_CHECK_INTERVAL) {
+        return;
+      }
+      lastCheck.current = now;
+
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (session && mounted.current) {
-          console.log("Existing session found, redirecting to /");
+          console.log("Existing session found in Auth, redirecting to /");
           navigate("/");
         }
       } catch (error) {
         console.error("Session check error:", error);
+        if (error instanceof Error && error.message.includes('rate limit')) {
+          setErrorMessage("Too many requests. Please wait a moment.");
+        }
       }
     };
 
-    // Initial session check
     checkSession();
 
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, !!session);
       
       if (!mounted.current) return;
@@ -41,35 +51,11 @@ const Auth = () => {
       }
     });
 
-    // Cleanup function
     return () => {
       mounted.current = false;
       subscription.unsubscribe();
     };
   }, [navigate]);
-
-  const getErrorMessage = (error: AuthError) => {
-    console.error("Auth error:", error);
-    
-    if (error.message.includes("rate limit")) {
-      return "Too many attempts. Please wait a moment and try again.";
-    }
-    
-    if (error.message.includes("User already registered")) {
-      return "This email is already registered. Please sign in instead.";
-    }
-    
-    switch (error.message) {
-      case "Invalid login credentials":
-        return "Invalid email or password. Please check your credentials.";
-      case "Email not confirmed":
-        return "Please verify your email address before signing in.";
-      case "validation_failed":
-        return "Please enter both email and password.";
-      default:
-        return error.message;
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -100,7 +86,7 @@ const Auth = () => {
               },
             }}
             providers={[]}
-            redirectTo={`${window.location.origin}/`}
+            redirectTo={window.location.origin}
           />
         </div>
       </div>

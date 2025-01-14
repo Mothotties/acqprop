@@ -1,4 +1,4 @@
 project_id = "fldafqlezglfbmqrgcoj"
 
-[functions.create-checkout]
+[functions.send-property-comparison]
 verify_jwt = false

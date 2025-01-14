@@ -311,42 +311,6 @@ export type Database = {
           },
         ]
       }
-      subscriptions: {
-        Row: {
-          created_at: string
-          current_period_end: string | null
-          current_period_start: string | null
-          id: string
-          status: string
-          stripe_subscription_id: string | null
-          tier: Database["public"]["Enums"]["subscription_tier"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          status?: string
-          stripe_subscription_id?: string | null
-          tier: Database["public"]["Enums"]["subscription_tier"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          status?: string
-          stripe_subscription_id?: string | null
-          tier?: Database["public"]["Enums"]["subscription_tier"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string
@@ -377,7 +341,6 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "investor" | "agent" | "basic"
-      subscription_tier: "basic" | "pro" | "enterprise"
     }
     CompositeTypes: {
       [_ in never]: never

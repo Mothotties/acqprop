@@ -1,9 +1,9 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "./integrations/supabase/client";
@@ -12,8 +12,8 @@ import { ErrorBoundary } from "./components/error/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { errorLogger } from "./utils/errorLogger";
 import { toast } from "@/components/ui/use-toast";
+import { performanceMonitor } from "./utils/performanceMonitor";
 
-// Lazy load components
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const PropertyDetails = lazy(() => import("./components/PropertyDetails").then(module => ({ default: module.PropertyDetails })));
@@ -40,54 +40,49 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
-      gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
-      onError: (error) => {
-        errorLogger.log(error as Error, "medium", { source: "query" });
-        toast({
-          title: "Error",
-          description: "Failed to fetch data. Please try again.",
-          variant: "destructive",
-        });
+      meta: {
+        onError: (error: Error) => {
+          errorLogger.log(error, "medium", { source: "query" });
+          toast({
+            title: "Error",
+            description: "Failed to fetch data. Please try again.",
+            variant: "destructive",
+          });
+        },
       },
     },
     mutations: {
-      onError: (error) => {
-        errorLogger.log(error as Error, "high", { source: "mutation" });
-        toast({
-          title: "Error",
-          description: "Failed to update data. Please try again.",
-          variant: "destructive",
-        });
-      },
-      onSettled: (_, error) => {
-        if (error) {
-          console.error("Mutation error:", error);
-        }
+      meta: {
+        onError: (error: Error) => {
+          errorLogger.log(error, "high", { source: "mutation" });
+          toast({
+            title: "Error",
+            description: "Failed to update data. Please try again.",
+            variant: "destructive",
+          });
+        },
+        onSettled: (_, error) => {
+          if (error) {
+            console.error("Mutation error:", error);
+          }
+        },
       },
     },
   },
 });
 
-// Performance monitoring function
-const monitorRouteChange = (location: string) => {
-  const startTime = performance.now();
-  
-  // Record navigation timing
-  setTimeout(() => {
-    const duration = performance.now() - startTime;
-    console.info(`Navigation to ${location} took ${duration.toFixed(2)}ms`);
-    
-    // Log if navigation takes too long
-    if (duration > 1000) {
-      errorLogger.log(
-        new Error(`Slow navigation to ${location}`),
-        "low",
-        { duration, route: location }
-      );
-    }
-  }, 0);
+// Route change monitoring component
+const RouteChangeMonitor = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    performanceMonitor.logMetric(`Navigation to ${location.pathname}`, performance.now());
+  }, [location]);
+
+  return null;
 };
 
 const App = () => {
@@ -98,8 +93,9 @@ const App = () => {
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>
               <BrowserRouter>
+                <RouteChangeMonitor />
                 <Suspense fallback={<LoadingFallback />}>
-                  <Routes onChange={(location) => monitorRouteChange(location.pathname)}>
+                  <Routes>
                     <Route path="/auth" element={<Auth />} />
                     <Route
                       path="/"

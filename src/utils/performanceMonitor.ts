@@ -29,7 +29,10 @@ class PerformanceMonitor {
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         if (entry.entryType === 'largest-contentful-paint') {
-          this.logMetric('LCP', entry.startTime, { element: entry.element?.tagName });
+          const lcp = entry as PerformanceElementTiming;
+          this.logMetric('LCP', entry.startTime, { 
+            elementType: lcp.element?.tagName 
+          });
         }
       }
     });

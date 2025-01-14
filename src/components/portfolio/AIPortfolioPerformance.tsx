@@ -3,19 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { Brain, TrendingUp, Target, Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Area,
-  AreaChart,
 } from "recharts";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 
 const performanceData = [
   { month: "Jan 2024", actual: 100, predicted: 102, confidence: 95, occupancy: 92 },
@@ -52,6 +50,29 @@ export function AIPortfolioPerformance() {
     queryFn: fetchPortfolioAnalytics,
   });
 
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('portfolio-analytics')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'property_analytics'
+        },
+        (payload) => {
+          console.log('Real-time update:', payload);
+          toast.success("Portfolio analytics updated");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <Card className="animate-pulse">
@@ -70,13 +91,17 @@ export function AIPortfolioPerformance() {
 
   if (error) {
     return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          Failed to load portfolio analytics. Please try again later.
-        </AlertDescription>
-      </Alert>
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <Brain className="w-4 h-4" />
+            Error Loading Analytics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-destructive">Failed to load portfolio analytics. Please try again later.</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -95,7 +120,7 @@ export function AIPortfolioPerformance() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">ROI Prediction</p>
               <div className="flex items-center gap-2">
@@ -106,51 +131,76 @@ export function AIPortfolioPerformance() {
                 High Confidence
               </Badge>
             </div>
+            
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">AI Accuracy</p>
+              <p className="text-sm text-muted-foreground">Occupancy Rate</p>
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-blue-500" />
-                <p className="text-2xl font-bold">{aiConfidence}%</p>
+                <Activity className="w-4 h-4 text-blue-500" />
+                <p className="text-2xl font-bold">{occupancyRate}%</p>
               </div>
               <Badge className="bg-blue-100 text-blue-800 transition-all duration-200 hover:scale-105">
-                Improving
+                Optimal
               </Badge>
             </div>
+
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">AI Confidence</p>
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-purple-500" />
+                <p className="text-2xl font-bold">{aiConfidence}%</p>
+              </div>
+              <Badge className="bg-purple-100 text-purple-800 transition-all duration-200 hover:scale-105">
+                High Accuracy
+              </Badge>
+            </div>
+
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Market Status</p>
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-purple-500" />
+                <Activity className="w-4 h-4 text-yellow-500" />
                 <p className="text-2xl font-bold">{marketStatus}</p>
               </div>
-              <Badge className="bg-purple-100 text-purple-800 transition-all duration-200 hover:scale-105">
-                {occupancyRate}% Occupancy
+              <Badge className="bg-yellow-100 text-yellow-800 transition-all duration-200 hover:scale-105">
+                {marketStatus}
               </Badge>
             </div>
           </div>
 
-          <div className="h-[300px]">
+          <div className="h-[300px] mt-6">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={performanceData}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <defs>
+                  <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="predictedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#6366F1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis 
                   dataKey="month" 
                   angle={-45} 
                   textAnchor="end" 
                   height={60}
+                  tick={{ fill: 'currentColor', fontSize: 12 }}
                 />
-                <YAxis />
+                <YAxis tick={{ fill: 'currentColor', fontSize: 12 }} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.9)',
                     borderRadius: '8px',
-                    border: '1px solid #e2e8f0'
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="actual" 
                   stroke="#10B981" 
-                  fill="#10B98133"
+                  fill="url(#actualGradient)"
                   name="Actual Performance"
                   strokeWidth={2}
                 />
@@ -158,18 +208,10 @@ export function AIPortfolioPerformance() {
                   type="monotone" 
                   dataKey="predicted" 
                   stroke="#6366F1" 
-                  fill="#6366F133"
+                  fill="url(#predictedGradient)"
                   name="AI Prediction"
                   strokeWidth={2}
                   strokeDasharray="5 5"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="occupancy" 
-                  stroke="#F59E0B" 
-                  fill="#F59E0B33"
-                  name="Occupancy Rate"
-                  strokeWidth={2}
                 />
               </AreaChart>
             </ResponsiveContainer>

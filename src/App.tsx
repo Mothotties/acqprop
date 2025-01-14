@@ -44,7 +44,7 @@ const App = () => {
                 <Route
                   path="/properties/create"
                   element={
-                    <AuthGuard>
+                    <AuthGuard requiredRole={['admin', 'agent']}>
                       <CreatePropertyForm />
                     </AuthGuard>
                   }

@@ -18,13 +18,15 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("portfolio");
 
   useEffect(() => {
+    // Redirect if no session
     if (!session) {
       navigate("/auth");
       return;
     }
 
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
+      if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
       }
     });
@@ -34,6 +36,7 @@ const Index = () => {
     };
   }, [session, navigate]);
 
+  // Don't render anything if there's no session
   if (!session) {
     return null;
   }

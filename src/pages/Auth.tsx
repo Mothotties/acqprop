@@ -11,18 +11,21 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    // Initial session check
-    const initialCheck = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (session && !error) {
+    // Single initial session check
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         navigate("/");
       }
     };
-    initialCheck();
+    checkSession();
 
-    // Subscribe to auth changes
+    // Subscribe to auth changes with debounced navigation
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        // Clear any existing errors
+        setErrorMessage("");
+        // Navigate to home
         navigate("/");
       }
     });

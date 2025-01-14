@@ -4,41 +4,13 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { AuthError } from "@supabase/supabase-js";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const mounted = useRef(true);
-  const lastCheck = useRef(Date.now());
-  const MIN_CHECK_INTERVAL = 2000; // 2 seconds minimum between checks
 
   useEffect(() => {
-    const checkSession = async () => {
-      // Rate limiting check
-      const now = Date.now();
-      if (now - lastCheck.current < MIN_CHECK_INTERVAL) {
-        return;
-      }
-      lastCheck.current = now;
-
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (session && mounted.current) {
-          console.log("Existing session found in Auth, redirecting to /");
-          navigate("/");
-        }
-      } catch (error) {
-        console.error("Session check error:", error);
-        if (error instanceof Error && error.message.includes('rate limit')) {
-          setErrorMessage("Too many requests. Please wait a moment.");
-        }
-      }
-    };
-
-    checkSession();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, !!session);
       

@@ -1,109 +1,85 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { useSession } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check } from "lucide-react";
+import { SubscriptionCheckout } from "./SubscriptionCheckout";
+
+const plans = [
+  {
+    name: "Basic",
+    price: "$9.99",
+    description: "Essential features for individual investors",
+    priceId: "price_basic", // Replace with your actual Stripe price ID
+    features: [
+      "Basic property analytics",
+      "Market trends overview",
+      "Property comparison tools",
+      "Email support"
+    ]
+  },
+  {
+    name: "Pro",
+    price: "$29.99",
+    description: "Advanced features for professional investors",
+    priceId: "price_pro", // Replace with your actual Stripe price ID
+    features: [
+      "Advanced AI-powered analytics",
+      "Real-time market insights",
+      "Portfolio optimization tools",
+      "Priority support",
+      "Custom reports"
+    ]
+  },
+  {
+    name: "Enterprise",
+    price: "$99.99",
+    description: "Complete solution for investment firms",
+    priceId: "price_enterprise", // Replace with your actual Stripe price ID
+    features: [
+      "Full access to all features",
+      "Custom AI models",
+      "API access",
+      "Dedicated account manager",
+      "24/7 premium support",
+      "Custom integrations"
+    ]
+  }
+];
 
 export function PricingPage() {
-  const { toast } = useToast();
-  const session = useSession();
-  const navigate = useNavigate();
-
-  const handleSubscribe = async () => {
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {},
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to initiate checkout. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
-    <div className="container mx-auto py-12">
+    <div className="container py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-        <p className="text-muted-foreground">Get access to premium features and analytics</p>
+        <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
+        <p className="text-muted-foreground">
+          Choose the perfect plan for your investment needs
+        </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        <Card className="relative">
-          <CardHeader>
-            <CardTitle>Basic</CardTitle>
-            <CardDescription>Essential features for getting started</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-4">Free</div>
-            <ul className="space-y-2">
-              <li>✓ Basic property listings</li>
-              <li>✓ Simple analytics</li>
-              <li>✓ Email support</li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" variant="outline">Current Plan</Button>
-          </CardFooter>
-        </Card>
-
-        <Card className="relative border-gold">
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gold px-4 py-1 rounded-full text-white text-sm">
-            Popular
-          </div>
-          <CardHeader>
-            <CardTitle>Pro</CardTitle>
-            <CardDescription>Advanced features for serious investors</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-4">$49/mo</div>
-            <ul className="space-y-2">
-              <li>✓ All Basic features</li>
-              <li>✓ Advanced AI analytics</li>
-              <li>✓ Market predictions</li>
-              <li>✓ Priority support</li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full bg-gold hover:bg-gold/90" onClick={handleSubscribe}>
-              Upgrade to Pro
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card className="relative">
-          <CardHeader>
-            <CardTitle>Enterprise</CardTitle>
-            <CardDescription>Custom solutions for large portfolios</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-4">Custom</div>
-            <ul className="space-y-2">
-              <li>✓ All Pro features</li>
-              <li>✓ Custom integrations</li>
-              <li>✓ Dedicated support</li>
-              <li>✓ Custom analytics</li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full" variant="outline">Contact Sales</Button>
-          </CardFooter>
-        </Card>
+      <div className="grid gap-8 md:grid-cols-3">
+        {plans.map((plan) => (
+          <Card key={plan.name} className="flex flex-col">
+            <CardHeader>
+              <CardTitle>{plan.name}</CardTitle>
+              <CardDescription>{plan.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <div className="text-3xl font-bold mb-6">{plan.price}<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+              <ul className="space-y-2">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center">
+                    <Check className="h-4 w-4 text-green-500 mr-2" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <SubscriptionCheckout 
+                priceId={plan.priceId}
+                buttonText={`Get ${plan.name}`}
+              />
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );

@@ -34,6 +34,8 @@ const Auth = () => {
 
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
+      case "User already registered":
+        return "This email is already registered. Please try signing in instead.";
       case "Invalid login credentials":
         return "Invalid email or password. Please check your credentials and try again.";
       case "Email not confirmed":

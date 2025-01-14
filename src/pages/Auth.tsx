@@ -19,11 +19,28 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Only redirect if we have a valid session
-    if (session?.user?.id) {
-      // Use replace instead of push to prevent back navigation issues
-      navigate("/", { replace: true });
-    }
+    let isMounted = true;
+
+    const handleSession = async () => {
+      if (session?.user?.id && isMounted) {
+        try {
+          // Use setTimeout to ensure state is updated before navigation
+          setTimeout(() => {
+            if (isMounted) {
+              navigate("/", { replace: true });
+            }
+          }, 0);
+        } catch (error) {
+          console.error("Navigation error:", error);
+        }
+      }
+    };
+
+    handleSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, [session, navigate]);
 
   const retryWithBackoff = async (operation: () => Promise<any>, retryCount = 0) => {
@@ -42,8 +59,36 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user?.id) {
-        // Use replace instead of push to prevent back navigation issues
-        navigate("/", { replace: true });
+        try {
+          await retryWithBackoff(async () => {
+            // Ensure we have a role for the user
+            const { data: roleData, error: roleError } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+
+            if (roleError) throw roleError;
+
+            if (!roleData) {
+              // Create default role if none exists
+              const { error: insertError } = await supabase
+                .from('user_roles')
+                .insert({ user_id: session.user.id, role: 'investor' });
+
+              if (insertError) throw insertError;
+            }
+
+            // Safe navigation with setTimeout
+            setTimeout(() => {
+              navigate("/", { replace: true });
+            }, 0);
+          });
+        } catch (error) {
+          console.error('Session handling error:', error);
+          setErrorMessage(getErrorMessage(error as AuthError));
+          toast.error(getErrorMessage(error as AuthError));
+        }
       }
       if (event === 'USER_UPDATED') {
         setIsLoading(true);
@@ -65,7 +110,9 @@ const Auth = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [supabase.auth, navigate]);
 
   const getErrorMessage = (error: AuthError) => {

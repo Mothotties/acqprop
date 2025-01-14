@@ -23,10 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchUserData = async () => {
       try {
         if (!session?.user) {
-          setAuthState({ user: null, isLoading: false, error: null });
+          if (isMounted) {
+            setAuthState({ user: null, isLoading: false, error: null });
+          }
           return;
         }
 
@@ -34,49 +38,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from("user_roles")
           .select("role")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (roleError) throw roleError;
+
+        if (!roleData) {
+          // Create default role if none exists
+          const { error: insertError } = await supabase
+            .from('user_roles')
+            .insert({ user_id: session.user.id, role: 'investor' });
+
+          if (insertError) throw insertError;
+        }
 
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("full_name, avatar_url")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) throw profileError;
 
-        const user: AuthUser = {
-          id: session.user.id,
-          email: session.user.email!,
-          role: roleData.role,
-          profile: profileData,
-        };
+        if (isMounted) {
+          const user: AuthUser = {
+            id: session.user.id,
+            email: session.user.email!,
+            role: roleData?.role || 'investor',
+            profile: profileData || { full_name: null, avatar_url: null },
+          };
 
-        setAuthState({ user, isLoading: false, error: null });
+          setAuthState({ user, isLoading: false, error: null });
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        setAuthState({
-          user: null,
-          isLoading: false,
-          error: error as Error,
-        });
-        toast.error("Failed to load user data. Please try again.");
+        if (isMounted) {
+          setAuthState({
+            user: null,
+            isLoading: false,
+            error: error as Error,
+          });
+          toast.error("Failed to load user data. Please try again.");
+        }
       }
     };
 
     fetchUserData();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN") {
-        fetchUserData();
+        await fetchUserData();
       } else if (event === "SIGNED_OUT") {
-        setAuthState({ user: null, isLoading: false, error: null });
-        navigate("/auth");
+        if (isMounted) {
+          setAuthState({ user: null, isLoading: false, error: null });
+          // Use setTimeout to ensure safe navigation
+          setTimeout(() => {
+            if (isMounted) {
+              navigate("/auth", { replace: true });
+            }
+          }, 0);
+        }
       }
     });
 
     return () => {
+      isMounted = false;
       authListener?.subscription.unsubscribe();
     };
   }, [session, supabase, navigate]);

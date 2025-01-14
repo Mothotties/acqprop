@@ -124,24 +124,26 @@ function App() {
                     </AuthGuard>
                   } />
 
-                  {/* Protected routes wrapped in DashboardLayout */}
+                  {/* Protected routes */}
                   <Route element={
                     <AuthGuard>
-                      <DashboardLayout />
+                      <DashboardLayout>
+                        <Routes>
+                          <Route index element={<Navigate to={ROUTES.private.dashboard.path} replace />} />
+                          <Route path={ROUTES.private.dashboard.path} element={<Dashboard />} />
+                          <Route path={ROUTES.private.properties.path} element={<Properties />} />
+                          <Route path={ROUTES.private.propertyDetails.path} element={<PropertyDetailsView />} />
+                          <Route path={ROUTES.private.documents.path} element={<DocumentManager />} />
+                          <Route path={ROUTES.private.maintenance.path} element={<MaintenanceTracker />} />
+                          <Route path={ROUTES.private.analysis.path} element={<Analytics />} />
+                          <Route path={ROUTES.private.evaluation.path} element={<Analytics />} />
+                          <Route path={ROUTES.private.aiAnalysis.path} element={<Analytics />} />
+                          <Route path={ROUTES.private.settings.path} element={<Settings />} />
+                          <Route path={ROUTES.private.profile.path} element={<Profile />} />
+                        </Routes>
+                      </DashboardLayout>
                     </AuthGuard>
-                  }>
-                    <Route index element={<Navigate to={ROUTES.private.dashboard.path} replace />} />
-                    <Route path={ROUTES.private.dashboard.path} element={<Dashboard />} />
-                    <Route path={ROUTES.private.properties.path} element={<Properties />} />
-                    <Route path={ROUTES.private.propertyDetails.path} element={<PropertyDetailsView />} />
-                    <Route path={ROUTES.private.documents.path} element={<DocumentManager />} />
-                    <Route path={ROUTES.private.maintenance.path} element={<MaintenanceTracker />} />
-                    <Route path={ROUTES.private.analysis.path} element={<Analytics />} />
-                    <Route path={ROUTES.private.evaluation.path} element={<Analytics />} />
-                    <Route path={ROUTES.private.aiAnalysis.path} element={<Analytics />} />
-                    <Route path={ROUTES.private.settings.path} element={<Settings />} />
-                    <Route path={ROUTES.private.profile.path} element={<Profile />} />
-                  </Route>
+                  } />
 
                   {/* Catch all route */}
                   <Route path="*" element={<Navigate to={ROUTES.private.dashboard.path} replace />} />

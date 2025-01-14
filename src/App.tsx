@@ -12,6 +12,8 @@ import { Properties } from "@/components/Properties";
 import { Analytics } from "@/components/Analytics";
 import { Settings } from "@/components/Settings";
 import { Profile } from "@/components/Profile";
+import { DocumentManager } from "@/components/DocumentManager";
+import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +32,11 @@ function App() {
                     <Route path="/property/:id" element={<PropertyDetailsView />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/properties" element={<Properties />} />
-                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/documents" element={<DocumentManager />} />
+                    <Route path="/maintenance" element={<MaintenanceTracker />} />
+                    <Route path="/analysis" element={<Analytics />} />
+                    <Route path="/evaluation" element={<Analytics />} />
+                    <Route path="/ai-analysis" element={<Analytics />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/profile" element={<Profile />} />
                   </Routes>

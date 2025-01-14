@@ -5,13 +5,15 @@ import { Loader2 } from "lucide-react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
+  requiredRole?: string[];
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
+export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const session = useSession();
   const navigate = useNavigate();
   const supabase = useSupabaseClient();
   const [isLoading, setIsLoading] = useState(true);
+  const [hasRequiredRole, setHasRequiredRole] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -29,6 +31,24 @@ export function AuthGuard({ children }: AuthGuardProps) {
           return;
         }
 
+        // If requiredRole is specified, check user roles
+        if (requiredRole && requiredRole.length > 0) {
+          const { data: userRoles, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (rolesError) {
+            console.error("Role check error:", rolesError);
+            setHasRequiredRole(false);
+          } else {
+            setHasRequiredRole(requiredRole.includes(userRoles?.role));
+          }
+        } else {
+          setHasRequiredRole(true);
+        }
+
         setIsLoading(false);
       } catch (error) {
         console.error("Auth check failed:", error);
@@ -37,7 +57,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     };
 
     checkAuth();
-  }, [navigate, supabase.auth]);
+  }, [navigate, supabase.auth, requiredRole]);
 
   if (isLoading) {
     return (
@@ -47,7 +67,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  if (!session) {
+  if (!session || (requiredRole && !hasRequiredRole)) {
     return null;
   }
 

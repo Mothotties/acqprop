@@ -16,7 +16,7 @@ const performanceData = [
 
 export function PortfolioPerformanceMetrics() {
   return (
-    <Card>
+    <Card className="animate-fade-in">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-ai" />
@@ -30,25 +30,31 @@ export function PortfolioPerformanceMetrics() {
               <p className="text-sm text-muted-foreground">ROI Prediction</p>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-500" />
-                <p className="text-2xl font-bold">+15.8%</p>
+                <p className="text-2xl font-bold">15.8%</p>
               </div>
-              <Badge className="bg-green-100 text-green-800">High Confidence</Badge>
+              <Badge className="bg-green-100 text-green-800 transition-all duration-200 hover:scale-105">
+                High Confidence
+              </Badge>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">AI Accuracy</p>
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4 text-blue-500" />
-                <p className="text-2xl font-bold">96%</p>
+                <p className="text-2xl font-bold">92%</p>
               </div>
-              <Badge className="bg-blue-100 text-blue-800">Improving</Badge>
+              <Badge className="bg-blue-100 text-blue-800 transition-all duration-200 hover:scale-105">
+                Improving
+              </Badge>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Portfolio Health</p>
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-purple-500" />
-                <p className="text-2xl font-bold">Strong</p>
+                <p className="text-2xl font-bold">High</p>
               </div>
-              <Badge className="bg-purple-100 text-purple-800">Optimized</Badge>
+              <Badge className="bg-purple-100 text-purple-800 transition-all duration-200 hover:scale-105">
+                Optimized
+              </Badge>
             </div>
           </div>
 
@@ -56,15 +62,28 @@ export function PortfolioPerformanceMetrics() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" angle={-45} textAnchor="end" height={60} />
+                <XAxis 
+                  dataKey="month" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={60}
+                />
                 <YAxis />
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0'
+                  }}
+                />
                 <Line 
                   type="monotone" 
                   dataKey="actual" 
                   stroke="#10B981" 
                   name="Actual Performance"
                   strokeWidth={2}
+                  dot={{ strokeWidth: 2 }}
+                  activeDot={{ r: 8, className: "animate-pulse" }}
                 />
                 <Line 
                   type="monotone" 
@@ -73,6 +92,8 @@ export function PortfolioPerformanceMetrics() {
                   name="AI Prediction"
                   strokeWidth={2}
                   strokeDasharray="5 5"
+                  dot={{ strokeWidth: 2 }}
+                  activeDot={{ r: 8, className: "animate-pulse" }}
                 />
                 <Line 
                   type="monotone" 
@@ -80,6 +101,8 @@ export function PortfolioPerformanceMetrics() {
                   stroke="#F59E0B" 
                   name="Occupancy Rate"
                   strokeWidth={2}
+                  dot={{ strokeWidth: 2 }}
+                  activeDot={{ r: 8, className: "animate-pulse" }}
                 />
               </LineChart>
             </ResponsiveContainer>

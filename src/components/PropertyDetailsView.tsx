@@ -10,12 +10,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
 export function PropertyDetailsView() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", id],
     queryFn: async () => {
+      if (!id) {
+        throw new Error("Property ID is required");
+      }
+
       const { data, error } = await supabase
         .from("properties")
         .select(`
@@ -23,7 +27,7 @@ export function PropertyDetailsView() {
           property_analytics (*),
           property_market_data (*)
         `)
-        .eq("id", id)
+        .eq('id', id)
         .maybeSingle();
 
       if (error) {
@@ -37,6 +41,7 @@ export function PropertyDetailsView() {
 
       return data;
     },
+    enabled: !!id // Only run query if we have an ID
   });
 
   if (isLoading) {

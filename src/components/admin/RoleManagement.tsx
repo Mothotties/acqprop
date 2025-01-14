@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -19,151 +19,126 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-
-interface UserRoleData {
-  id: string;
-  user_id: string;
-  role: "admin" | "agent" | "investor";
-  user_email: string | null;
-  user_full_name: string | null;
-}
+import { toast } from "sonner";
 
 type Role = "admin" | "agent" | "investor";
 
+interface User {
+  id: string;
+  email: string;
+  role?: Role;
+}
+
 export function RoleManagement() {
-  const queryClient = useQueryClient();
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<Role | undefined>();
+  const { toast } = useToast();
 
-  const fetchUserRoles = async (): Promise<UserRoleData[]> => {
-    const { data: roles, error } = await supabase
-      .from("user_roles")
-      .select(`
-        id,
-        user_id,
-        role,
-        users:auth.users!user_id(
-          email,
-          raw_user_meta_data->>'full_name'
-        )
-      `);
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const { data: { users }, error } = await supabase.auth.admin.listUsers();
+      
+      if (error) throw error;
 
-    if (error) {
-      console.error("Error fetching roles:", error);
-      throw error;
-    }
+      // Fetch roles for all users
+      const { data: roles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
 
-    const transformedData = roles.map((role: any) => ({
-      id: role.id,
-      user_id: role.user_id,
-      role: role.role,
-      user_email: role.users?.email || null,
-      user_full_name: role.users?.raw_user_meta_data || null,
-    }));
+      if (rolesError) throw rolesError;
 
-    return transformedData;
-  };
+      // Map roles to users
+      const usersWithRoles = users.map((user) => ({
+        id: user.id,
+        email: user.email,
+        role: roles.find((r) => r.user_id === user.id)?.role as Role | undefined,
+      }));
 
-  const { data: userRoles, isLoading } = useQuery({
-    queryKey: ["userRoles"],
-    queryFn: fetchUserRoles,
+      return usersWithRoles;
+    },
   });
 
-  const updateRole = useMutation({
-    mutationFn: async ({
-      userId,
-      newRole,
-    }: {
-      userId: string;
-      newRole: Role;
-    }) => {
+  const updateUserRole = async (userId: string, newRole: Role) => {
+    try {
       const { error } = await supabase
         .from("user_roles")
-        .update({ role: newRole })
-        .eq("user_id", userId);
+        .upsert({ user_id: userId, role: newRole }, { onConflict: "user_id" });
 
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userRoles"] });
-      toast.success("Role updated successfully");
-    },
-    onError: (error) => {
-      console.error("Error updating role:", error);
-      toast.error("Failed to update role");
-    },
-  });
 
-  if (isLoading) {
+      toast({
+        title: "Role updated",
+        description: "The user's role has been successfully updated.",
+      });
+    } catch (error) {
+      console.error("Error updating role:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update user role. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoadingUsers) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-gold" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Role Management</h2>
-      </div>
-
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Current Role</TableHead>
-              <TableHead>Actions</TableHead>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Email</TableHead>
+            <TableHead>Current Role</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users?.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.role || "No role assigned"}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-4">
+                  <Select
+                    value={selectedUser === user.id ? selectedRole : user.role}
+                    onValueChange={(value: Role) => {
+                      setSelectedUser(user.id);
+                      setSelectedRole(value);
+                    }}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="agent">Agent</SelectItem>
+                      <SelectItem value="investor">Investor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (selectedRole && selectedUser === user.id) {
+                        updateUserRole(user.id, selectedRole);
+                      }
+                    }}
+                    disabled={!selectedRole || selectedUser !== user.id}
+                  >
+                    Update Role
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {userRoles?.map((userRole) => (
-              <TableRow key={userRole.id}>
-                <TableCell>{userRole.user_full_name || "N/A"}</TableCell>
-                <TableCell>{userRole.user_email || "N/A"}</TableCell>
-                <TableCell>{userRole.role}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={selectedRole}
-                      onValueChange={(value: Role) => setSelectedRole(value)}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
-                        <SelectItem value="investor">Investor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (selectedRole) {
-                          updateRole.mutate({
-                            userId: userRole.user_id,
-                            newRole: selectedRole,
-                          });
-                        }
-                      }}
-                      disabled={!selectedRole || updateRole.isPending}
-                    >
-                      {updateRole.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Update"
-                      )}
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

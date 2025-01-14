@@ -18,6 +18,7 @@ export function SubscriptionCheckout({ priceId, buttonText = "Subscribe" }: Subs
   const handleCheckout = async () => {
     try {
       setLoading(true);
+      console.log("[SubscriptionCheckout] Starting checkout process for priceId:", priceId);
 
       if (!session) {
         toast({
@@ -28,11 +29,17 @@ export function SubscriptionCheckout({ priceId, buttonText = "Subscribe" }: Subs
         return;
       }
 
+      console.log("[SubscriptionCheckout] Invoking create-checkout function");
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[SubscriptionCheckout] Function invocation error:", error);
+        throw error;
+      }
+
+      console.log("[SubscriptionCheckout] Checkout session created:", data);
 
       if (data?.url) {
         window.location.href = data.url;
@@ -40,7 +47,7 @@ export function SubscriptionCheckout({ priceId, buttonText = "Subscribe" }: Subs
         throw new Error('No checkout URL returned');
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error('[SubscriptionCheckout] Error creating checkout session:', error);
       toast({
         title: "Error",
         description: "Failed to start checkout process. Please try again.",

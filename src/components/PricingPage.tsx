@@ -7,7 +7,7 @@ const plans = [
     name: "Basic",
     price: "$9.99",
     description: "Essential features for individual investors",
-    priceId: "price_basic", // Replace with your actual Stripe price ID
+    priceId: "price_1QhCqV03YCYlFW6DJDUIp4ZO",
     features: [
       "Basic property analytics",
       "Market trends overview",
@@ -19,7 +19,7 @@ const plans = [
     name: "Pro",
     price: "$29.99",
     description: "Advanced features for professional investors",
-    priceId: "price_pro", // Replace with your actual Stripe price ID
+    priceId: "price_1QhCqB03YCYlFW6DPN5E2qiD",
     features: [
       "Advanced AI-powered analytics",
       "Real-time market insights",
@@ -32,7 +32,7 @@ const plans = [
     name: "Enterprise",
     price: "$99.99",
     description: "Complete solution for investment firms",
-    priceId: "price_enterprise", // Replace with your actual Stripe price ID
+    priceId: "price_1Qgj4y03YCYlFW6DWO35RMwV",
     features: [
       "Full access to all features",
       "Custom AI models",

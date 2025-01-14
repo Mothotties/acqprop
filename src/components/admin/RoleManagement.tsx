@@ -38,17 +38,24 @@ export function RoleManagement() {
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: userRoles, error: rolesError } = await supabase
         .from("user_roles")
         .select(`
           id,
           user_id,
           role,
-          user:profiles!user_roles_user_id_fkey(full_name, email)
+          user:user_id (
+            email:raw_user_meta_data->email,
+            full_name:raw_user_meta_data->full_name
+          )
         `);
 
-      if (error) throw error;
-      return data as UserRoleData[];
+      if (rolesError) {
+        console.error("Error fetching roles:", rolesError);
+        throw rolesError;
+      }
+
+      return userRoles as UserRoleData[];
     },
   });
 

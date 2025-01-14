@@ -1,6 +1,6 @@
 import { PropertyListingView } from "@/components/PropertyListingView";
 import { LocationAnalysis } from "@/components/LocationAnalysis";
-import { PropertyAnalytics } from "@/components/analytics/PropertyAnalytics";
+import { PropertyAnalytics } from "@/components/PropertyAnalytics";
 import { AISearchInterface } from "@/components/search/AISearchInterface";
 
 export function Properties() {

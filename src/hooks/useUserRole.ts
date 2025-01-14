@@ -22,13 +22,17 @@ export function useUserRole() {
           .from('user_roles')
           .select('role')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (error) throw error;
-        setRole(data?.role as UserRole || 'investor');
+        if (error) {
+          console.error('Error fetching user role:', error);
+          setRole('investor'); // Default role on error
+        } else {
+          setRole(data?.role as UserRole || 'investor'); // Default role if no role found
+        }
       } catch (error) {
-        console.error('Error fetching user role:', error);
-        setRole('investor'); // Default role
+        console.error('Error in useUserRole:', error);
+        setRole('investor'); // Default role on exception
       } finally {
         setLoading(false);
       }

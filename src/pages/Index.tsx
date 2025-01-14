@@ -18,39 +18,21 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("portfolio");
 
   useEffect(() => {
-    let mounted = true;
-
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        if (!session && mounted) {
-          console.log("No valid session found, redirecting to /auth");
-          navigate("/auth");
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        if (mounted) {
-          navigate("/auth");
-        }
-      }
-    };
-
-    checkAuth();
+    if (!session) {
+      navigate("/auth");
+      return;
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session && mounted) {
-        console.log("Session ended, redirecting to /auth");
+      if (!session) {
         navigate("/auth");
       }
     });
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [session, navigate]);
 
   if (!session) {
     return null;

@@ -11,43 +11,23 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    let mounted = true;
-
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        if (session && mounted) {
-          console.log("User has valid session, redirecting to /");
-          navigate("/");
-        }
-      } catch (error) {
-        console.error("Session check error:", error);
-        if (mounted) {
-          setErrorMessage(getErrorMessage(error as AuthError));
-        }
-      }
-    };
-
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
-
-      if (event === "SIGNED_IN" && session && mounted) {
-        console.log("User signed in successfully, redirecting to /");
+    // Initial session check
+    const initialCheck = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session && !error) {
         navigate("/");
       }
+    };
+    initialCheck();
 
-      if (event === "SIGNED_OUT" && mounted) {
-        console.log("User signed out");
-        setErrorMessage("");
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        navigate("/");
       }
     });
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);

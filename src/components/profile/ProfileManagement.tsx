@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,14 +40,11 @@ const defaultNotificationSettings = {
   push: true
 };
 
-const MAX_RETRIES = 3;
-const BASE_DELAY = 1000; // 1 second
-
 export function ProfileManagement() {
   const session = useSession();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
   const [profile, setProfile] = useState<Profile>({
     full_name: "",
     phone: "",
@@ -58,89 +55,64 @@ export function ProfileManagement() {
   });
 
   useEffect(() => {
-    let mounted = true;
-    let retryTimeout: NodeJS.Timeout;
-
-    const getProfile = async (attempt = 0) => {
-      try {
-        if (!session?.user?.id) {
-          toast.error("No user session found");
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
-
-        if (error) {
-          if (error.code === '429' && attempt < MAX_RETRIES) {
-            const delay = BASE_DELAY * Math.pow(2, attempt);
-            console.log(`Rate limited, retrying in ${delay}ms`);
-            if (mounted) {
-              setRetryCount(attempt + 1);
-              retryTimeout = setTimeout(() => getProfile(attempt + 1), delay);
-            }
-            return;
-          }
-          throw error;
-        }
-
-        if (mounted && data) {
-          const investmentPrefs = data.investment_preferences as Json;
-          const notificationSettings = data.notification_settings as Json;
-
-          setProfile({
-            ...profile,
-            ...data,
-            investment_preferences: investmentPrefs ? 
-              (typeof investmentPrefs === 'object' ? 
-                {
-                  propertyTypes: Array.isArray((investmentPrefs as any).propertyTypes) ? (investmentPrefs as any).propertyTypes : [],
-                  priceRange: {
-                    min: Number((investmentPrefs as any).priceRange?.min) || 0,
-                    max: Number((investmentPrefs as any).priceRange?.max) || 1000000
-                  },
-                  locations: Array.isArray((investmentPrefs as any).locations) ? (investmentPrefs as any).locations : []
-                }
-              : defaultInvestmentPreferences)
-              : defaultInvestmentPreferences,
-            notification_settings: notificationSettings ? 
-              (typeof notificationSettings === 'object' ? 
-                {
-                  email: Boolean((notificationSettings as any).email),
-                  push: Boolean((notificationSettings as any).push)
-                }
-              : defaultNotificationSettings)
-              : defaultNotificationSettings,
-          });
-        }
-      } catch (error) {
-        console.error("Profile fetch error:", error);
-        toast.error("Error fetching profile. Please try again later.");
-      } finally {
-        if (mounted) {
-          setLoading(false);
-          setRetryCount(0);
-        }
-      }
-    };
-
     getProfile();
-
-    return () => {
-      mounted = false;
-      if (retryTimeout) clearTimeout(retryTimeout);
-    };
   }, [session]);
+
+  const getProfile = async () => {
+    try {
+      if (!session?.user.id) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        const investmentPrefs = data.investment_preferences as Json;
+        const notificationSettings = data.notification_settings as Json;
+        
+        setProfile({
+          ...profile,
+          ...data,
+          investment_preferences: investmentPrefs ? 
+            (typeof investmentPrefs === 'object' ? 
+              {
+                propertyTypes: Array.isArray((investmentPrefs as any).propertyTypes) ? (investmentPrefs as any).propertyTypes : [],
+                priceRange: {
+                  min: Number((investmentPrefs as any).priceRange?.min) || 0,
+                  max: Number((investmentPrefs as any).priceRange?.max) || 1000000
+                },
+                locations: Array.isArray((investmentPrefs as any).locations) ? (investmentPrefs as any).locations : []
+              }
+            : defaultInvestmentPreferences)
+            : defaultInvestmentPreferences,
+          notification_settings: notificationSettings ? 
+            (typeof notificationSettings === 'object' ? 
+              {
+                email: Boolean((notificationSettings as any).email),
+                push: Boolean((notificationSettings as any).push)
+              }
+            : defaultNotificationSettings)
+            : defaultNotificationSettings,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error fetching profile",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updateProfile = async (updates: Partial<Profile>) => {
     try {
-      if (!session?.user?.id) {
-        toast.error("No user session found");
-        return;
-      }
+      if (!session?.user.id) return;
 
       const { error } = await supabase
         .from("profiles")
@@ -152,20 +124,19 @@ export function ProfileManagement() {
         })
         .eq("id", session.user.id);
 
-      if (error) {
-        if (error.code === '429') {
-          toast.error("Too many requests. Please try again in a moment.");
-        } else {
-          toast.error("Error updating profile");
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       setProfile((prev) => ({ ...prev, ...updates }));
-      toast.success("Profile updated successfully");
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
     } catch (error) {
-      console.error("Profile update error:", error);
-      toast.error("Error updating profile. Please try again later.");
+      toast({
+        title: "Error updating profile",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -174,7 +145,7 @@ export function ProfileManagement() {
       setUploading(true);
       
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error("Please select an image to upload.");
+        throw new Error("You must select an image to upload.");
       }
 
       const file = event.target.files[0];
@@ -185,12 +156,7 @@ export function ProfileManagement() {
         .from("avatars")
         .upload(filePath, file);
 
-      if (uploadError) {
-        if (uploadError.message.includes('429')) {
-          throw new Error("Too many upload requests. Please try again in a moment.");
-        }
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
@@ -198,10 +164,16 @@ export function ProfileManagement() {
 
       await updateProfile({ avatar_url: publicUrl });
       
-      toast.success("Avatar uploaded successfully");
+      toast({
+        title: "Avatar uploaded",
+        description: "Your profile picture has been updated.",
+      });
     } catch (error) {
-      console.error("Avatar upload error:", error);
-      toast.error(error instanceof Error ? error.message : "Error uploading avatar");
+      toast({
+        title: "Error uploading avatar",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }
@@ -211,11 +183,6 @@ export function ProfileManagement() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-gold" />
-        {retryCount > 0 && (
-          <p className="ml-2 text-sm text-muted-foreground">
-            Retrying... ({retryCount}/{MAX_RETRIES})
-          </p>
-        )}
       </div>
     );
   }

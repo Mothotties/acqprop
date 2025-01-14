@@ -8,12 +8,19 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log("Function invoked with method:", req.method);
+  console.log("[create-checkout] Function invoked:", {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries())
+  });
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log("Handling CORS preflight request");
-    return new Response('ok', { headers: corsHeaders });
+    console.log("[create-checkout] Handling CORS preflight request");
+    return new Response('ok', { 
+      headers: corsHeaders,
+      status: 200
+    });
   }
 
   try {
@@ -24,13 +31,13 @@ serve(async (req) => {
 
     // Get the price ID from the request body
     const { priceId } = await req.json();
-    console.log("Received priceId:", priceId);
+    console.log("[create-checkout] Received priceId:", priceId);
 
     if (!priceId) {
       throw new Error('Price ID is required');
     }
 
-    console.log('Creating checkout session...');
+    console.log('[create-checkout] Creating checkout session...');
 
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
@@ -46,21 +53,29 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/pricing`,
     });
 
-    console.log('Checkout session created:', session.id);
+    console.log('[create-checkout] Session created successfully:', {
+      sessionId: session.id,
+      url: session.url
+    });
 
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
         headers: { 
           ...corsHeaders,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         status: 200,
-      },
+      }
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('[create-checkout] Error:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+
     return new Response(
       JSON.stringify({ 
         error: error.message,
@@ -72,10 +87,10 @@ serve(async (req) => {
       { 
         headers: { 
           ...corsHeaders,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         status: 400,
-      },
+      }
     );
   }
 });

@@ -15,6 +15,7 @@ import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunity
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketAnalyticsDashboard } from "@/components/MarketAnalyticsDashboard";
 import { MarketTrendsAnalysis } from "@/components/analytics/MarketTrendsAnalysis";
+import { AIPortfolioPerformance } from "@/components/portfolio/AIPortfolioPerformance";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { useState } from "react";
@@ -45,6 +46,7 @@ const Index = () => {
         <NavigationTabs />
         
         <TabsContent value="portfolio" className="space-y-6">
+          <AIPortfolioPerformance />
           <PortfolioDashboard />
           <PropertyAnalyticsDashboard />
           <MarketAnalyticsDashboard />

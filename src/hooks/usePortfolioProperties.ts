@@ -16,6 +16,18 @@ interface UsePortfolioPropertiesProps {
   itemsPerPage: number;
 }
 
+interface PerformanceData {
+  property: string;
+  roi: number;
+  occupancy: number;
+}
+
+interface MarketData {
+  property: string;
+  marketValue: number;
+  pricePerSqft: number;
+}
+
 export function usePortfolioProperties({ 
   search, 
   sort, 
@@ -39,7 +51,12 @@ export function usePortfolioProperties({
             cap_rate,
             roi,
             predicted_growth,
-            market_volatility
+            market_volatility,
+            occupancy_rate
+          ),
+          property_market_data (
+            market_value,
+            price_per_sqft
           )
         `, { count: 'exact' })
         .range(start, end);
@@ -77,7 +94,26 @@ export function usePortfolioProperties({
         }))
       })) as Property[];
 
-      return { properties, totalCount: count || 0 };
+      // Transform data for performance metrics
+      const performanceData = properties.map(property => ({
+        property: property.title,
+        roi: property.property_analytics?.[0]?.roi || 0,
+        occupancy: property.property_analytics?.[0]?.occupancy_rate || 0
+      }));
+
+      // Transform data for market metrics
+      const marketData = properties.map(property => ({
+        property: property.title,
+        marketValue: property.property_market_data?.[0]?.market_value || 0,
+        pricePerSqft: property.property_market_data?.[0]?.price_per_sqft || 0
+      }));
+
+      return { 
+        properties, 
+        totalCount: count || 0,
+        performanceData,
+        marketData
+      };
     },
   });
 }

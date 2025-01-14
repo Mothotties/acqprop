@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,7 +42,6 @@ const defaultNotificationSettings = {
 
 export function ProfileManagement() {
   const session = useSession();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState<Profile>({
@@ -55,12 +54,17 @@ export function ProfileManagement() {
   });
 
   useEffect(() => {
-    getProfile();
+    if (session?.user?.id) {
+      getProfile();
+    }
   }, [session]);
 
   const getProfile = async () => {
     try {
-      if (!session?.user.id) return;
+      if (!session?.user?.id) {
+        toast.error("No user session found");
+        return;
+      }
 
       const { data, error } = await supabase
         .from("profiles")
@@ -68,7 +72,15 @@ export function ProfileManagement() {
         .eq("id", session.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '429') {
+          toast.error("Too many requests. Please try again in a moment.");
+        } else {
+          toast.error("Error fetching profile");
+        }
+        console.error("Profile fetch error:", error);
+        return;
+      }
       
       if (data) {
         const investmentPrefs = data.investment_preferences as Json;
@@ -100,11 +112,8 @@ export function ProfileManagement() {
         });
       }
     } catch (error) {
-      toast({
-        title: "Error fetching profile",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      console.error("Profile fetch error:", error);
+      toast.error("Error fetching profile");
     } finally {
       setLoading(false);
     }
@@ -112,7 +121,7 @@ export function ProfileManagement() {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     try {
-      if (!session?.user.id) return;
+      if (!session?.user?.id) return;
 
       const { error } = await supabase
         .from("profiles")
@@ -124,19 +133,20 @@ export function ProfileManagement() {
         })
         .eq("id", session.user.id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '429') {
+          toast.error("Too many requests. Please try again in a moment.");
+        } else {
+          toast.error("Error updating profile");
+        }
+        throw error;
+      }
 
       setProfile((prev) => ({ ...prev, ...updates }));
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
+      toast.success("Profile updated successfully");
     } catch (error) {
-      toast({
-        title: "Error updating profile",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      console.error("Profile update error:", error);
+      toast.error("Error updating profile");
     }
   };
 
@@ -145,7 +155,7 @@ export function ProfileManagement() {
       setUploading(true);
       
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error("You must select an image to upload.");
+        throw new Error("Please select an image to upload.");
       }
 
       const file = event.target.files[0];
@@ -156,7 +166,12 @@ export function ProfileManagement() {
         .from("avatars")
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        if (uploadError.message.includes('429')) {
+          throw new Error("Too many upload requests. Please try again in a moment.");
+        }
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
@@ -164,16 +179,10 @@ export function ProfileManagement() {
 
       await updateProfile({ avatar_url: publicUrl });
       
-      toast({
-        title: "Avatar uploaded",
-        description: "Your profile picture has been updated.",
-      });
+      toast.success("Avatar uploaded successfully");
     } catch (error) {
-      toast({
-        title: "Error uploading avatar",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Avatar upload error:", error);
+      toast.error(error instanceof Error ? error.message : "Error uploading avatar");
     } finally {
       setUploading(false);
     }

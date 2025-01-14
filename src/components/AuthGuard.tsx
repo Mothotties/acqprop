@@ -24,15 +24,6 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
 
     const checkAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Auth error:", error);
-          toast.error("Authentication error. Please try again.");
-          navigate("/auth");
-          return;
-        }
-
         if (!session) {
           navigate("/auth");
           return;
@@ -46,11 +37,12 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
                 .from('user_roles')
                 .select('role')
                 .eq('user_id', session.user.id)
-                .single();
+                .maybeSingle();
 
               if (rolesError) {
                 if (rolesError.code === '429') {
                   const waitTime = baseDelay * Math.pow(2, attempts);
+                  console.log(`Rate limited, waiting ${waitTime}ms before retry`);
                   await new Promise(resolve => setTimeout(resolve, waitTime));
                   attempts++;
                   continue;
@@ -59,11 +51,11 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
               }
 
               if (isMounted) {
-                const hasRole = requiredRole.includes(userRoles?.role);
+                const hasRole = userRoles ? requiredRole.includes(userRoles.role) : false;
                 setHasRequiredRole(hasRole);
                 
                 if (!hasRole) {
-                  toast.error("You don't have permission to access this page.");
+                  toast.error("You don't have permission to access this page");
                   navigate("/");
                 }
               }
@@ -74,7 +66,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
               
               if (attempts === maxAttempts) {
                 if (isMounted) {
-                  toast.error("Error checking user permissions.");
+                  toast.error("Error checking user permissions");
                   setHasRequiredRole(false);
                   navigate("/");
                 }
@@ -92,7 +84,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
         }
       } catch (error) {
         console.error("Auth check failed:", error);
-        toast.error("Authentication check failed. Please try again.");
+        toast.error("Authentication check failed");
         navigate("/auth");
       }
     };
@@ -102,7 +94,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     return () => {
       isMounted = false;
     };
-  }, [navigate, supabase.auth, requiredRole]);
+  }, [navigate, supabase, session, requiredRole]);
 
   if (isLoading) {
     return (

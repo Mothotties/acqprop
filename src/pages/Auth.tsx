@@ -13,80 +13,38 @@ const Auth = () => {
   const [lastCheckTime, setLastCheckTime] = useState(0);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    const checkUser = async () => {
-      const now = Date.now();
-      if (isCheckingSession || now - lastCheckTime < 2000) return; // Prevent checks within 2 seconds
-      
-      setIsCheckingSession(true);
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Initial session check:", session);
-        
-        if (error) {
-          console.error("Session check error:", error);
-          if (error.message.includes("rate limit")) {
-            setErrorMessage("Too many attempts. Please wait a moment and try again.");
-            timeoutId = setTimeout(() => setErrorMessage(""), 5000);
-          } else {
-            setErrorMessage(getErrorMessage(error));
-          }
-          return;
-        }
-        
-        if (session) {
-          console.log("User already has session, redirecting to /");
-          navigate("/");
-        }
-      } finally {
-        setIsCheckingSession(false);
-        setLastCheckTime(now);
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Checking initial session:", session);
+      if (session) {
+        console.log("User already has session, redirecting to /");
+        navigate("/");
       }
     };
-    
-    checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, session);
-      
+
       if (event === "SIGNED_IN" && session) {
         console.log("User signed in successfully, redirecting to /");
         navigate("/");
         return;
       }
-      
+
       if (event === "SIGNED_OUT") {
         console.log("User signed out");
         setErrorMessage("");
         return;
-      }
-
-      if (event === "USER_UPDATED") {
-        console.log("User updated");
-        const now = Date.now();
-        if (!isCheckingSession && now - lastCheckTime >= 2000) {
-          const { error } = await supabase.auth.getSession();
-          if (error) {
-            console.error("Session refresh error:", error);
-            if (error.message.includes("rate limit")) {
-              setErrorMessage("Too many attempts. Please wait a moment and try again.");
-              timeoutId = setTimeout(() => setErrorMessage(""), 5000);
-            } else {
-              setErrorMessage(getErrorMessage(error));
-            }
-          }
-          setLastCheckTime(now);
-        }
       }
     });
 
     return () => {
       console.log("Cleaning up auth subscriptions");
       subscription.unsubscribe();
-      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [navigate, isCheckingSession, lastCheckTime]);
+  }, [navigate]);
 
   const getErrorMessage = (error: AuthError) => {
     console.error("Auth error:", error);

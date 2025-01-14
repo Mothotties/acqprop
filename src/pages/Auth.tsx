@@ -9,39 +9,45 @@ import type { AuthError } from "@supabase/supabase-js";
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
-  const [isCheckingSession, setIsCheckingSession] = useState(false);
-  const [lastCheckTime, setLastCheckTime] = useState(0);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Checking initial session:", session);
-      if (session) {
-        console.log("User already has session, redirecting to /");
-        navigate("/");
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (session && mounted) {
+          console.log("User has valid session, redirecting to /");
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
+        if (mounted) {
+          setErrorMessage(getErrorMessage(error as AuthError));
+        }
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
 
-      if (event === "SIGNED_IN" && session) {
+      if (event === "SIGNED_IN" && session && mounted) {
         console.log("User signed in successfully, redirecting to /");
         navigate("/");
-        return;
       }
 
-      if (event === "SIGNED_OUT") {
+      if (event === "SIGNED_OUT" && mounted) {
         console.log("User signed out");
         setErrorMessage("");
-        return;
       }
     });
 
     return () => {
-      console.log("Cleaning up auth subscriptions");
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate]);

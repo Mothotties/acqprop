@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+const SUPABASE_URL = "https://fldafqlezglfbmqrgcoj.supabase.co";
+
 export function PricingPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +25,7 @@ export function PricingPage() {
         return;
       }
 
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/create-checkout`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

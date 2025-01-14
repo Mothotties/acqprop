@@ -19,8 +19,10 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (session) {
-      navigate("/");
+    // Only redirect if we have a valid session
+    if (session?.user?.id) {
+      // Use replace instead of push to prevent back navigation issues
+      navigate("/", { replace: true });
     }
   }, [session, navigate]);
 
@@ -39,8 +41,9 @@ const Auth = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN') {
-        navigate("/");
+      if (event === 'SIGNED_IN' && session?.user?.id) {
+        // Use replace instead of push to prevent back navigation issues
+        navigate("/", { replace: true });
       }
       if (event === 'USER_UPDATED') {
         setIsLoading(true);

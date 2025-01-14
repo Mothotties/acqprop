@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { stripe } from '../_shared/stripe.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 
@@ -13,6 +13,8 @@ serve(async (req) => {
   try {
     // Get the request body
     const { priceId, successUrl, cancelUrl } = await req.json()
+    
+    console.log('Creating checkout session with:', { priceId, successUrl, cancelUrl })
 
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
@@ -27,6 +29,8 @@ serve(async (req) => {
       success_url: successUrl,
       cancel_url: cancelUrl,
     })
+
+    console.log('Checkout session created:', session.id)
 
     // Return the session URL
     return new Response(

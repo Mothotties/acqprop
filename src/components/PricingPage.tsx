@@ -5,14 +5,18 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/5kA4jH17b5ZlbbqdQQ";
+const STRIPE_PAYMENT_LINKS = {
+  basic: "https://buy.stripe.com/5kA4jH17b5ZlbbqdQQ",
+  pro: "https://buy.stripe.com/9AQ6rP7vz73pa7m001",
+  enterprise: "https://buy.stripe.com/14keYl6rv1J50wM7su"
+};
 
 export function PricingPage() {
   const session = useSession();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubscribe = () => {
+  const handleSubscribe = (plan: keyof typeof STRIPE_PAYMENT_LINKS) => {
     if (!session) {
       toast({
         title: "Authentication required",
@@ -23,7 +27,7 @@ export function PricingPage() {
       return;
     }
     
-    window.location.href = STRIPE_PAYMENT_LINK;
+    window.location.href = STRIPE_PAYMENT_LINKS[plan];
   };
 
   return (
@@ -61,7 +65,7 @@ export function PricingPage() {
           </CardContent>
           <CardFooter>
             <Button 
-              onClick={handleSubscribe}
+              onClick={() => handleSubscribe('basic')}
               className="w-full bg-gold hover:bg-gold/90"
             >
               Subscribe Now
@@ -97,7 +101,7 @@ export function PricingPage() {
           </CardContent>
           <CardFooter>
             <Button 
-              onClick={handleSubscribe}
+              onClick={() => handleSubscribe('pro')}
               className="w-full bg-gold hover:bg-gold/90"
             >
               Subscribe Now
@@ -133,11 +137,11 @@ export function PricingPage() {
           </CardContent>
           <CardFooter>
             <Button 
-              onClick={() => window.location.href = "mailto:sales@acqprop.com"}
+              onClick={() => handleSubscribe('enterprise')}
               className="w-full"
               variant="outline"
             >
-              Contact Sales
+              Subscribe Now
             </Button>
           </CardFooter>
         </Card>

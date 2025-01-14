@@ -138,8 +138,15 @@ export const ProfileManagement = () => {
           phone: profile.phone,
           bio: profile.bio,
           avatar_url: profile.avatar_url,
-          investment_preferences: profile.investment_preferences as Json,
-          notification_settings: profile.notification_settings as Json,
+          investment_preferences: {
+            propertyTypes: profile.investment_preferences.propertyTypes,
+            priceRange: profile.investment_preferences.priceRange,
+            locations: profile.investment_preferences.locations
+          } as unknown as Json,
+          notification_settings: {
+            email: profile.notification_settings.email,
+            push: profile.notification_settings.push
+          } as unknown as Json,
           updated_at: new Date().toISOString()
         })
         .eq("id", session.user.id);

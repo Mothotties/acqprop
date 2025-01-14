@@ -14,61 +14,78 @@ import { CreatePropertyForm } from "./components/property/CreatePropertyForm";
 import { AuthGuard } from "./components/AuthGuard";
 import { ProfileManagement } from "./components/profile/ProfileManagement";
 import { RoleManagement } from "./components/admin/RoleManagement";
+import { ErrorBoundary } from "./components/error/ErrorBoundary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      onError: (error) => {
+        console.error("Query error:", error);
+      },
+    },
+    mutations: {
+      onError: (error) => {
+        console.error("Mutation error:", error);
+      },
+    },
+  },
+});
 
 const App = () => {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <SessionContextProvider supabaseClient={supabase}>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route
-                  path="/"
-                  element={
-                    <AuthGuard>
-                      <Index />
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <AuthGuard>
-                      <ProfileManagement />
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/admin/roles"
-                  element={
-                    <AuthGuard requiredRole={["admin"]}>
-                      <RoleManagement />
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/properties/create"
-                  element={
-                    <AuthGuard requiredRole={["admin", "agent"]}>
-                      <CreatePropertyForm />
-                    </AuthGuard>
-                  }
-                />
-                <Route path="/properties/:id" element={<PropertyDetails />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-              <Toaster />
-              <Sonner />
-            </BrowserRouter>
-          </TooltipProvider>
-        </QueryClientProvider>
-      </SessionContextProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <SessionContextProvider supabaseClient={supabase}>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                  <Route
+                    path="/"
+                    element={
+                      <AuthGuard>
+                        <Index />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <AuthGuard>
+                        <ProfileManagement />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/roles"
+                    element={
+                      <AuthGuard requiredRole={["admin"]}>
+                        <RoleManagement />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/properties/create"
+                    element={
+                      <AuthGuard requiredRole={["admin", "agent"]}>
+                        <CreatePropertyForm />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route path="/properties/:id" element={<PropertyDetails />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+                <Toaster />
+                <Sonner />
+              </BrowserRouter>
+            </TooltipProvider>
+          </QueryClientProvider>
+        </SessionContextProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

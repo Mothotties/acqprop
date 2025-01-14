@@ -13,8 +13,15 @@ const Auth = () => {
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
       console.log("Initial session check:", session);
+      
+      if (error) {
+        console.error("Session check error:", error);
+        setErrorMessage(getErrorMessage(error));
+        return;
+      }
+      
       if (session) {
         console.log("User already has session, redirecting to /");
         navigate("/");
@@ -38,8 +45,10 @@ const Auth = () => {
       }
 
       if (event === "USER_UPDATED") {
+        console.log("User updated");
         const { error } = await supabase.auth.getSession();
         if (error) {
+          console.error("Session refresh error:", error);
           setErrorMessage(getErrorMessage(error));
         }
       }
@@ -63,6 +72,8 @@ const Auth = () => {
         return "Invalid email or password. Please check your credentials.";
       case "Email not confirmed":
         return "Please verify your email address before signing in.";
+      case "validation_failed":
+        return "Please enter both email and password.";
       default:
         return error.message;
     }
@@ -97,6 +108,7 @@ const Auth = () => {
               },
             }}
             providers={[]}
+            redirectTo={window.location.origin}
           />
         </div>
       </div>

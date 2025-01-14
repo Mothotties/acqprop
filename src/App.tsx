@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createClient } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
@@ -150,16 +149,9 @@ function App() {
                     </AuthGuard>
                   } />
 
-                  {/* Catch all route with error handling */}
+                  {/* Catch all route */}
                   <Route path="*" element={
-                    (() => {
-                      console.error("[Router] Invalid route accessed:", {
-                        path: location.pathname,
-                        timestamp: new Date().toISOString()
-                      });
-                      toast.error("Page not found");
-                      return <Navigate to={ROUTES.private.dashboard.path} replace />;
-                    })()
+                    <Navigate to={ROUTES.private.dashboard.path} replace />
                   } />
                 </Routes>
               </Router>

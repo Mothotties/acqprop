@@ -63,10 +63,20 @@ export function Auth() {
         
         <SupabaseAuth
           supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
-          providers={["google", "github"]}
-          redirectTo={`${window.location.origin}/dashboard`}
+          appearance={{ 
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary))',
+                }
+              }
+            }
+          }}
           theme="dark"
+          providers={["google", "github"]}
+          redirectTo={`${window.location.origin}/auth/callback`}
         />
       </div>
     </div>

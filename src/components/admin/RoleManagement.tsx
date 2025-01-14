@@ -28,9 +28,11 @@ interface UserRoleData {
   user_full_name: string | null;
 }
 
+type Role = "admin" | "agent" | "investor";
+
 export function RoleManagement() {
   const queryClient = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState<string | undefined>();
+  const [selectedRole, setSelectedRole] = useState<Role | undefined>();
 
   const fetchUserRoles = async (): Promise<UserRoleData[]> => {
     const { data: roles, error } = await supabase
@@ -72,7 +74,7 @@ export function RoleManagement() {
       newRole,
     }: {
       userId: string;
-      newRole: string;
+      newRole: Role;
     }) => {
       const { error } = await supabase
         .from("user_roles")
@@ -125,7 +127,7 @@ export function RoleManagement() {
                   <div className="flex items-center gap-2">
                     <Select
                       value={selectedRole}
-                      onValueChange={(value) => setSelectedRole(value)}
+                      onValueChange={(value: Role) => setSelectedRole(value)}
                     >
                       <SelectTrigger className="w-32">
                         <SelectValue placeholder="Select role" />

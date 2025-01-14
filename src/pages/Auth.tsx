@@ -7,7 +7,6 @@ import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000; // 1 second
@@ -43,7 +42,6 @@ const Auth = () => {
       if (event === 'SIGNED_IN') {
         navigate("/");
       }
-
       if (event === 'USER_UPDATED') {
         setIsLoading(true);
         try {
@@ -59,16 +57,13 @@ const Auth = () => {
           setIsLoading(false);
         }
       }
-
       if (event === 'SIGNED_OUT') {
         setErrorMessage("");
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, supabase.auth]);
+    return () => subscription.unsubscribe();
+  }, [supabase.auth, navigate]);
 
   const getErrorMessage = (error: AuthError) => {
     if (error instanceof AuthApiError) {
@@ -77,77 +72,54 @@ const Auth = () => {
           return 'Too many requests. Please wait a moment and try again.';
         case 500:
           return 'Server error. Please try again later.';
-        case 400:
+        default:
           switch (error.message) {
-            case 'Email not confirmed':
-              return 'Please verify your email address before signing in.';
             case 'Invalid login credentials':
               return 'Invalid email or password. Please check your credentials.';
+            case 'Email not confirmed':
+              return 'Please verify your email address before signing in.';
+            case 'User not found':
+              return 'No account found with these credentials.';
             default:
               return error.message;
           }
-        default:
-          return error.message;
       }
     }
     return error.message;
   };
 
   return (
-    <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/20 via-gold/10 to-gold/5" />
-        <div className="relative z-20 flex items-center text-lg font-medium">
-          <img src="/logo.png" alt="Logo" className="h-8 w-8 mr-2" />
-          ACQPROP
-        </div>
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              "Transform your real estate investment journey with AI-powered insights and analytics."
-            </p>
-          </blockquote>
-        </div>
-      </div>
-      <div className="p-4 lg:p-8 h-full flex items-center">
-        <Card className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
-            <CardDescription>
-              Sign in to your account to continue
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {errorMessage && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-            {isLoading ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="h-6 w-6 animate-spin text-gold" />
-              </div>
-            ) : (
-              <SupabaseAuth
-                supabaseClient={supabase}
-                appearance={{
-                  theme: ThemeSupa,
-                  variables: {
-                    default: {
-                      colors: {
-                        brand: '#D4AF37',
-                        brandAccent: '#B4941F',
-                      },
-                    },
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold">Welcome to ACQPROP</CardTitle>
+          <CardDescription>
+            Sign in to access your real estate investment dashboard
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+          <SupabaseAuth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#2563eb',
+                    brandAccent: '#1d4ed8',
                   },
-                }}
-                providers={[]}
-                redirectTo={window.location.origin}
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                },
+              },
+            }}
+            providers={[]}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

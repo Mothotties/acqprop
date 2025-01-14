@@ -39,14 +39,14 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
             .from('user_roles')
             .select('role')
             .eq('user_id', session.user.id)
-            .maybeSingle();
+            .single();
 
           if (rolesError) {
             console.error("Role check error:", rolesError);
             toast.error("Error checking user permissions.");
             setHasRequiredRole(false);
           } else {
-            const hasRole = userRoles ? requiredRole.includes(userRoles.role) : false;
+            const hasRole = requiredRole.includes(userRoles?.role);
             setHasRequiredRole(hasRole);
             
             if (!hasRole) {

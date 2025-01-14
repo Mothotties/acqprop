@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -8,7 +9,6 @@ import { Json } from "@/integrations/supabase/types";
 import { ProfileBasicInfo } from "./ProfileBasicInfo";
 import { NotificationPreferences } from "./NotificationPreferences";
 import { InvestmentPreferences } from "./InvestmentPreferences";
-import { toast } from "sonner";
 
 interface Profile {
   full_name: string;
@@ -42,7 +42,7 @@ const defaultNotificationSettings = {
 
 export function ProfileManagement() {
   const session = useSession();
-  const { toast: uiToast } = useToast();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState<Profile>({
@@ -55,14 +55,11 @@ export function ProfileManagement() {
   });
 
   useEffect(() => {
-    if (session?.user.id) {
-      getProfile();
-    }
+    getProfile();
   }, [session]);
 
   const getProfile = async () => {
     try {
-      setLoading(true);
       if (!session?.user.id) return;
 
       const { data, error } = await supabase
@@ -71,12 +68,7 @@ export function ProfileManagement() {
         .eq("id", session.user.id)
         .single();
 
-      if (error) {
-        toast.error("Error fetching profile", {
-          description: error.message
-        });
-        return;
-      }
+      if (error) throw error;
       
       if (data) {
         const investmentPrefs = data.investment_preferences as Json;
@@ -108,8 +100,10 @@ export function ProfileManagement() {
         });
       }
     } catch (error) {
-      toast.error("Error fetching profile", {
-        description: "Please try again later."
+      toast({
+        title: "Error fetching profile",
+        description: "Please try again later.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -118,10 +112,7 @@ export function ProfileManagement() {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     try {
-      if (!session?.user.id) {
-        toast.error("No authenticated user found");
-        return;
-      }
+      if (!session?.user.id) return;
 
       const { error } = await supabase
         .from("profiles")
@@ -136,10 +127,15 @@ export function ProfileManagement() {
       if (error) throw error;
 
       setProfile((prev) => ({ ...prev, ...updates }));
-      toast.success("Profile updated successfully");
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
     } catch (error) {
-      toast.error("Error updating profile", {
-        description: "Please try again later."
+      toast({
+        title: "Error updating profile",
+        description: "Please try again later.",
+        variant: "destructive",
       });
     }
   };
@@ -168,10 +164,15 @@ export function ProfileManagement() {
 
       await updateProfile({ avatar_url: publicUrl });
       
-      toast.success("Avatar uploaded successfully");
+      toast({
+        title: "Avatar uploaded",
+        description: "Your profile picture has been updated.",
+      });
     } catch (error) {
-      toast.error("Error uploading avatar", {
-        description: error.message
+      toast({
+        title: "Error uploading avatar",
+        description: error.message,
+        variant: "destructive",
       });
     } finally {
       setUploading(false);

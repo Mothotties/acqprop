@@ -1,8 +1,19 @@
+import { PropertyListingView } from "@/components/PropertyListingView";
+import { LocationAnalysis } from "@/components/LocationAnalysis";
+import { PropertyAnalytics } from "@/components/analytics/PropertyAnalytics";
+import { AISearchInterface } from "@/components/search/AISearchInterface";
+
 export function Properties() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">Properties</h1>
-      <p>View all properties</p>
+    <div className="space-y-8 animate-fade-up">
+      <AISearchInterface />
+      
+      <PropertyListingView />
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        <LocationAnalysis />
+        <PropertyAnalytics />
+      </div>
     </div>
   );
 }

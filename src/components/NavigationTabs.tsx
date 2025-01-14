@@ -9,16 +9,10 @@ export function NavigationTabs() {
 
   const navigationItems = [
     {
-      value: "portfolio",
-      label: "Portfolio",
+      value: "dashboard",
+      label: "Dashboard",
       icon: Home,
-      path: "/",
-    },
-    {
-      value: "ai",
-      label: "AI Analysis",
-      icon: Brain,
-      path: "/ai-analysis",
+      path: "/dashboard",
     },
     {
       value: "properties",
@@ -43,6 +37,12 @@ export function NavigationTabs() {
       label: "Analysis",
       icon: BarChart3,
       path: "/analysis",
+    },
+    {
+      value: "ai-analysis",
+      label: "AI Analysis",
+      icon: Brain,
+      path: "/ai-analysis",
     },
     {
       value: "evaluation",

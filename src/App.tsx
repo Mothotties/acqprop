@@ -1,157 +1,44 @@
-import { Suspense, lazy, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { supabase } from "./integrations/supabase/client";
-import { AuthProvider } from "./components/auth/AuthProvider";
-import { AuthGuard } from "./components/AuthGuard";
-import { ErrorBoundary } from "./components/error/ErrorBoundary";
-import { Skeleton } from "@/components/ui/skeleton";
-import { errorLogger } from "./utils/errorLogger";
-import { toast } from "@/components/ui/use-toast";
-import { performanceMonitor } from "./utils/performanceMonitor";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthGuard } from "@/components/AuthGuard";
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { PropertyDetailsView } from "@/components/PropertyDetailsView";
+import { Auth } from "@/components/Auth";
+import { Index } from "@/components/Index";
+import { Dashboard } from "@/components/Dashboard";
+import { Properties } from "@/components/Properties";
+import { Analytics } from "@/components/Analytics";
+import { Settings } from "@/components/Settings";
+import { Profile } from "@/components/Profile";
 
-const Index = lazy(() => import("./pages/Index"));
-const Auth = lazy(() => import("./pages/Auth"));
-const PropertyDetails = lazy(() => import("./components/PropertyDetails").then(module => ({ default: module.PropertyDetails })));
-const PricingPage = lazy(() => import("./components/PricingPage").then(module => ({ default: module.PricingPage })));
-const CreatePropertyForm = lazy(() => import("./components/property/CreatePropertyForm").then(module => ({ default: module.CreatePropertyForm })));
-const ProfileManagement = lazy(() => import("./components/profile/ProfileManagement").then(module => ({ default: module.ProfileManagement })));
-const RoleManagement = lazy(() => import("./components/admin/RoleManagement").then(module => ({ default: module.RoleManagement })));
+const queryClient = new QueryClient();
 
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="p-8 space-y-4">
-    <Skeleton className="h-8 w-[250px]" />
-    <Skeleton className="h-[200px] w-full" />
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {[...Array(3)].map((_, i) => (
-        <Skeleton key={i} className="h-[150px]" />
-      ))}
-    </div>
-  </div>
-);
-
-// Enhanced query client with better error handling and performance monitoring
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error: any) => {
-        // Don't retry on 401/403 errors
-        if (error?.status === 401 || error?.status === 403) return false;
-        // Retry up to 3 times with exponential backoff
-        return failureCount < 3;
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 10,
-      refetchOnWindowFocus: false,
-      meta: {
-        onError: (error: Error) => {
-          errorLogger.log(error, "medium", { source: "query" });
-          toast({
-            title: "Error",
-            description: "Failed to fetch data. Please try again.",
-            variant: "destructive",
-          });
-        },
-      },
-    },
-    mutations: {
-      retry: (failureCount, error: any) => {
-        if (error?.status === 401 || error?.status === 403) return false;
-        return failureCount < 3;
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      meta: {
-        onError: (error: Error) => {
-          errorLogger.log(error, "high", { source: "mutation" });
-          toast({
-            title: "Error",
-            description: "Failed to update data. Please try again.",
-            variant: "destructive",
-          });
-        },
-      },
-    },
-  },
-});
-
-// Route change monitoring component
-const RouteChangeMonitor = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    performanceMonitor.logMetric(`Navigation to ${location.pathname}`, performance.now());
-  }, [location]);
-
-  return null;
-};
-
-const App = () => {
+function App() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <SessionContextProvider supabaseClient={supabase}>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <BrowserRouter>
-                <AuthProvider>
-                  <RouteChangeMonitor />
-                  <Suspense fallback={<LoadingFallback />}>
-                    <Routes>
-                      <Route path="/auth" element={<Auth />} />
-                      <Route
-                        path="/"
-                        element={
-                          <AuthGuard>
-                            <Index />
-                          </AuthGuard>
-                        }
-                      />
-                      <Route
-                        path="/profile"
-                        element={
-                          <AuthGuard>
-                            <ProfileManagement />
-                          </AuthGuard>
-                        }
-                      />
-                      <Route
-                        path="/admin/roles"
-                        element={
-                          <AuthGuard requiredRole="admin">
-                            <RoleManagement />
-                          </AuthGuard>
-                        }
-                      />
-                      <Route
-                        path="/properties/create"
-                        element={
-                          <AuthGuard requiredRole="agent">
-                            <CreatePropertyForm />
-                          </AuthGuard>
-                        }
-                      />
-                      <Route path="/properties/:id" element={<PropertyDetails />} />
-                      <Route path="/pricing" element={<PricingPage />} />
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                  </Suspense>
-                  <Toaster />
-                  <Sonner />
-                </AuthProvider>
-              </BrowserRouter>
-            </TooltipProvider>
-          </QueryClientProvider>
-        </SessionContextProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<AuthGuard />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/" element={<Index />} />
+                <Route path="/property/:id" element={<PropertyDetailsView />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/properties" element={<Properties />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<Profile />} />
+              </Route>
+            </Route>
+          </Routes>
+        </Router>
+        <Toaster />
+      </QueryClientProvider>
+    </ThemeProvider>
   );
-};
+}
 
 export default App;

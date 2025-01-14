@@ -8,8 +8,11 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log("Function invoked with method:", req.method);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log("Handling CORS preflight request");
     return new Response('ok', { headers: corsHeaders });
   }
 
@@ -21,12 +24,13 @@ serve(async (req) => {
 
     // Get the price ID from the request body
     const { priceId } = await req.json();
+    console.log("Received priceId:", priceId);
 
     if (!priceId) {
       throw new Error('Price ID is required');
     }
 
-    console.log('Creating checkout session for price:', priceId);
+    console.log('Creating checkout session...');
 
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
@@ -58,7 +62,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: {
+          name: error.name,
+          stack: error.stack,
+        }
+      }),
       { 
         headers: { 
           ...corsHeaders,

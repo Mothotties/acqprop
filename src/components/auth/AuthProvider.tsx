@@ -5,6 +5,7 @@ import { AuthState, AuthUser } from "@/types/auth";
 import { toast } from "sonner";
 import { debounce } from "lodash";
 import { errorLogger } from "@/utils/errorLogger";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 const AuthContext = createContext<AuthState>({
   user: null,
@@ -16,7 +17,7 @@ export const useAuth = () => useContext(AuthContext);
 
 const INITIAL_RETRY_DELAY = 1000;
 const MAX_RETRIES = 3;
-const SESSION_REFRESH_INTERVAL = 1000 * 60 * 60; // 1 hour
+const SESSION_REFRESH_INTERVAL = 1000 * 60 * 30; // 30 minutes
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const session = useSession();
@@ -35,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Wait for a short delay before making requests
+      // Add a small delay before making requests to prevent race conditions
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const { data: roleData, error: roleError } = await supabase
@@ -92,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === "SIGNED_IN") {
         await new Promise(resolve => setTimeout(resolve, 1000));
         await debouncedFetchUserData();
+        navigate("/dashboard");
       } else if (event === "SIGNED_OUT") {
         setAuthState({ user: null, isLoading: false, error: null });
         if (mounted) {
@@ -106,9 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const setupSessionRefresh = () => {
       sessionRefreshInterval = setInterval(async () => {
         try {
-          const { data, error } = await supabase.auth.refreshSession();
+          const { data: { session }, error } = await supabase.auth.refreshSession();
           if (error) throw error;
-          if (!data.session && mounted) {
+          if (!session && mounted) {
             navigate("/auth", { replace: true });
           }
         } catch (error) {
@@ -123,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }, SESSION_REFRESH_INTERVAL);
     };
 
-    // Initial fetch with delay
+    // Initial fetch with delay to prevent race conditions
     setTimeout(() => {
       if (mounted) {
         fetchUserData();
@@ -144,8 +146,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [session, supabase, navigate]);
 
   return (
-    <AuthContext.Provider value={authState}>
-      {children}
-    </AuthContext.Provider>
+    <ErrorBoundary>
+      <AuthContext.Provider value={authState}>
+        {authState.isLoading ? (
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+            </div>
+          </div>
+        ) : (
+          children
+        )}
+      </AuthContext.Provider>
+    </ErrorBoundary>
   );
 }

@@ -14,7 +14,9 @@ const Auth = () => {
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("Initial session check:", session); // Debug log
       if (session) {
+        console.log("User already has session, redirecting to /"); // Debug log
         navigate("/");
       }
     };
@@ -24,13 +26,17 @@ const Auth = () => {
       console.log("Auth state changed:", event, session); // Debug log
       
       if (event === "SIGNED_IN" && session) {
-        console.log("User signed in, redirecting..."); // Debug log
+        console.log("User signed in successfully, redirecting to /"); // Debug log
         navigate("/");
+        return;
       }
+      
       if (event === "SIGNED_OUT") {
         console.log("User signed out"); // Debug log
         navigate("/auth");
+        return;
       }
+
       if (event === "USER_UPDATED") {
         const { error } = await supabase.auth.getSession();
         if (error) {
@@ -40,7 +46,10 @@ const Auth = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("Cleaning up auth subscriptions"); // Debug log
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const getErrorMessage = (error: AuthError) => {

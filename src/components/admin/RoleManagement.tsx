@@ -1,37 +1,21 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-
-type Role = "admin" | "agent" | "investor";
-
-interface UserRoleData {
-  id: string;
-  email: string | null;
-  role: Role;
-  full_name: string | null;
-}
+import { UserRoleRow } from "./UserRoleRow";
+import { Role, RoleUpdatePayload, UserRoleData } from "@/types/roles";
+import { useState } from "react";
 
 export function RoleManagement() {
   const queryClient = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState<Role | undefined>();
+  const [selectedRole, setSelectedRole] = useState<Role>();
 
   const fetchUserRoles = async (): Promise<UserRoleData[]> => {
     const { data, error } = await supabase
@@ -47,7 +31,7 @@ export function RoleManagement() {
       `);
 
     if (error) {
-      console.error("Error fetching roles:", error);
+      toast.error("Failed to fetch user roles");
       throw error;
     }
 
@@ -59,19 +43,13 @@ export function RoleManagement() {
     }));
   };
 
-  const { data: userRoles, isLoading } = useQuery({
+  const { data: userRoles, isLoading, error } = useQuery({
     queryKey: ["userRoles"],
     queryFn: fetchUserRoles,
   });
 
   const updateRole = useMutation({
-    mutationFn: async ({
-      userId,
-      newRole,
-    }: {
-      userId: string;
-      newRole: Role;
-    }) => {
+    mutationFn: async ({ userId, newRole }: RoleUpdatePayload) => {
       const { error } = await supabase
         .from("user_roles")
         .update({ role: newRole })
@@ -82,6 +60,7 @@ export function RoleManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userRoles"] });
       toast.success("Role updated successfully");
+      setSelectedRole(undefined);
     },
     onError: (error) => {
       console.error("Error updating role:", error);
@@ -93,6 +72,14 @@ export function RoleManagement() {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Failed to load user roles. Please try again later.
       </div>
     );
   }
@@ -115,47 +102,21 @@ export function RoleManagement() {
           </TableHeader>
           <TableBody>
             {userRoles?.map((userRole) => (
-              <TableRow key={userRole.id}>
-                <TableCell>{userRole.full_name || "N/A"}</TableCell>
-                <TableCell>{userRole.email || "N/A"}</TableCell>
-                <TableCell>{userRole.role}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={selectedRole}
-                      onValueChange={(value: Role) => setSelectedRole(value)}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="agent">Agent</SelectItem>
-                        <SelectItem value="investor">Investor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (selectedRole) {
-                          updateRole.mutate({
-                            userId: userRole.id,
-                            newRole: selectedRole,
-                          });
-                        }
-                      }}
-                      disabled={!selectedRole || updateRole.isPending}
-                    >
-                      {updateRole.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Update"
-                      )}
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
+              <UserRoleRow
+                key={userRole.id}
+                userRole={userRole}
+                selectedRole={selectedRole}
+                onRoleSelect={setSelectedRole}
+                onUpdateRole={() => {
+                  if (selectedRole) {
+                    updateRole.mutate({
+                      userId: userRole.id,
+                      newRole: selectedRole,
+                    });
+                  }
+                }}
+                isUpdating={updateRole.isPending}
+              />
             ))}
           </TableBody>
         </Table>

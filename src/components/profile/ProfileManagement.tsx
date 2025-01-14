@@ -12,12 +12,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+interface InvestmentPreferences {
+  propertyTypes: string[];
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  locations: string[];
+}
+
+interface NotificationSettings {
+  email: boolean;
+  push: boolean;
+}
+
+interface Profile {
+  full_name: string;
+  phone: string;
+  bio: string;
+  avatar_url: string;
+  investment_preferences: InvestmentPreferences;
+  notification_settings: NotificationSettings;
+}
+
 export const ProfileManagement = () => {
   const session = useSession();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<Profile>({
     full_name: "",
     phone: "",
     bio: "",
@@ -49,11 +72,15 @@ export const ProfileManagement = () => {
 
       if (error) throw error;
       if (data) {
+        // Ensure the data conforms to our expected types
+        const investmentPreferences: InvestmentPreferences = data.investment_preferences || profile.investment_preferences;
+        const notificationSettings: NotificationSettings = data.notification_settings || profile.notification_settings;
+
         setProfile({
           ...profile,
           ...data,
-          investment_preferences: data.investment_preferences || profile.investment_preferences,
-          notification_settings: data.notification_settings || profile.notification_settings
+          investment_preferences: investmentPreferences,
+          notification_settings: notificationSettings
         });
       }
     } catch (error) {

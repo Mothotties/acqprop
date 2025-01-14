@@ -1,9 +1,9 @@
-import { Brain, Building, Building2, FileText, Wrench, BarChart3, Calculator } from "lucide-react";
+import { Brain, Building2, FileText, Wrench, BarChart3, Calculator, Building } from "lucide-react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function NavigationTabs() {
   return (
-    <TabsList className="relative grid w-full grid-cols-4 lg:grid-cols-7 h-auto gap-2 bg-background/50 p-2 rounded-lg shadow-sm">
+    <TabsList className="relative grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto gap-2 bg-background/50 p-2 rounded-lg shadow-sm">
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-ai/5 rounded-lg opacity-30" />
       

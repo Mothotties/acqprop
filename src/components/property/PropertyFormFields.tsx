@@ -24,7 +24,7 @@ export interface PropertyFormFieldsProps {
 
 export function PropertyFormFields({ form }: PropertyFormFieldsProps) {
   return (
-    <>
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="title"
@@ -118,6 +118,6 @@ export function PropertyFormFields({ form }: PropertyFormFieldsProps) {
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 }

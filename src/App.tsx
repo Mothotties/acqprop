@@ -10,6 +10,8 @@ import { supabase } from "./integrations/supabase/client";
 import { AuthGuard } from "./components/AuthGuard";
 import { ErrorBoundary } from "./components/error/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { errorLogger } from "./utils/errorLogger";
+import { toast } from "@/components/ui/use-toast";
 
 // Lazy load components
 const Index = lazy(() => import("./pages/Index"));
@@ -33,16 +35,33 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Enhanced query client with better error handling and performance monitoring
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
       gcTime: 1000 * 60 * 10, // Keep unused data in cache for 10 minutes
-      refetchOnWindowFocus: false, // Disable automatic refetching when window gains focus
+      refetchOnWindowFocus: false,
+      onError: (error) => {
+        errorLogger.log(error as Error, "medium", { source: "query" });
+        toast({
+          title: "Error",
+          description: "Failed to fetch data. Please try again.",
+          variant: "destructive",
+        });
+      },
     },
     mutations: {
-      onSettled: (data, error) => {
+      onError: (error) => {
+        errorLogger.log(error as Error, "high", { source: "mutation" });
+        toast({
+          title: "Error",
+          description: "Failed to update data. Please try again.",
+          variant: "destructive",
+        });
+      },
+      onSettled: (_, error) => {
         if (error) {
           console.error("Mutation error:", error);
         }
@@ -50,6 +69,26 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Performance monitoring function
+const monitorRouteChange = (location: string) => {
+  const startTime = performance.now();
+  
+  // Record navigation timing
+  setTimeout(() => {
+    const duration = performance.now() - startTime;
+    console.info(`Navigation to ${location} took ${duration.toFixed(2)}ms`);
+    
+    // Log if navigation takes too long
+    if (duration > 1000) {
+      errorLogger.log(
+        new Error(`Slow navigation to ${location}`),
+        "low",
+        { duration, route: location }
+      );
+    }
+  }, 0);
+};
 
 const App = () => {
   return (
@@ -60,7 +99,7 @@ const App = () => {
             <TooltipProvider>
               <BrowserRouter>
                 <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
+                  <Routes onChange={(location) => monitorRouteChange(location.pathname)}>
                     <Route path="/auth" element={<Auth />} />
                     <Route
                       path="/"

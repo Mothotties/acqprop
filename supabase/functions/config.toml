@@ -1,5 +1,4 @@
-# project_id must be the first value in the toml
 project_id = "fldafqlezglfbmqrgcoj"
 
 [functions.create-checkout]
-verify_jwt = false
+verify_jwt = true

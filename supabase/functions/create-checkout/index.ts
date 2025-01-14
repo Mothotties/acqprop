@@ -26,6 +26,8 @@ serve(async (req) => {
       throw new Error('Price ID is required');
     }
 
+    console.log('Creating checkout session for price:', priceId);
+
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -40,8 +42,10 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/pricing`,
     });
 
+    console.log('Checkout session created:', session.id);
+
     return new Response(
-      JSON.stringify({ sessionId: session.id }),
+      JSON.stringify({ url: session.url }),
       { 
         headers: { 
           ...corsHeaders,

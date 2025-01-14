@@ -33,6 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Wait for a short delay before making requests to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // First, try to get the user's role
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
@@ -52,12 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // If no role exists, create one with default role
       if (!roleData) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Add delay before insert
         const { error: insertError } = await supabase
           .from("user_roles")
-          .insert({ user_id: session.user.id, role: "investor" });
+          .insert([{ user_id: session.user.id, role: "investor" }]);
 
         if (insertError) throw insertError;
       }
+
+      // Add delay before fetching profile
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Get user profile data
       const { data: profileData, error: profileError } = await supabase
@@ -87,7 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const debouncedFetchUserData = debounce(fetchUserData, 1000);
+  // Increase debounce delay to help with rate limiting
+  const debouncedFetchUserData = debounce(fetchUserData, 2000);
 
   useEffect(() => {
     let mounted = true;
@@ -96,6 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!mounted) return;
 
       if (event === "SIGNED_IN") {
+        // Add delay before fetching user data after sign in
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await debouncedFetchUserData();
       } else if (event === "SIGNED_OUT") {
         setAuthState({ user: null, isLoading: false, error: null });
@@ -107,7 +117,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    fetchUserData();
+    // Initial fetch with delay
+    setTimeout(() => {
+      if (mounted) {
+        fetchUserData();
+      }
+    }, 1000);
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event) => {
       await handleAuthChange(event);

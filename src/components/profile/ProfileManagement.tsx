@@ -71,14 +71,32 @@ export function ProfileManagement() {
       if (error) throw error;
       
       if (data) {
-        const investmentPrefs = data.investment_preferences as Json ?? defaultInvestmentPreferences;
-        const notificationSettings = data.notification_settings as Json ?? defaultNotificationSettings;
+        const investmentPrefs = data.investment_preferences as Json;
+        const notificationSettings = data.notification_settings as Json;
         
         setProfile({
           ...profile,
           ...data,
-          investment_preferences: typeof investmentPrefs === 'object' ? investmentPrefs : defaultInvestmentPreferences,
-          notification_settings: typeof notificationSettings === 'object' ? notificationSettings : defaultNotificationSettings,
+          investment_preferences: investmentPrefs ? 
+            (typeof investmentPrefs === 'object' ? 
+              {
+                propertyTypes: Array.isArray((investmentPrefs as any).propertyTypes) ? (investmentPrefs as any).propertyTypes : [],
+                priceRange: {
+                  min: Number((investmentPrefs as any).priceRange?.min) || 0,
+                  max: Number((investmentPrefs as any).priceRange?.max) || 1000000
+                },
+                locations: Array.isArray((investmentPrefs as any).locations) ? (investmentPrefs as any).locations : []
+              }
+            : defaultInvestmentPreferences)
+            : defaultInvestmentPreferences,
+          notification_settings: notificationSettings ? 
+            (typeof notificationSettings === 'object' ? 
+              {
+                email: Boolean((notificationSettings as any).email),
+                push: Boolean((notificationSettings as any).push)
+              }
+            : defaultNotificationSettings)
+            : defaultNotificationSettings,
         });
       }
     } catch (error) {
@@ -100,15 +118,8 @@ export function ProfileManagement() {
         .from("profiles")
         .update({
           ...updates,
-          investment_preferences: {
-            propertyTypes: profile.investment_preferences.propertyTypes,
-            priceRange: profile.investment_preferences.priceRange,
-            locations: profile.investment_preferences.locations
-          } as unknown as Json,
-          notification_settings: {
-            email: profile.notification_settings.email,
-            push: profile.notification_settings.push
-          } as unknown as Json,
+          investment_preferences: updates.investment_preferences as unknown as Json,
+          notification_settings: updates.notification_settings as unknown as Json,
           updated_at: new Date().toISOString()
         })
         .eq("id", session.user.id);

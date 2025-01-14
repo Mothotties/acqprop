@@ -42,9 +42,9 @@ export function RoleManagement() {
           id,
           user_id,
           role,
-          user:user_id (
-            email:raw_user_meta_data->>'email',
-            full_name:raw_user_meta_data->>'full_name'
+          user:auth.users!user_id(
+            raw_user_meta_data->'email',
+            raw_user_meta_data->'full_name'
           )
         `);
 
@@ -58,8 +58,8 @@ export function RoleManagement() {
         id: role.id,
         user_id: role.user_id,
         role: role.role,
-        user_email: role.user?.email || null,
-        user_full_name: role.user?.full_name || null,
+        user_email: role.user?.raw_user_meta_data?.email || null,
+        user_full_name: role.user?.raw_user_meta_data?.full_name || null,
       }));
 
       return transformedData;

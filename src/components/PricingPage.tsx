@@ -27,7 +27,17 @@ export function PricingPage() {
       return;
     }
     
-    window.location.href = STRIPE_PAYMENT_LINKS[plan];
+    try {
+      // Open payment link in a new tab
+      window.open(STRIPE_PAYMENT_LINKS[plan], '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Error opening payment link:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open payment page. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

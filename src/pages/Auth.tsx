@@ -9,24 +9,39 @@ import type { AuthError } from "@supabase/supabase-js";
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in
+    let timeoutId: NodeJS.Timeout;
+    
     const checkUser = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      console.log("Initial session check:", session);
+      if (isChecking) return;
       
-      if (error) {
-        console.error("Session check error:", error);
-        setErrorMessage(getErrorMessage(error));
-        return;
-      }
-      
-      if (session) {
-        console.log("User already has session, redirecting to /");
-        navigate("/");
+      setIsChecking(true);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Initial session check:", session);
+        
+        if (error) {
+          console.error("Session check error:", error);
+          if (error.message.includes("rate limit")) {
+            setErrorMessage("Too many attempts. Please wait a moment and try again.");
+            timeoutId = setTimeout(() => setErrorMessage(""), 5000);
+          } else {
+            setErrorMessage(getErrorMessage(error));
+          }
+          return;
+        }
+        
+        if (session) {
+          console.log("User already has session, redirecting to /");
+          navigate("/");
+        }
+      } finally {
+        setIsChecking(false);
       }
     };
+    
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -46,10 +61,17 @@ const Auth = () => {
 
       if (event === "USER_UPDATED") {
         console.log("User updated");
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Session refresh error:", error);
-          setErrorMessage(getErrorMessage(error));
+        if (!isChecking) {
+          const { error } = await supabase.auth.getSession();
+          if (error) {
+            console.error("Session refresh error:", error);
+            if (error.message.includes("rate limit")) {
+              setErrorMessage("Too many attempts. Please wait a moment and try again.");
+              timeoutId = setTimeout(() => setErrorMessage(""), 5000);
+            } else {
+              setErrorMessage(getErrorMessage(error));
+            }
+          }
         }
       }
     });
@@ -57,11 +79,16 @@ const Auth = () => {
     return () => {
       console.log("Cleaning up auth subscriptions");
       subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [navigate]);
+  }, [navigate, isChecking]);
 
   const getErrorMessage = (error: AuthError) => {
     console.error("Auth error:", error);
+    
+    if (error.message.includes("rate limit")) {
+      return "Too many attempts. Please wait a moment and try again.";
+    }
     
     if (error.message.includes("User already registered")) {
       return "This email is already registered. Please sign in instead.";

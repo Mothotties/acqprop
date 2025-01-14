@@ -7,6 +7,16 @@ interface PerformanceMetric {
   metadata?: Record<string, unknown>;
 }
 
+// Define the PerformanceElementTiming interface
+interface PerformanceElementTiming extends PerformanceEntry {
+  element?: Element;
+  id?: string;
+  url?: string;
+  loadTime?: number;
+  renderTime?: number;
+  size?: DOMRectReadOnly;
+}
+
 class PerformanceMonitor {
   private static instance: PerformanceMonitor;
   private metrics: PerformanceMetric[] = [];

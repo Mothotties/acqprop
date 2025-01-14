@@ -25,9 +25,9 @@ interface UserRoleData {
   id: string;
   user_id: string;
   role: UserRole;
-  profiles: {
-    full_name: string | null;
+  user: {
     email: string | null;
+    full_name: string | null;
   };
 }
 
@@ -44,7 +44,7 @@ export function RoleManagement() {
           id,
           user_id,
           role,
-          profiles:profiles(full_name, email)
+          user:profiles!user_roles_user_id_fkey(full_name, email)
         `);
 
       if (error) throw error;
@@ -102,8 +102,8 @@ export function RoleManagement() {
         <TableBody>
           {users?.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>{user.profiles?.full_name || "N/A"}</TableCell>
-              <TableCell>{user.profiles?.email || "N/A"}</TableCell>
+              <TableCell>{user.user?.full_name || "N/A"}</TableCell>
+              <TableCell>{user.user?.email || "N/A"}</TableCell>
               <TableCell>{user.role}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">

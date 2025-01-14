@@ -22,9 +22,6 @@ const sentimentData = [
 export function MarketSentimentChart() {
   return (
     <Card className="border-gold/10 hover:border-gold/20 transition-all duration-300">
-      {/* Gradient overlay with adjusted opacity and colors */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gold/20 via-transparent to-primary/10" />
-      
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-gold animate-pulse" />
@@ -33,9 +30,6 @@ export function MarketSentimentChart() {
       </CardHeader>
       <CardContent>
         <div className="h-[300px] relative">
-          {/* Chart background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background opacity-75" />
-          
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sentimentData}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />

@@ -1,143 +1,143 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Check } from "lucide-react";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
-const SUPABASE_URL = "https://fldafqlezglfbmqrgcoj.supabase.co";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/5kA4jH17b5ZlbbqdQQ";
 
 export function PricingPage() {
+  const session = useSession();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubscribe = async (priceId: string) => {
-    try {
-      setIsLoading(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to subscribe to a plan",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          priceId,
-          successUrl: `${window.location.origin}/dashboard?checkout=success`,
-          cancelUrl: `${window.location.origin}/pricing?checkout=cancelled`,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error) {
-      console.error('Checkout error:', error);
+  const handleSubscribe = () => {
+    if (!session) {
       toast({
-        title: "Error",
-        description: "Failed to initiate checkout. Please try again.",
+        title: "Authentication required",
+        description: "Please sign in to subscribe to a plan",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
+      navigate("/auth");
+      return;
     }
+    
+    window.location.href = STRIPE_PAYMENT_LINK;
   };
 
   return (
-    <div className="container mx-auto py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
-        <p className="text-muted-foreground">Choose the plan that's right for you</p>
+    <div className="container py-12 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">Simple, Transparent Pricing</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Choose the plan that best fits your needs. All plans include access to our core features
+          and AI-powered analytics.
+        </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
-        {/* Basic Plan */}
+      <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Basic</CardTitle>
             <CardDescription>Perfect for getting started</CardDescription>
+            <p className="text-3xl font-bold">$29/mo</p>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-4">$29/month</div>
-            <ul className="space-y-2">
-              <li>✓ Up to 5 properties</li>
-              <li>✓ Basic analytics</li>
-              <li>✓ Email support</li>
-            </ul>
+          <CardContent className="space-y-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Up to 5 properties</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Basic analytics</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Email support</span>
+              </div>
+            </div>
           </CardContent>
           <CardFooter>
             <Button 
-              className="w-full" 
-              onClick={() => handleSubscribe('price_basic')}
-              disabled={isLoading}
+              onClick={handleSubscribe}
+              className="w-full bg-gold hover:bg-gold/90"
             >
-              {isLoading ? 'Processing...' : 'Subscribe Now'}
+              Subscribe Now
             </Button>
           </CardFooter>
         </Card>
 
-        {/* Pro Plan */}
         <Card className="border-gold">
           <CardHeader>
             <CardTitle>Pro</CardTitle>
             <CardDescription>For growing portfolios</CardDescription>
+            <p className="text-3xl font-bold">$79/mo</p>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-4">$79/month</div>
-            <ul className="space-y-2">
-              <li>✓ Up to 20 properties</li>
-              <li>✓ Advanced analytics</li>
-              <li>✓ Priority support</li>
-              <li>✓ AI market insights</li>
-            </ul>
+          <CardContent className="space-y-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Up to 20 properties</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Advanced analytics</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Priority support</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>AI market predictions</span>
+              </div>
+            </div>
           </CardContent>
           <CardFooter>
             <Button 
-              className="w-full bg-gold hover:bg-gold/90" 
-              onClick={() => handleSubscribe('price_pro')}
-              disabled={isLoading}
+              onClick={handleSubscribe}
+              className="w-full bg-gold hover:bg-gold/90"
             >
-              {isLoading ? 'Processing...' : 'Subscribe Now'}
+              Subscribe Now
             </Button>
           </CardFooter>
         </Card>
 
-        {/* Enterprise Plan */}
         <Card>
           <CardHeader>
             <CardTitle>Enterprise</CardTitle>
             <CardDescription>For large portfolios</CardDescription>
+            <p className="text-3xl font-bold">Contact us</p>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mb-4">$199/month</div>
-            <ul className="space-y-2">
-              <li>✓ Unlimited properties</li>
-              <li>✓ Custom analytics</li>
-              <li>✓ 24/7 support</li>
-              <li>✓ Custom integrations</li>
-              <li>✓ Dedicated account manager</li>
-            </ul>
+          <CardContent className="space-y-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Unlimited properties</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Custom analytics</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>24/7 support</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Custom integrations</span>
+              </div>
+            </div>
           </CardContent>
           <CardFooter>
             <Button 
-              className="w-full" 
-              onClick={() => handleSubscribe('price_enterprise')}
-              disabled={isLoading}
+              onClick={() => window.location.href = "mailto:sales@acqprop.com"}
+              className="w-full"
+              variant="outline"
             >
-              {isLoading ? 'Processing...' : 'Contact Sales'}
+              Contact Sales
             </Button>
           </CardFooter>
         </Card>

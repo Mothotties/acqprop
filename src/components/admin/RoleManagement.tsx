@@ -25,10 +25,8 @@ interface UserRoleData {
   id: string;
   user_id: string;
   role: UserRole;
-  user: {
-    email: string | null;
-    full_name: string | null;
-  };
+  user_email: string | null;
+  user_full_name: string | null;
 }
 
 export function RoleManagement() {
@@ -45,8 +43,8 @@ export function RoleManagement() {
           user_id,
           role,
           user:user_id (
-            email:raw_user_meta_data->email,
-            full_name:raw_user_meta_data->full_name
+            email:raw_user_meta_data->>'email',
+            full_name:raw_user_meta_data->>'full_name'
           )
         `);
 
@@ -55,7 +53,16 @@ export function RoleManagement() {
         throw rolesError;
       }
 
-      return userRoles as UserRoleData[];
+      // Transform the data to match our interface
+      const transformedData: UserRoleData[] = userRoles.map((role: any) => ({
+        id: role.id,
+        user_id: role.user_id,
+        role: role.role,
+        user_email: role.user?.email || null,
+        user_full_name: role.user?.full_name || null,
+      }));
+
+      return transformedData;
     },
   });
 
@@ -109,8 +116,8 @@ export function RoleManagement() {
         <TableBody>
           {users?.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>{user.user?.full_name || "N/A"}</TableCell>
-              <TableCell>{user.user?.email || "N/A"}</TableCell>
+              <TableCell>{user.user_full_name || "N/A"}</TableCell>
+              <TableCell>{user.user_email || "N/A"}</TableCell>
               <TableCell>{user.role}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">

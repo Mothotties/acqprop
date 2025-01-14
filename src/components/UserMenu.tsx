@@ -10,13 +10,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, Settings, Users } from "lucide-react";
 import { toast } from "sonner";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export function UserMenu() {
   const user = useUser();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const { data: role } = useUserRole();
 
   const handleSignOut = async () => {
     try {
@@ -57,6 +59,12 @@ export function UserMenu() {
           <Settings className="mr-2 h-4 w-4" />
           <span>Profile Settings</span>
         </DropdownMenuItem>
+        {role === "admin" && (
+          <DropdownMenuItem onClick={() => navigate("/admin/roles")}>
+            <Users className="mr-2 h-4 w-4" />
+            <span>Manage Roles</span>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sign out</span>

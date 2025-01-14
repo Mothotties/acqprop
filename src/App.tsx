@@ -13,6 +13,7 @@ import { PricingPage } from "./components/PricingPage";
 import { CreatePropertyForm } from "./components/property/CreatePropertyForm";
 import { AuthGuard } from "./components/AuthGuard";
 import { ProfileManagement } from "./components/profile/ProfileManagement";
+import { RoleManagement } from "./components/admin/RoleManagement";
 
 const queryClient = new QueryClient();
 
@@ -42,9 +43,17 @@ const App = () => {
                   }
                 />
                 <Route
+                  path="/admin/roles"
+                  element={
+                    <AuthGuard requiredRole={["admin"]}>
+                      <RoleManagement />
+                    </AuthGuard>
+                  }
+                />
+                <Route
                   path="/properties/create"
                   element={
-                    <AuthGuard requiredRole={['admin', 'agent']}>
+                    <AuthGuard requiredRole={["admin", "agent"]}>
                       <CreatePropertyForm />
                     </AuthGuard>
                   }

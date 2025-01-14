@@ -17,7 +17,8 @@ export function Auth() {
     console.error("[Auth] Authentication error:", {
       error: error.message,
       status: error instanceof AuthApiError ? error.status : 'unknown',
-      name: error.name
+      name: error.name,
+      details: error instanceof AuthApiError ? error.status : undefined
     });
     
     if (error instanceof AuthApiError) {
@@ -45,57 +46,92 @@ export function Auth() {
   };
 
   useEffect(() => {
-    console.log("[Auth] Component mounted");
+    console.log("[Auth] Component mounted, initializing auth state tracking");
+    let mounted = true;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("[Auth] Auth state changed:", { event, userId: session?.user?.id });
+      console.log("[Auth] Auth state changed:", { 
+        event, 
+        userId: session?.user?.id,
+        timestamp: new Date().toISOString(),
+        hasSession: !!session,
+        accessToken: session?.access_token ? 'present' : 'absent',
+        refreshToken: session?.refresh_token ? 'present' : 'absent'
+      });
       
       if (event === "SIGNED_IN") {
         setIsLoading(true);
-        console.log("[Auth] Sign in detected, attempting session setup");
+        console.log("[Auth] Sign in detected, attempting session setup", {
+          timestamp: new Date().toISOString(),
+          userId: session?.user?.id
+        });
         
         try {
           if (session?.access_token && session?.refresh_token) {
-            console.log("[Auth] Setting up session with valid tokens");
+            console.log("[Auth] Setting up session with valid tokens", {
+              timestamp: new Date().toISOString(),
+              tokenType: session.token_type,
+              expiresIn: session.expires_in
+            });
             await supabase.auth.setSession({
               access_token: session.access_token,
               refresh_token: session.refresh_token,
             });
             toast.success("Successfully signed in!");
-            console.log("[Auth] Redirecting to dashboard");
+            console.log("[Auth] Redirecting to dashboard", {
+              timestamp: new Date().toISOString(),
+              destination: "/"
+            });
             navigate("/");
           }
         } catch (error) {
-          console.error("[Auth] Session setup error:", error);
+          console.error("[Auth] Session setup error:", {
+            error,
+            timestamp: new Date().toISOString(),
+            context: "session setup"
+          });
           handleAuthError(error as AuthError);
         } finally {
-          setIsLoading(false);
+          if (mounted) setIsLoading(false);
         }
       }
     });
 
     // Set up session refresh interval
     const refreshInterval = setInterval(async () => {
-      console.log("[Auth] Attempting token refresh");
+      console.log("[Auth] Attempting token refresh", {
+        timestamp: new Date().toISOString()
+      });
       try {
         const { data, error } = await supabase.auth.refreshSession();
         if (error) throw error;
         console.log("[Auth] Token refresh result:", {
           success: !!data.session,
-          userId: data.session?.user?.id
+          userId: data.session?.user?.id,
+          timestamp: new Date().toISOString(),
+          newExpiresIn: data.session?.expires_in
         });
         if (!data.session) {
-          console.log("[Auth] No valid session found, redirecting to auth");
+          console.log("[Auth] No valid session found, redirecting to auth", {
+            timestamp: new Date().toISOString()
+          });
           navigate("/auth");
         }
       } catch (error) {
-        console.error("[Auth] Token refresh error:", error);
+        console.error("[Auth] Token refresh error:", {
+          error,
+          timestamp: new Date().toISOString(),
+          context: "refresh interval"
+        });
         navigate("/auth");
       }
     }, 1000 * 60 * 60); // Refresh every hour
 
     return () => {
-      console.log("[Auth] Component unmounting, cleaning up subscriptions");
+      console.log("[Auth] Component unmounting, cleaning up subscriptions", {
+        timestamp: new Date().toISOString()
+      });
+      mounted = false;
       subscription.unsubscribe();
       clearInterval(refreshInterval);
     };

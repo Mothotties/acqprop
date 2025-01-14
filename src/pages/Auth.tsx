@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
-const INITIAL_RETRY_DELAY = 1000;
+const INITIAL_RETRY_DELAY = 2000; // Increased to 2 seconds
 const MAX_RETRIES = 3;
 
 const Auth = () => {
@@ -35,7 +35,6 @@ const Auth = () => {
           if (retryCount < MAX_RETRIES) {
             setRetryCount(prev => prev + 1);
             setTimeout(() => {
-              // Retry the operation
               setRetryCount(0);
               setErrorMessage("");
             }, delay);
@@ -59,7 +58,7 @@ const Auth = () => {
       setIsLoading(true);
       try {
         // Add delay before navigation to prevent rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
         navigate("/", { replace: true });
       } catch (error) {
         console.error("Session handling error:", error);
@@ -79,9 +78,9 @@ const Auth = () => {
 
       if (event === "SIGNED_IN" && session?.user?.id) {
         // Add delay before handling session to prevent rate limiting
-        setTimeout(() => {
+        retryTimeout = setTimeout(() => {
           handleSession();
-        }, 1000);
+        }, 2000);
       } else if (event === "SIGNED_OUT") {
         setErrorMessage("");
         setRetryCount(0);

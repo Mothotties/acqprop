@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Json } from "@/integrations/supabase/types";
 
 interface InvestmentPreferences {
   propertyTypes: string[];
@@ -35,6 +36,17 @@ interface Profile {
   notification_settings: NotificationSettings;
 }
 
+const defaultInvestmentPreferences: InvestmentPreferences = {
+  propertyTypes: [],
+  priceRange: { min: 0, max: 1000000 },
+  locations: []
+};
+
+const defaultNotificationSettings: NotificationSettings = {
+  email: true,
+  push: true
+};
+
 export const ProfileManagement = () => {
   const session = useSession();
   const { toast } = useToast();
@@ -45,20 +57,45 @@ export const ProfileManagement = () => {
     phone: "",
     bio: "",
     avatar_url: "",
-    investment_preferences: {
-      propertyTypes: [],
-      priceRange: { min: 0, max: 1000000 },
-      locations: []
-    },
-    notification_settings: {
-      email: true,
-      push: true
-    }
+    investment_preferences: defaultInvestmentPreferences,
+    notification_settings: defaultNotificationSettings
   });
 
   useEffect(() => {
     getProfile();
   }, [session]);
+
+  const parseInvestmentPreferences = (data: Json): InvestmentPreferences => {
+    const defaultPrefs = defaultInvestmentPreferences;
+    if (!data || typeof data !== 'object') return defaultPrefs;
+    
+    try {
+      return {
+        propertyTypes: Array.isArray((data as any).propertyTypes) ? (data as any).propertyTypes : defaultPrefs.propertyTypes,
+        priceRange: {
+          min: Number((data as any).priceRange?.min) || defaultPrefs.priceRange.min,
+          max: Number((data as any).priceRange?.max) || defaultPrefs.priceRange.max
+        },
+        locations: Array.isArray((data as any).locations) ? (data as any).locations : defaultPrefs.locations
+      };
+    } catch {
+      return defaultPrefs;
+    }
+  };
+
+  const parseNotificationSettings = (data: Json): NotificationSettings => {
+    const defaultSettings = defaultNotificationSettings;
+    if (!data || typeof data !== 'object') return defaultSettings;
+    
+    try {
+      return {
+        email: Boolean((data as any).email ?? defaultSettings.email),
+        push: Boolean((data as any).push ?? defaultSettings.push)
+      };
+    } catch {
+      return defaultSettings;
+    }
+  };
 
   const getProfile = async () => {
     try {
@@ -72,15 +109,11 @@ export const ProfileManagement = () => {
 
       if (error) throw error;
       if (data) {
-        // Ensure the data conforms to our expected types
-        const investmentPreferences: InvestmentPreferences = data.investment_preferences || profile.investment_preferences;
-        const notificationSettings: NotificationSettings = data.notification_settings || profile.notification_settings;
-
         setProfile({
           ...profile,
           ...data,
-          investment_preferences: investmentPreferences,
-          notification_settings: notificationSettings
+          investment_preferences: parseInvestmentPreferences(data.investment_preferences),
+          notification_settings: parseNotificationSettings(data.notification_settings)
         });
       }
     } catch (error) {
@@ -105,8 +138,8 @@ export const ProfileManagement = () => {
           phone: profile.phone,
           bio: profile.bio,
           avatar_url: profile.avatar_url,
-          investment_preferences: profile.investment_preferences,
-          notification_settings: profile.notification_settings,
+          investment_preferences: profile.investment_preferences as Json,
+          notification_settings: profile.notification_settings as Json,
           updated_at: new Date().toISOString()
         })
         .eq("id", session.user.id);

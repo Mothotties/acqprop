@@ -1,73 +1,45 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "./auth/AuthProvider";
+import { UserRole } from "@/types/auth";
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole?: string[];
+  requiredRole?: UserRole[];
 }
 
 export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
-  const session = useSession();
   const navigate = useNavigate();
-  const supabase = useSupabaseClient();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading, error } = useAuth();
   const [hasRequiredRole, setHasRequiredRole] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Auth error:", error);
-          toast.error("Authentication error. Please try again.");
-          navigate("/auth");
-          return;
-        }
+    if (error) {
+      console.error("Auth error:", error);
+      toast.error("Authentication error. Please try again.");
+      navigate("/auth");
+      return;
+    }
 
-        if (!session) {
-          navigate("/auth");
-          return;
-        }
+    if (!isLoading && !user) {
+      navigate("/auth");
+      return;
+    }
 
-        // If requiredRole is specified, check user roles
-        if (requiredRole && requiredRole.length > 0) {
-          const { data: userRoles, error: rolesError } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .single();
-
-          if (rolesError) {
-            console.error("Role check error:", rolesError);
-            toast.error("Error checking user permissions.");
-            setHasRequiredRole(false);
-          } else {
-            const hasRole = requiredRole.includes(userRoles?.role);
-            setHasRequiredRole(hasRole);
-            
-            if (!hasRole) {
-              toast.error("You don't have permission to access this page.");
-              navigate("/");
-            }
-          }
-        } else {
-          setHasRequiredRole(true);
-        }
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        toast.error("Authentication check failed. Please try again.");
-        navigate("/auth");
+    if (user && requiredRole) {
+      const hasRole = requiredRole.includes(user.role);
+      setHasRequiredRole(hasRole);
+      
+      if (!hasRole) {
+        toast.error("You don't have permission to access this page.");
+        navigate("/");
       }
-    };
-
-    checkAuth();
-  }, [navigate, supabase.auth, requiredRole]);
+    } else {
+      setHasRequiredRole(true);
+    }
+  }, [user, isLoading, error, navigate, requiredRole]);
 
   if (isLoading) {
     return (
@@ -77,7 +49,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     );
   }
 
-  if (!session || (requiredRole && !hasRequiredRole)) {
+  if (!user || (requiredRole && !hasRequiredRole)) {
     return null;
   }
 

@@ -11,6 +11,9 @@ import { PredictiveTrendAnalysis } from "./PredictiveTrendAnalysis";
 import { AnalyticsCharts } from "./analytics/AnalyticsCharts";
 import { MarketCharts } from "./analytics/MarketCharts";
 import { PortfolioDashboardSkeleton } from "./portfolio/PortfolioDashboardSkeleton";
+import { ErrorBoundary } from "./error/ErrorBoundary";
+import { performanceMonitor } from "@/utils/performanceMonitor";
+import { useEffect } from "react";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -25,6 +28,19 @@ export function PortfolioDashboard() {
     currentPage,
     itemsPerPage: ITEMS_PER_PAGE,
   });
+
+  // Monitor component performance
+  useEffect(() => {
+    const startTime = performance.now();
+    return () => {
+      const duration = performance.now() - startTime;
+      performanceMonitor.logMetric('PortfolioDashboard render', duration, {
+        search,
+        currentPage,
+        sortField: sort.field,
+      });
+    };
+  }, [search, currentPage, sort.field]);
 
   if (isLoading) {
     return <PortfolioDashboardSkeleton />;
@@ -44,30 +60,44 @@ export function PortfolioDashboard() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PortfolioMetrics />
+      <ErrorBoundary>
+        <PortfolioMetrics />
+      </ErrorBoundary>
       
       <div className="grid gap-6 md:grid-cols-2">
-        <ROIPerformanceTracker />
-        <PortfolioDiversification />
+        <ErrorBoundary>
+          <ROIPerformanceTracker />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <PortfolioDiversification />
+        </ErrorBoundary>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <PredictiveTrendAnalysis />
+        <ErrorBoundary>
+          <PredictiveTrendAnalysis />
+        </ErrorBoundary>
       </div>
 
-      <AnalyticsCharts performanceData={data?.performanceData || []} />
+      <ErrorBoundary>
+        <AnalyticsCharts performanceData={data?.performanceData || []} />
+      </ErrorBoundary>
       
-      <MarketCharts data={data?.marketData || []} />
+      <ErrorBoundary>
+        <MarketCharts data={data?.marketData || []} />
+      </ErrorBoundary>
       
-      <PropertyOverviewCard
-        properties={data?.properties || []}
-        totalCount={data?.totalCount || 0}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        onSearchChange={setSearch}
-        onSortChange={setSort}
-        itemsPerPage={ITEMS_PER_PAGE}
-      />
+      <ErrorBoundary>
+        <PropertyOverviewCard
+          properties={data?.properties || []}
+          totalCount={data?.totalCount || 0}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onSearchChange={setSearch}
+          onSortChange={setSort}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
+      </ErrorBoundary>
     </div>
   );
 }

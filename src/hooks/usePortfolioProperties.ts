@@ -115,5 +115,9 @@ export function usePortfolioProperties({
         marketData
       };
     },
+    staleTime: 30000, // Data stays fresh for 30 seconds
+    cacheTime: 5 * 60 * 1000, // Cache data for 5 minutes
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    retry: 3, // Retry failed requests 3 times
   });
 }

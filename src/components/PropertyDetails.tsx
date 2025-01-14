@@ -52,6 +52,7 @@ export function PropertyDetails() {
     );
   }
 
+  // Get the first analytics record if it exists
   const analytics = property.property_analytics?.[0];
 
   return (

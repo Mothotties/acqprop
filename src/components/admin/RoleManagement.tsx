@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -19,132 +19,149 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { UserRole } from "@/hooks/useUserRole";
 
 interface UserRoleData {
   id: string;
   user_id: string;
-  role: UserRole;
+  role: "admin" | "agent" | "investor";
   user_email: string | null;
   user_full_name: string | null;
 }
 
 export function RoleManagement() {
-  const { toast } = useToast();
-  const [updating, setUpdating] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const [selectedRole, setSelectedRole] = useState<string | undefined>();
 
-  const { data: users, isLoading, refetch } = useQuery({
-    queryKey: ["user-roles"],
-    queryFn: async () => {
-      const { data: userRoles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select(`
-          id,
-          user_id,
-          role,
-          users:auth.users!user_id(
-            email,
-            raw_user_meta_data->>'full_name'
-          )
-        `);
+  const fetchUserRoles = async (): Promise<UserRoleData[]> => {
+    const { data: roles, error } = await supabase
+      .from("user_roles")
+      .select(`
+        id,
+        user_id,
+        role,
+        users:auth.users!user_id(
+          email,
+          raw_user_meta_data->>'full_name'
+        )
+      `);
 
-      if (rolesError) {
-        console.error("Error fetching roles:", rolesError);
-        throw rolesError;
-      }
+    if (error) {
+      console.error("Error fetching roles:", error);
+      throw error;
+    }
 
-      // Transform the data to match our interface
-      const transformedData: UserRoleData[] = userRoles.map((role: any) => ({
-        id: role.id,
-        user_id: role.user_id,
-        role: role.role,
-        user_email: role.users?.email || null,
-        user_full_name: role.users?.raw_user_meta_data || null,
-      }));
+    const transformedData = roles.map((role: any) => ({
+      id: role.id,
+      user_id: role.user_id,
+      role: role.role,
+      user_email: role.users?.email || null,
+      user_full_name: role.users?.raw_user_meta_data || null,
+    }));
 
-      return transformedData;
-    },
+    return transformedData;
+  };
+
+  const { data: userRoles, isLoading } = useQuery({
+    queryKey: ["userRoles"],
+    queryFn: fetchUserRoles,
   });
 
-  const updateUserRole = async (userId: string, newRole: UserRole) => {
-    try {
-      setUpdating(userId);
+  const updateRole = useMutation({
+    mutationFn: async ({
+      userId,
+      newRole,
+    }: {
+      userId: string;
+      newRole: string;
+    }) => {
       const { error } = await supabase
         .from("user_roles")
         .update({ role: newRole })
         .eq("user_id", userId);
 
       if (error) throw error;
-
-      toast({
-        title: "Role updated",
-        description: "User role has been successfully updated.",
-      });
-      refetch();
-    } catch (error) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userRoles"] });
+      toast.success("Role updated successfully");
+    },
+    onError: (error) => {
       console.error("Error updating role:", error);
-      toast({
-        title: "Error updating role",
-        description: "There was an error updating the user role.",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdating(null);
-    }
-  };
+      toast.error("Failed to update role");
+    },
+  });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-gold" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">User Role Management</h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users?.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.user_full_name || "N/A"}</TableCell>
-              <TableCell>{user.user_email || "N/A"}</TableCell>
-              <TableCell>{user.role}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Select
-                    defaultValue={user.role}
-                    onValueChange={(value: UserRole) =>
-                      updateUserRole(user.user_id, value)
-                    }
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="agent">Agent</SelectItem>
-                      <SelectItem value="investor">Investor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {updating === user.user_id && (
-                    <Loader2 className="h-4 w-4 animate-spin text-gold" />
-                  )}
-                </div>
-              </TableCell>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">Role Management</h2>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Current Role</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {userRoles?.map((userRole) => (
+              <TableRow key={userRole.id}>
+                <TableCell>{userRole.user_full_name || "N/A"}</TableCell>
+                <TableCell>{userRole.user_email || "N/A"}</TableCell>
+                <TableCell>{userRole.role}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={selectedRole}
+                      onValueChange={(value) => setSelectedRole(value)}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="agent">Agent</SelectItem>
+                        <SelectItem value="investor">Investor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (selectedRole) {
+                          updateRole.mutate({
+                            userId: userRole.user_id,
+                            newRole: selectedRole,
+                          });
+                        }
+                      }}
+                      disabled={!selectedRole || updateRole.isPending}
+                    >
+                      {updateRole.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Update"
+                      )}
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

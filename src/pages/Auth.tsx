@@ -8,9 +8,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
-const MAX_RETRIES = 3;
-const INITIAL_RETRY_DELAY = 1000; // 1 second
-
 const Auth = () => {
   const session = useSession();
   const navigate = useNavigate();
@@ -19,91 +16,57 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
     const handleSession = async () => {
-      if (session?.user?.id && isMounted) {
+      if (!mounted) return;
+      
+      if (session?.user?.id) {
         try {
-          // Use setTimeout to ensure state is updated before navigation
-          setTimeout(() => {
-            if (isMounted) {
-              navigate("/", { replace: true });
+          // Verify user role exists
+          const { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (roleError) {
+            console.error('Error fetching user role:', roleError);
+            toast.error('Error verifying user access');
+            return;
+          }
+
+          // If no role exists, create default role
+          if (!roleData) {
+            const { error: insertError } = await supabase
+              .from('user_roles')
+              .insert([
+                { user_id: session.user.id, role: 'investor' }
+              ]);
+
+            if (insertError) {
+              console.error('Error creating user role:', insertError);
+              toast.error('Error setting up user access');
+              return;
             }
-          }, 0);
+          }
+
+          // Navigate to home page
+          navigate("/", { replace: true });
         } catch (error) {
-          console.error("Navigation error:", error);
+          console.error('Session handling error:', error);
+          setErrorMessage(getErrorMessage(error as AuthError));
         }
       }
     };
 
     handleSession();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [session, navigate]);
-
-  const retryWithBackoff = async (operation: () => Promise<any>, retryCount = 0) => {
-    try {
-      return await operation();
-    } catch (error: any) {
-      if (error?.status === 429 && retryCount < MAX_RETRIES) {
-        const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        return retryWithBackoff(operation, retryCount + 1);
-      }
-      throw error;
-    }
-  };
-
-  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
       if (event === 'SIGNED_IN' && session?.user?.id) {
-        try {
-          await retryWithBackoff(async () => {
-            // Ensure we have a role for the user
-            const { data: roleData, error: roleError } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .maybeSingle();
-
-            if (roleError) throw roleError;
-
-            if (!roleData) {
-              // Create default role if none exists
-              const { error: insertError } = await supabase
-                .from('user_roles')
-                .insert({ user_id: session.user.id, role: 'investor' });
-
-              if (insertError) throw insertError;
-            }
-
-            // Safe navigation with setTimeout
-            setTimeout(() => {
-              navigate("/", { replace: true });
-            }, 0);
-          });
-        } catch (error) {
-          console.error('Session handling error:', error);
-          setErrorMessage(getErrorMessage(error as AuthError));
-          toast.error(getErrorMessage(error as AuthError));
-        }
-      }
-      if (event === 'USER_UPDATED') {
-        setIsLoading(true);
-        try {
-          await retryWithBackoff(async () => {
-            const { error } = await supabase.auth.getSession();
-            if (error) throw error;
-          });
-        } catch (error) {
-          console.error('Session refresh error:', error);
-          setErrorMessage(getErrorMessage(error as AuthError));
-          toast.error(getErrorMessage(error as AuthError));
-        } finally {
-          setIsLoading(false);
-        }
+        handleSession();
       }
       if (event === 'SIGNED_OUT') {
         setErrorMessage("");
@@ -111,28 +74,22 @@ const Auth = () => {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase.auth, navigate]);
+  }, [session, navigate, supabase]);
 
   const getErrorMessage = (error: AuthError) => {
     if (error instanceof AuthApiError) {
       switch (error.status) {
+        case 400:
+          return 'Please provide both email and password.';
+        case 401:
+          return 'Invalid credentials. Please check your email and password.';
         case 429:
-          return 'Too many requests. Please wait a moment and try again.';
-        case 500:
-          return 'Server error. Please try again later.';
+          return 'Too many attempts. Please try again later.';
         default:
-          switch (error.message) {
-            case 'Invalid login credentials':
-              return 'Invalid email or password. Please check your credentials.';
-            case 'Email not confirmed':
-              return 'Please verify your email address before signing in.';
-            case 'User not found':
-              return 'No account found with these credentials.';
-            default:
-              return error.message;
-          }
+          return error.message;
       }
     }
     return error.message;
@@ -165,7 +122,13 @@ const Auth = () => {
                   },
                 },
               },
+              className: {
+                container: 'w-full',
+                button: 'w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700',
+                input: 'w-full px-3 py-2 border rounded',
+              },
             }}
+            theme="dark"
             providers={[]}
           />
         </CardContent>

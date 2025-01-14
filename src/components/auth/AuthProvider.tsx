@@ -13,7 +13,7 @@ const AuthContext = createContext<AuthState>({
 
 export const useAuth = () => useContext(AuthContext);
 
-const RETRY_DELAY = 1000; // Start with 1 second
+const INITIAL_RETRY_DELAY = 1000; // Start with 1 second
 const MAX_RETRIES = 3;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -25,15 +25,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
     error: null,
   });
-  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchUserData = async (retryAttempt = 0) => {
+  const fetchUserData = async (retryCount = 0) => {
     try {
       if (!session?.user) {
         setAuthState({ user: null, isLoading: false, error: null });
         return;
       }
 
+      // First, try to get the user's role
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
@@ -41,14 +41,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (roleError) {
-        if (roleError.message.includes("rate_limit") && retryAttempt < MAX_RETRIES) {
-          const delay = RETRY_DELAY * Math.pow(2, retryAttempt);
+        // If we hit rate limit and haven't exceeded max retries, wait and try again
+        if (roleError.message.includes("rate_limit") && retryCount < MAX_RETRIES) {
+          const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
           await new Promise(resolve => setTimeout(resolve, delay));
-          return fetchUserData(retryAttempt + 1);
+          return fetchUserData(retryCount + 1);
         }
         throw roleError;
       }
 
+      // If no role exists, create one with default role
       if (!roleData) {
         const { error: insertError } = await supabase
           .from("user_roles")
@@ -57,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (insertError) throw insertError;
       }
 
+      // Get user profile data
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, avatar_url")
@@ -73,7 +76,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       setAuthState({ user, isLoading: false, error: null });
-      setRetryCount(0);
     } catch (error) {
       console.error("Error fetching user data:", error);
       setAuthState({

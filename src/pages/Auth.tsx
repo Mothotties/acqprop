@@ -10,12 +10,13 @@ const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const mounted = useRef(true);
+  const sessionCheckTimeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    // Single initial session check
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
         if (session && mounted.current) {
           navigate("/");
         }
@@ -23,21 +24,36 @@ const Auth = () => {
         console.error("Session check error:", error);
       }
     };
+
+    // Initial session check
     checkSession();
 
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Subscribe to auth changes with debounced session checks
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted.current) return;
 
       if (event === 'SIGNED_IN' && session) {
-        setErrorMessage("");
-        navigate("/");
+        // Clear any existing timeout
+        if (sessionCheckTimeout.current) {
+          clearTimeout(sessionCheckTimeout.current);
+        }
+
+        // Set a new timeout for navigation
+        sessionCheckTimeout.current = setTimeout(() => {
+          if (mounted.current) {
+            setErrorMessage("");
+            navigate("/");
+          }
+        }, 500); // Add a small delay to prevent rapid state updates
       }
     });
 
-    // Cleanup
+    // Cleanup function
     return () => {
       mounted.current = false;
+      if (sessionCheckTimeout.current) {
+        clearTimeout(sessionCheckTimeout.current);
+      }
       subscription.unsubscribe();
     };
   }, [navigate]);

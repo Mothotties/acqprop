@@ -20,30 +20,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
+type Role = "admin" | "agent" | "investor";
+
 interface UserRoleData {
   id: string;
-  user_id: string;
-  role: "admin" | "agent" | "investor";
-  user_email: string | null;
-  user_full_name: string | null;
+  email: string | null;
+  role: Role;
+  full_name: string | null;
 }
-
-type Role = "admin" | "agent" | "investor";
 
 export function RoleManagement() {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<Role | undefined>();
 
   const fetchUserRoles = async (): Promise<UserRoleData[]> => {
-    const { data: roles, error } = await supabase
-      .from("user_roles")
+    const { data, error } = await supabase
+      .from('user_roles')
       .select(`
         id,
         user_id,
         role,
-        users:auth.users!user_id(
+        users:user_id (
           email,
-          raw_user_meta_data->>'full_name'
+          raw_user_meta_data->full_name
         )
       `);
 
@@ -52,15 +51,12 @@ export function RoleManagement() {
       throw error;
     }
 
-    const transformedData = roles.map((role: any) => ({
-      id: role.id,
-      user_id: role.user_id,
-      role: role.role,
-      user_email: role.users?.email || null,
-      user_full_name: role.users?.raw_user_meta_data || null,
+    return data.map((item: any) => ({
+      id: item.id,
+      email: item.users?.email,
+      role: item.role,
+      full_name: item.users?.raw_user_meta_data?.full_name
     }));
-
-    return transformedData;
   };
 
   const { data: userRoles, isLoading } = useQuery({
@@ -79,7 +75,7 @@ export function RoleManagement() {
       const { error } = await supabase
         .from("user_roles")
         .update({ role: newRole })
-        .eq("user_id", userId);
+        .eq("id", userId);
 
       if (error) throw error;
     },
@@ -120,8 +116,8 @@ export function RoleManagement() {
           <TableBody>
             {userRoles?.map((userRole) => (
               <TableRow key={userRole.id}>
-                <TableCell>{userRole.user_full_name || "N/A"}</TableCell>
-                <TableCell>{userRole.user_email || "N/A"}</TableCell>
+                <TableCell>{userRole.full_name || "N/A"}</TableCell>
+                <TableCell>{userRole.email || "N/A"}</TableCell>
                 <TableCell>{userRole.role}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -144,7 +140,7 @@ export function RoleManagement() {
                       onClick={() => {
                         if (selectedRole) {
                           updateRole.mutate({
-                            userId: userRole.user_id,
+                            userId: userRole.id,
                             newRole: selectedRole,
                           });
                         }

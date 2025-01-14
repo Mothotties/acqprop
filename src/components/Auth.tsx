@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 export function Auth() {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleAuthError = (error: AuthError) => {
@@ -31,11 +32,13 @@ export function Auth() {
     } else {
       setErrorMessage("An unexpected error occurred. Please try again.");
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN") {
+        setIsLoading(true);
         try {
           // Ensure we have a valid session
           if (session?.access_token && session?.refresh_token) {
@@ -49,6 +52,8 @@ export function Auth() {
         } catch (error) {
           console.error("Session error:", error);
           handleAuthError(error as AuthError);
+        } finally {
+          setIsLoading(false);
         }
       }
     });
@@ -87,10 +92,22 @@ export function Auth() {
           )}
           <SupabaseAuth 
             supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
+            appearance={{ 
+              theme: ThemeSupa,
+              className: {
+                container: 'w-full',
+                button: isLoading ? 'opacity-50 cursor-not-allowed' : '',
+                input: isLoading ? 'opacity-50' : '',
+              }
+            }}
             theme="dark"
             providers={[]}
           />
+          {isLoading && (
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              Authenticating...
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

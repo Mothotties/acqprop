@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
         
         if (error) {
           console.error("Auth error:", error);
+          toast.error("Authentication error. Please try again.");
           navigate("/auth");
           return;
         }
@@ -41,9 +43,16 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
 
           if (rolesError) {
             console.error("Role check error:", rolesError);
+            toast.error("Error checking user permissions.");
             setHasRequiredRole(false);
           } else {
-            setHasRequiredRole(requiredRole.includes(userRoles?.role));
+            const hasRole = requiredRole.includes(userRoles?.role);
+            setHasRequiredRole(hasRole);
+            
+            if (!hasRole) {
+              toast.error("You don't have permission to access this page.");
+              navigate("/");
+            }
           }
         } else {
           setHasRequiredRole(true);
@@ -52,6 +61,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
         setIsLoading(false);
       } catch (error) {
         console.error("Auth check failed:", error);
+        toast.error("Authentication check failed. Please try again.");
         navigate("/auth");
       }
     };

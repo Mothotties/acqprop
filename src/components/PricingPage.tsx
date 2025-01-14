@@ -4,11 +4,44 @@ import { Check } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-const STRIPE_PAYMENT_LINKS = {
-  basic: "https://buy.stripe.com/5kA4jH17b5ZlbbqdQQ",
-  pro: "https://buy.stripe.com/9AQ6rP7vz73pa7m001",
-  enterprise: "https://buy.stripe.com/14keYl6rv1J50wM7su"
+const SUBSCRIPTION_TIERS = {
+  basic: {
+    priceId: "price_1QhCqV03YCYlFW6DJDUIp4ZO",
+    name: "Basic",
+    description: "Perfect for getting started",
+    price: "$29/mo",
+    features: [
+      "Up to 5 properties",
+      "Basic analytics",
+      "Email support"
+    ]
+  },
+  pro: {
+    priceId: "price_1QhCqB03YCYlFW6DPN5E2qiD",
+    name: "Pro",
+    description: "For growing portfolios",
+    price: "$79/mo",
+    features: [
+      "Up to 20 properties",
+      "Advanced analytics",
+      "Priority support",
+      "AI market predictions"
+    ]
+  },
+  enterprise: {
+    priceId: "price_1Qgj4y03YCYlFW6DWO35RMwV",
+    name: "Enterprise",
+    description: "For large portfolios",
+    price: "Contact us",
+    features: [
+      "Unlimited properties",
+      "Custom analytics",
+      "24/7 support",
+      "Custom integrations"
+    ]
+  }
 };
 
 export function PricingPage() {
@@ -16,25 +49,37 @@ export function PricingPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubscribe = (plan: keyof typeof STRIPE_PAYMENT_LINKS) => {
-    if (!session) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to subscribe to a plan",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-    
+  const handleSubscribe = async (tier: keyof typeof SUBSCRIPTION_TIERS) => {
     try {
-      // Open payment link in a new tab
-      window.open(STRIPE_PAYMENT_LINKS[plan], '_blank', 'noopener,noreferrer');
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to subscribe to a plan",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: SUBSCRIPTION_TIERS[tier].priceId }
+      });
+
+      if (error) {
+        console.error('Error creating checkout session:', error);
+        throw error;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
     } catch (error) {
-      console.error('Error opening payment link:', error);
+      console.error('Error starting checkout:', error);
       toast({
         title: "Error",
-        description: "Failed to open payment page. Please try again.",
+        description: "Failed to start checkout process. Please try again.",
         variant: "destructive",
       });
     }
@@ -51,110 +96,34 @@ export function PricingPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic</CardTitle>
-            <CardDescription>Perfect for getting started</CardDescription>
-            <p className="text-3xl font-bold">$29/mo</p>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Up to 5 properties</span>
+        {Object.entries(SUBSCRIPTION_TIERS).map(([key, tier]) => (
+          <Card key={key} className={key === 'pro' ? 'border-gold' : ''}>
+            <CardHeader>
+              <CardTitle>{tier.name}</CardTitle>
+              <CardDescription>{tier.description}</CardDescription>
+              <p className="text-3xl font-bold">{tier.price}</p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="space-y-2">
+                {tier.features.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-500" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Basic analytics</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Email support</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              onClick={() => handleSubscribe('basic')}
-              className="w-full bg-gold hover:bg-gold/90"
-            >
-              Subscribe Now
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card className="border-gold">
-          <CardHeader>
-            <CardTitle>Pro</CardTitle>
-            <CardDescription>For growing portfolios</CardDescription>
-            <p className="text-3xl font-bold">$79/mo</p>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Up to 20 properties</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Advanced analytics</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Priority support</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>AI market predictions</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              onClick={() => handleSubscribe('pro')}
-              className="w-full bg-gold hover:bg-gold/90"
-            >
-              Subscribe Now
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Enterprise</CardTitle>
-            <CardDescription>For large portfolios</CardDescription>
-            <p className="text-3xl font-bold">Contact us</p>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Unlimited properties</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Custom analytics</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>24/7 support</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Custom integrations</span>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              onClick={() => handleSubscribe('enterprise')}
-              className="w-full"
-              variant="outline"
-            >
-              Subscribe Now
-            </Button>
-          </CardFooter>
-        </Card>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={() => handleSubscribe(key as keyof typeof SUBSCRIPTION_TIERS)}
+                className={`w-full ${key === 'enterprise' ? '' : 'bg-gold hover:bg-gold/90'}`}
+                variant={key === 'enterprise' ? 'outline' : 'default'}
+              >
+                Subscribe Now
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );

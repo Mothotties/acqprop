@@ -1,141 +1,74 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 export function Auth() {
+  const session = useSession();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string>("");
-
-  const handleAuthError = (error: AuthError) => {
-    console.error("[Auth] Authentication error:", {
-      error: error.message,
-      status: error instanceof AuthApiError ? error.status : 'unknown',
-      name: error.name,
-      details: error instanceof AuthApiError ? error.status : undefined
-    });
-    
-    if (error instanceof AuthApiError) {
-      switch (error.status) {
-        case 400:
-          if (error.message.includes("missing email")) {
-            setErrorMessage("Please enter your email address.");
-          } else {
-            setErrorMessage("Invalid login credentials. Please check your email and password.");
-          }
-          break;
-        case 422:
-          setErrorMessage("Email validation failed. Please enter a valid email address.");
-          break;
-        case 429:
-          setErrorMessage("Too many login attempts. Please try again later.");
-          break;
-        default:
-          setErrorMessage(error.message);
-      }
-    } else {
-      setErrorMessage("An unexpected error occurred. Please try again.");
-    }
-    setIsLoading(false);
-  };
+  const location = useLocation();
+  const supabase = useSupabaseClient();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("[Auth] Component mounted, checking initial session");
-    let mounted = true;
+    console.log("[Auth] Component mounted, checking session:", { session });
     
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("[Auth] Initial session check:", {
-          hasSession: !!session,
-          timestamp: new Date().toISOString()
-        });
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          console.log("[Auth] Active session found, redirecting to dashboard");
-          navigate("/dashboard", { replace: true });
+        if (error) {
+          console.error("[Auth] Session check error:", error);
+          toast.error("Authentication error. Please try again.");
+          return;
+        }
+
+        console.log("[Auth] Session check result:", { currentSession });
+        
+        if (currentSession) {
+          const redirectTo = location.state?.from || "/dashboard";
+          console.log("[Auth] Redirecting authenticated user to:", redirectTo);
+          navigate(redirectTo, { replace: true });
         }
       } catch (error) {
-        console.error("[Auth] Session check error:", error);
+        console.error("[Auth] Unexpected error during session check:", error);
+        toast.error("An unexpected error occurred. Please try again.");
       } finally {
-        if (mounted) setIsLoading(false);
+        setLoading(false);
       }
     };
 
     checkSession();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("[Auth] Auth state changed:", { 
-        event, 
-        userId: session?.user?.id,
-        timestamp: new Date().toISOString()
-      });
-      
-      if (event === "SIGNED_IN" && session?.user) {
-        console.log("[Auth] Sign in successful, setting up session");
-        setIsLoading(true);
-        
-        try {
-          await supabase.auth.setSession({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token,
-          });
-          
-          toast.success("Successfully signed in!");
-          console.log("[Auth] Redirecting to dashboard");
-          navigate("/dashboard", { replace: true });
-        } catch (error) {
-          console.error("[Auth] Session setup error:", error);
-          handleAuthError(error as AuthError);
-        }
-      }
-    });
+  }, [session, navigate, location.state, supabase.auth]);
 
-    return () => {
-      console.log("[Auth] Component unmounting, cleaning up subscriptions");
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Welcome to ACQPROP</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {errorMessage && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-          <SupabaseAuth 
-            supabaseClient={supabase}
-            appearance={{ 
-              theme: ThemeSupa,
-              className: {
-                container: 'w-full',
-                button: isLoading ? 'opacity-50 cursor-not-allowed' : '',
-                input: isLoading ? 'opacity-50' : '',
-              }
-            }}
-            theme="dark"
-            providers={[]}
-          />
-          {isLoading && (
-            <div className="mt-4 text-center text-sm text-muted-foreground">
-              Authenticating...
-            </div>
-          )}
-        </CardContent>
-      </Card>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+      <div className="w-full max-w-md space-y-8 px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold tracking-tight">Welcome Back</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sign in to your account to continue
+          </p>
+        </div>
+        
+        <SupabaseAuth
+          supabaseClient={supabase}
+          appearance={{ theme: ThemeSupa }}
+          providers={["google", "github"]}
+          redirectTo={`${window.location.origin}/dashboard`}
+          theme="dark"
+        />
+      </div>
     </div>
   );
 }

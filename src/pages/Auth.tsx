@@ -9,15 +9,17 @@ import type { AuthError } from "@supabase/supabase-js";
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
-  const [isChecking, setIsChecking] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(false);
+  const [lastCheckTime, setLastCheckTime] = useState(0);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
     const checkUser = async () => {
-      if (isChecking) return;
+      const now = Date.now();
+      if (isCheckingSession || now - lastCheckTime < 2000) return; // Prevent checks within 2 seconds
       
-      setIsChecking(true);
+      setIsCheckingSession(true);
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         console.log("Initial session check:", session);
@@ -38,7 +40,8 @@ const Auth = () => {
           navigate("/");
         }
       } finally {
-        setIsChecking(false);
+        setIsCheckingSession(false);
+        setLastCheckTime(now);
       }
     };
     
@@ -61,7 +64,8 @@ const Auth = () => {
 
       if (event === "USER_UPDATED") {
         console.log("User updated");
-        if (!isChecking) {
+        const now = Date.now();
+        if (!isCheckingSession && now - lastCheckTime >= 2000) {
           const { error } = await supabase.auth.getSession();
           if (error) {
             console.error("Session refresh error:", error);
@@ -72,6 +76,7 @@ const Auth = () => {
               setErrorMessage(getErrorMessage(error));
             }
           }
+          setLastCheckTime(now);
         }
       }
     });
@@ -81,7 +86,7 @@ const Auth = () => {
       subscription.unsubscribe();
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [navigate, isChecking]);
+  }, [navigate, isCheckingSession, lastCheckTime]);
 
   const getErrorMessage = (error: AuthError) => {
     console.error("Auth error:", error);

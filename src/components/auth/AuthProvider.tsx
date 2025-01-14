@@ -4,6 +4,7 @@ import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { AuthState, AuthUser } from "@/types/auth";
 import { toast } from "sonner";
 import { debounce } from "lodash";
+import { errorLogger } from "@/utils/errorLogger";
 
 const AuthContext = createContext<AuthState>({
   user: null,
@@ -13,8 +14,9 @@ const AuthContext = createContext<AuthState>({
 
 export const useAuth = () => useContext(AuthContext);
 
-const INITIAL_RETRY_DELAY = 1000; // Start with 1 second
+const INITIAL_RETRY_DELAY = 1000;
 const MAX_RETRIES = 3;
+const SESSION_REFRESH_INTERVAL = 1000 * 60 * 60; // 1 hour
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const session = useSession();
@@ -33,10 +35,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Wait for a short delay before making requests to avoid rate limiting
+      // Wait for a short delay before making requests
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // First, try to get the user's role
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
@@ -44,7 +45,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (roleError) {
-        // If we hit rate limit and haven't exceeded max retries, wait and try again
         if (roleError.message.includes("rate_limit") && retryCount < MAX_RETRIES) {
           const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
           await new Promise(resolve => setTimeout(resolve, delay));
@@ -53,20 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw roleError;
       }
 
-      // If no role exists, create one with default role
-      if (!roleData) {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Add delay before insert
-        const { error: insertError } = await supabase
-          .from("user_roles")
-          .insert([{ user_id: session.user.id, role: "investor" }]);
-
-        if (insertError) throw insertError;
-      }
-
-      // Add delay before fetching profile
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Get user profile data
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, avatar_url")
@@ -84,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setAuthState({ user, isLoading: false, error: null });
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      errorLogger.log(error as Error, "high", { component: "AuthProvider" });
       setAuthState({
         user: null,
         isLoading: false,
@@ -94,17 +80,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Increase debounce delay to help with rate limiting
   const debouncedFetchUserData = debounce(fetchUserData, 2000);
 
   useEffect(() => {
     let mounted = true;
+    let sessionRefreshInterval: NodeJS.Timeout;
 
     const handleAuthChange = async (event: string) => {
       if (!mounted) return;
 
       if (event === "SIGNED_IN") {
-        // Add delay before fetching user data after sign in
         await new Promise(resolve => setTimeout(resolve, 1000));
         await debouncedFetchUserData();
       } else if (event === "SIGNED_OUT") {
@@ -117,10 +102,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Set up session refresh
+    const setupSessionRefresh = () => {
+      sessionRefreshInterval = setInterval(async () => {
+        try {
+          const { data, error } = await supabase.auth.refreshSession();
+          if (error) throw error;
+          if (!data.session && mounted) {
+            navigate("/auth", { replace: true });
+          }
+        } catch (error) {
+          errorLogger.log(error as Error, "medium", { 
+            component: "AuthProvider",
+            action: "refreshSession"
+          });
+          if (mounted) {
+            navigate("/auth", { replace: true });
+          }
+        }
+      }, SESSION_REFRESH_INTERVAL);
+    };
+
     // Initial fetch with delay
     setTimeout(() => {
       if (mounted) {
         fetchUserData();
+        setupSessionRefresh();
       }
     }, 1000);
 
@@ -131,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
       debouncedFetchUserData.cancel();
+      clearInterval(sessionRefreshInterval);
       authListener?.subscription.unsubscribe();
     };
   }, [session, supabase, navigate]);

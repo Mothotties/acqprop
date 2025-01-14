@@ -21,11 +21,22 @@ const Auth = () => {
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session); // Debug log
+      
       if (event === "SIGNED_IN" && session) {
+        console.log("User signed in, redirecting..."); // Debug log
         navigate("/");
       }
       if (event === "SIGNED_OUT") {
+        console.log("User signed out"); // Debug log
         navigate("/auth");
+      }
+      if (event === "USER_UPDATED") {
+        const { error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Session error:", error); // Debug log
+          setErrorMessage(getErrorMessage(error));
+        }
       }
     });
 

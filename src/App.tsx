@@ -14,6 +14,7 @@ import { Settings } from "@/components/Settings";
 import { Profile } from "@/components/Profile";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
+import { PricingPage } from "@/components/PricingPage";
 import { useEffect, Suspense } from "react";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +32,10 @@ const ROUTES = {
   public: {
     auth: {
       path: "/auth",
+      requireAuth: false
+    },
+    pricing: {
+      path: "/pricing",
       requireAuth: false
     }
   },
@@ -123,6 +128,7 @@ function App() {
                       <Auth />
                     </AuthGuard>
                   } />
+                  <Route path="/pricing" element={<PricingPage />} />
 
                   {/* Protected routes wrapped in DashboardLayout */}
                   <Route element={

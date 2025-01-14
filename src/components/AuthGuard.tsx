@@ -14,32 +14,62 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const navigate = useNavigate();
   const { user, isLoading, error } = useAuth();
   const [hasRequiredRole, setHasRequiredRole] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
-    if (error) {
-      console.error("Auth error:", error);
-      toast.error("Authentication error. Please try again.");
-      navigate("/auth");
-      return;
-    }
+    let mounted = true;
+    let timeoutId: number;
 
-    if (!isLoading && !user) {
-      navigate("/auth");
-      return;
-    }
+    const checkAuthAndNavigate = () => {
+      if (!mounted) return;
 
-    if (user && requiredRole) {
-      const hasRole = requiredRole.includes(user.role);
-      setHasRequiredRole(hasRole);
-      
-      if (!hasRole) {
-        toast.error("You don't have permission to access this page.");
-        navigate("/");
+      if (error) {
+        console.error("Auth error:", error);
+        toast.error("Authentication error. Please try again.");
+        if (!isNavigating) {
+          setIsNavigating(true);
+          timeoutId = window.setTimeout(() => {
+            navigate("/auth", { replace: true });
+          }, 100);
+        }
+        return;
       }
-    } else {
-      setHasRequiredRole(true);
-    }
-  }, [user, isLoading, error, navigate, requiredRole]);
+
+      if (!isLoading && !user) {
+        if (!isNavigating) {
+          setIsNavigating(true);
+          timeoutId = window.setTimeout(() => {
+            navigate("/auth", { replace: true });
+          }, 100);
+        }
+        return;
+      }
+
+      if (user && requiredRole) {
+        const hasRole = requiredRole.includes(user.role);
+        setHasRequiredRole(hasRole);
+        
+        if (!hasRole && !isNavigating) {
+          setIsNavigating(true);
+          toast.error("You don't have permission to access this page.");
+          timeoutId = window.setTimeout(() => {
+            navigate("/", { replace: true });
+          }, 100);
+        }
+      } else {
+        setHasRequiredRole(true);
+      }
+    };
+
+    checkAuthAndNavigate();
+
+    return () => {
+      mounted = false;
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [user, isLoading, error, navigate, requiredRole, isNavigating]);
 
   if (isLoading) {
     return (

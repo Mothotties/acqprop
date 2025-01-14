@@ -90,7 +90,8 @@ export function usePortfolioProperties({
           cap_rate: analytics.cap_rate || null,
           roi: analytics.roi || null,
           predicted_growth: analytics.predicted_growth || null,
-          market_volatility: analytics.market_volatility || null
+          market_volatility: analytics.market_volatility || null,
+          occupancy_rate: analytics.occupancy_rate || null
         }))
       })) as Property[];
 
@@ -116,7 +117,7 @@ export function usePortfolioProperties({
       };
     },
     staleTime: 30000, // Data stays fresh for 30 seconds
-    cacheTime: 5 * 60 * 1000, // Cache data for 5 minutes
+    gcTime: 5 * 60 * 1000, // Cache data for 5 minutes (replaced cacheTime with gcTime)
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
     retry: 3, // Retry failed requests 3 times
   });

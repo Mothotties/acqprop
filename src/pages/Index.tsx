@@ -19,14 +19,13 @@ const Index = () => {
   const mounted = useRef(true);
 
   useEffect(() => {
-    // Check if not authenticated
     if (!session && mounted.current) {
       console.log("No session found in Index, redirecting to /auth");
       navigate("/auth");
       return;
     }
 
-    // Subscribe to auth changes
+    // Subscribe to auth changes with error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Index auth state changed:", event, !!session);
       

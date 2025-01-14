@@ -10,7 +10,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const mounted = useRef(true);
-  const sessionCheckTimeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -28,32 +27,20 @@ const Auth = () => {
     // Initial session check
     checkSession();
 
-    // Subscribe to auth changes with debounced session checks
+    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted.current) return;
 
       if (event === 'SIGNED_IN' && session) {
-        // Clear any existing timeout
-        if (sessionCheckTimeout.current) {
-          clearTimeout(sessionCheckTimeout.current);
-        }
-
-        // Set a new timeout for navigation
-        sessionCheckTimeout.current = setTimeout(() => {
-          if (mounted.current) {
-            setErrorMessage("");
-            navigate("/");
-          }
-        }, 500); // Add a small delay to prevent rapid state updates
+        console.log("Auth state changed: SIGNED_IN");
+        setErrorMessage("");
+        navigate("/");
       }
     });
 
     // Cleanup function
     return () => {
       mounted.current = false;
-      if (sessionCheckTimeout.current) {
-        clearTimeout(sessionCheckTimeout.current);
-      }
       subscription.unsubscribe();
     };
   }, [navigate]);

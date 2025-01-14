@@ -2,7 +2,7 @@ import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { errorLogger } from "@/utils/errorLogger";
 
 interface Props {
   children: React.ReactNode;
@@ -25,7 +25,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("Error caught by boundary:", error, errorInfo);
-    // Here we could send to an error logging service
+    errorLogger.log(error, "high", { component: "ErrorBoundary", errorInfo });
   }
 
   render() {

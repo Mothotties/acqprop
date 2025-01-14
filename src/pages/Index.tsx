@@ -1,19 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { MainDashboardAnalytics } from "@/components/dashboard/MainDashboardAnalytics";
-import { PropertyAnalytics } from "@/components/dashboard/PropertyAnalytics";
-import { InvestmentAnalytics } from "@/components/dashboard/InvestmentAnalytics";
-import { LocationAnalytics } from "@/components/dashboard/LocationAnalytics";
 import { PortfolioDashboard } from "@/components/PortfolioDashboard";
-import { DocumentManager } from "@/components/DocumentManager";
-import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { PropertyAnalyticsDashboard } from "@/components/PropertyAnalyticsDashboard";
-import { PropertyListingView } from "@/components/PropertyListingView";
+import { MarketAnalyticsDashboard } from "@/components/MarketAnalyticsDashboard";
 import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
-import { MarketAnalyticsDashboard } from "@/components/MarketAnalyticsDashboard";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { useState } from "react";
@@ -24,10 +18,32 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("portfolio");
 
   useEffect(() => {
-    if (!session) {
-      navigate("/auth");
-    }
-  }, [session, navigate]);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Index page - checking session:", session);
+      
+      if (!session) {
+        console.log("No session found, redirecting to /auth");
+        navigate("/auth");
+      }
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Index page - auth state changed:", event, session);
+      
+      if (!session) {
+        console.log("Session ended, redirecting to /auth");
+        navigate("/auth");
+      }
+    });
+
+    return () => {
+      console.log("Index page - cleaning up auth subscription");
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   if (!session) {
     return null;
@@ -52,30 +68,27 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="ai" className="space-y-6">
-          <MainDashboardAnalytics />
+          <PropertyAnalyticsDashboard />
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-6">
-          <PropertyListingView />
-          <PropertyAnalytics />
+          <PortfolioDashboard />
         </TabsContent>
         
         <TabsContent value="documents" className="space-y-6">
-          <DocumentManager />
+          <div>Documents section coming soon</div>
         </TabsContent>
         
         <TabsContent value="maintenance" className="space-y-6">
-          <MaintenanceTracker />
+          <div>Maintenance section coming soon</div>
         </TabsContent>
         
         <TabsContent value="analysis" className="space-y-6">
-          <MainDashboardAnalytics />
-          <PropertyAnalytics />
-          <LocationAnalytics />
+          <PropertyAnalyticsDashboard />
         </TabsContent>
         
         <TabsContent value="evaluation" className="space-y-6">
-          <PropertyAnalytics />
+          <PropertyAnalyticsDashboard />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

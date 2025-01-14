@@ -23,4 +23,13 @@ export interface Property {
   property_market_data?: PropertyMarketData[];
   square_feet?: number;
   year_built?: number;
+  description?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  amenities?: string[];
+  images?: string[];
+  owner_id?: string;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
 }

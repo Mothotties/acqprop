@@ -8,7 +8,7 @@ import { type SortOption } from "@/components/analytics/PropertySorting";
 import { PropertyPagination } from "./PropertyPagination";
 import { PropertyGridStates } from "./PropertyGridStates";
 import { filterPropertiesByLocation } from "@/utils/propertyFilters";
-import { type Property } from "@/types/property";
+import { type Property, type PropertyAnalytics } from "@/types/property";
 import { PropertyCardSkeleton } from "./PropertyCardSkeleton";
 
 const ITEMS_PER_PAGE = 9;
@@ -45,7 +45,8 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
               cap_rate,
               roi,
               predicted_growth,
-              market_volatility
+              market_volatility,
+              occupancy_rate
             )
           `)
           .range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
@@ -116,6 +117,7 @@ export function PropertyGrid({ filters, sortOption }: PropertyGridProps) {
         throw error;
       }
     },
+    gcTime: 5 * 60 * 1000, // Cache data for 5 minutes
   });
 
   const totalPages = Math.ceil((propertiesData?.count || 0) / ITEMS_PER_PAGE);

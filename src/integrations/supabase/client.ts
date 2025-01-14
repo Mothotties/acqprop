@@ -8,6 +8,61 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    storage: window?.localStorage,
+    storageKey: 'supabase.auth.token',
+  },
+  db: {
+    schema: 'public'
+  },
+  global: {
+    headers: {
+      'x-application-name': 'acqprop'
+    },
+    // Add retries for failed requests
+    fetch: (url, options) => {
+      const retries = 3;
+      const retryDelay = 1000; // 1 second
+
+      const fetchWithRetry = async (attempt: number): Promise<Response> => {
+        try {
+          const response = await fetch(url, options);
+          if (!response.ok && attempt < retries) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response;
+        } catch (error) {
+          if (attempt < retries) {
+            await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+            return fetchWithRetry(attempt + 1);
+          }
+          throw error;
+        }
+      };
+
+      return fetchWithRetry(1);
+    }
   }
 });
+
+// Add error boundary handler
+export const handleSupabaseError = (error: Error): string => {
+  console.error('Supabase error:', error);
+  
+  if (error instanceof Error) {
+    // Handle specific error types
+    if (error.message.includes('JWT')) {
+      return 'Authentication error. Please sign in again.';
+    }
+    if (error.message.includes('network')) {
+      return 'Network error. Please check your connection.';
+    }
+    if (error.message.includes('permission')) {
+      return 'You do not have permission to perform this action.';
+    }
+    return error.message;
+  }
+  
+  return 'An unexpected error occurred. Please try again.';
+};

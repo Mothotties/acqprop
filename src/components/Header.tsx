@@ -1,8 +1,21 @@
 import { Brain, ChevronRight, Search, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 export function Header() {
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleAISearch = () => {
+    toast({
+      title: "AI Search Assistant",
+      description: "Processing your search with AI assistance...",
+    });
+    // AI search logic will be implemented here
+  };
+
   return (
     <div className="relative overflow-hidden">
       {/* Background gradient effect */}
@@ -23,6 +36,9 @@ export function Header() {
             <Input 
               className="pl-9 bg-background/50 border-gold/20 focus:border-gold/40"
               placeholder="Search properties with AI assistance..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAISearch()}
             />
           </div>
         </div>

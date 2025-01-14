@@ -1,21 +1,32 @@
 import { useState } from "react";
+import { useSession } from "@supabase/auth-helpers-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionCheckoutProps {
   priceId: string;
   buttonText?: string;
 }
 
-export function SubscriptionCheckout({ priceId, buttonText = "Subscribe Now" }: SubscriptionCheckoutProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export function SubscriptionCheckout({ priceId, buttonText = "Subscribe" }: SubscriptionCheckoutProps) {
+  const [loading, setLoading] = useState(false);
+  const session = useSession();
   const { toast } = useToast();
 
-  const handleSubscription = async () => {
+  const handleCheckout = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
+
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to subscribe to a plan",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId },
@@ -23,32 +34,30 @@ export function SubscriptionCheckout({ priceId, buttonText = "Subscribe Now" }: 
 
       if (error) throw error;
 
-      if (data?.sessionId) {
-        // Redirect to Stripe Checkout
-        window.location.href = `https://checkout.stripe.com/c/pay/${data.sessionId}`;
+      if (data?.url) {
+        window.location.href = data.url;
       } else {
-        throw new Error('Failed to create checkout session');
+        throw new Error('No checkout URL returned');
       }
-
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error creating checkout session:', error);
       toast({
         title: "Error",
-        description: "Failed to initiate checkout. Please try again.",
+        description: "Failed to start checkout process. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <Button 
-      onClick={handleSubscription} 
-      disabled={isLoading}
-      className="w-full"
+      onClick={handleCheckout} 
+      disabled={loading}
+      className="w-full bg-gold hover:bg-gold/90 text-white"
     >
-      {isLoading ? (
+      {loading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Processing...

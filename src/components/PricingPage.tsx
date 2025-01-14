@@ -1,6 +1,6 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
-import { SubscriptionCheckout } from "./SubscriptionCheckout";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { SubscriptionCheckout } from "@/components/SubscriptionCheckout";
 
 const plans = [
   {
@@ -11,8 +11,9 @@ const plans = [
     features: [
       "Basic property analytics",
       "Market trends overview",
-      "Property comparison tools",
-      "Email support"
+      "Standard support",
+      "Up to 5 property comparisons",
+      "Basic AI insights"
     ]
   },
   {
@@ -23,8 +24,9 @@ const plans = [
     features: [
       "Advanced AI-powered analytics",
       "Real-time market insights",
-      "Portfolio optimization tools",
       "Priority support",
+      "Unlimited property comparisons",
+      "Advanced AI predictions",
       "Custom reports"
     ]
   },
@@ -36,21 +38,22 @@ const plans = [
     features: [
       "Full access to all features",
       "Custom AI models",
+      "Dedicated support",
       "API access",
-      "Dedicated account manager",
-      "24/7 premium support",
-      "Custom integrations"
+      "Custom integrations",
+      "Team collaboration tools",
+      "Advanced security features"
     ]
   }
 ];
 
 export function PricingPage() {
   return (
-    <div className="container py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
-        <p className="text-muted-foreground">
-          Choose the perfect plan for your investment needs
+    <div className="container py-12 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">Simple, Transparent Pricing</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Choose the plan that best fits your investment needs. All plans include access to our core features.
         </p>
       </div>
 
@@ -62,11 +65,14 @@ export function PricingPage() {
               <CardDescription>{plan.description}</CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
-              <div className="text-3xl font-bold mb-6">{plan.price}<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+              <div className="mb-4">
+                <span className="text-3xl font-bold">{plan.price}</span>
+                <span className="text-muted-foreground">/month</span>
+              </div>
               <ul className="space-y-2">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center">
-                    <Check className="h-4 w-4 text-green-500 mr-2" />
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-green-500" />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -75,7 +81,7 @@ export function PricingPage() {
             <CardFooter>
               <SubscriptionCheckout 
                 priceId={plan.priceId}
-                buttonText={`Get ${plan.name}`}
+                buttonText={`Subscribe to ${plan.name}`}
               />
             </CardFooter>
           </Card>

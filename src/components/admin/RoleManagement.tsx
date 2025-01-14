@@ -18,34 +18,44 @@ export function RoleManagement() {
   const [selectedRole, setSelectedRole] = useState<Role>();
 
   const fetchUserRoles = async (): Promise<UserRoleData[]> => {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select(`
-        id,
-        user_id,
-        role,
-        users:user_id (
-          email,
-          raw_user_meta_data->full_name
-        )
-      `);
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select(`
+          id,
+          user_id,
+          role,
+          users:user_id (
+            email,
+            raw_user_meta_data->full_name
+          )
+        `);
 
-    if (error) {
-      toast.error("Failed to fetch user roles");
-      throw error;
+      if (error) {
+        toast.error("Failed to fetch user roles");
+        throw error;
+      }
+
+      if (!data) return [];
+
+      return data.map((item: any) => ({
+        id: item.id,
+        email: item.users?.email,
+        role: item.role,
+        full_name: item.users?.raw_user_meta_data?.full_name
+      }));
+    } catch (error) {
+      console.error("Error fetching user roles:", error);
+      toast.error("Failed to fetch user roles. Please try again later.");
+      return [];
     }
-
-    return data.map((item: any) => ({
-      id: item.id,
-      email: item.users?.email,
-      role: item.role,
-      full_name: item.users?.raw_user_meta_data?.full_name
-    }));
   };
 
   const { data: userRoles, isLoading, error } = useQuery({
     queryKey: ["userRoles"],
     queryFn: fetchUserRoles,
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
   });
 
   const updateRole = useMutation({

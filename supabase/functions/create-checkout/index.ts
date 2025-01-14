@@ -8,6 +8,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -32,6 +33,8 @@ serve(async (req) => {
       throw new Error('Price ID is required')
     }
 
+    console.log('[create-checkout] Creating checkout session for user:', user.id, 'priceId:', priceId)
+
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
     })
@@ -45,6 +48,7 @@ serve(async (req) => {
     let customerId = customers.data[0]?.id
 
     if (!customerId) {
+      console.log('[create-checkout] Creating new customer for user:', user.id)
       const customer = await stripe.customers.create({
         email: user.email,
         metadata: {
@@ -53,6 +57,8 @@ serve(async (req) => {
       })
       customerId = customer.id
     }
+
+    console.log('[create-checkout] Using customer:', customerId)
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
@@ -68,6 +74,8 @@ serve(async (req) => {
       }
     })
 
+    console.log('[create-checkout] Created checkout session:', session.id)
+
     return new Response(
       JSON.stringify({ url: session.url }),
       {
@@ -76,7 +84,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('[create-checkout] Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

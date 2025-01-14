@@ -18,7 +18,11 @@ export function Auth() {
     if (error instanceof AuthApiError) {
       switch (error.status) {
         case 400:
-          setErrorMessage("Invalid login credentials. Please check your email and password.");
+          if (error.message.includes("missing email")) {
+            setErrorMessage("Please enter your email address.");
+          } else {
+            setErrorMessage("Invalid login credentials. Please check your email and password.");
+          }
           break;
         case 422:
           setErrorMessage("Email validation failed. Please enter a valid email address.");

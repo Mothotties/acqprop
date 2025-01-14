@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,7 +14,6 @@ import { Profile } from "@/components/Profile";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { useEffect, Suspense } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
@@ -26,22 +25,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// Custom hook to log navigation
-const useNavigationLogger = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log("[Navigation] Route changed:", {
-      path: location.pathname,
-      timestamp: new Date().toISOString(),
-      state: location.state
-    });
-  }, [location]);
-
-  return { location, navigate };
-};
 
 // Route configuration with metadata
 const ROUTES = {
@@ -95,11 +78,17 @@ const ROUTES = {
   }
 };
 
-function App() {
-  const { location } = useNavigationLogger();
+// Navigation logger component that uses router hooks within Router context
+const NavigationLogger = () => {
+  const location = useLocation();
 
-  // Log route access attempts
   useEffect(() => {
+    console.log("[Navigation] Route changed:", {
+      path: location.pathname,
+      timestamp: new Date().toISOString(),
+      state: location.state
+    });
+
     console.log("[Router] Attempting to access route:", {
       path: location.pathname,
       timestamp: new Date().toISOString(),
@@ -109,6 +98,10 @@ function App() {
     });
   }, [location]);
 
+  return null;
+};
+
+function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -119,6 +112,7 @@ function App() {
             </div>
           }>
             <Router>
+              <NavigationLogger />
               <Routes>
                 {/* Public routes */}
                 <Route path={ROUTES.public.auth.path} element={

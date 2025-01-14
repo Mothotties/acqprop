@@ -53,6 +53,50 @@ export type Database = {
           },
         ]
       }
+      market_recommendations: {
+        Row: {
+          action_items: string[] | null
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          market_insights: Json | null
+          predicted_roi: number | null
+          property_id: string | null
+          recommendation_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_items?: string[] | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          market_insights?: Json | null
+          predicted_roi?: number | null
+          property_id?: string | null
+          recommendation_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_items?: string[] | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          market_insights?: Json | null
+          predicted_roi?: number | null
+          property_id?: string | null
+          recommendation_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_recommendations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -12,6 +12,7 @@ import { PropertyDetails } from "./components/PropertyDetails";
 import { PricingPage } from "./components/PricingPage";
 import { CreatePropertyForm } from "./components/property/CreatePropertyForm";
 import { AuthGuard } from "./components/AuthGuard";
+import { ProfileManagement } from "./components/profile/ProfileManagement";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,14 @@ const App = () => {
                   element={
                     <AuthGuard>
                       <Index />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <AuthGuard>
+                      <ProfileManagement />
                     </AuthGuard>
                   }
                 />

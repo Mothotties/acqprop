@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
-const INITIAL_RETRY_DELAY = 1000; // Start with 1 second
+const INITIAL_RETRY_DELAY = 1000;
 const MAX_RETRIES = 3;
 
 const Auth = () => {
@@ -17,64 +17,37 @@ const Auth = () => {
   const supabase = useSupabaseClient();
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const handleAuthError = (error: AuthError) => {
+    console.error("Auth error:", error);
     if (error instanceof AuthApiError) {
       switch (error.status) {
         case 400:
-          return "Please provide both email and password.";
+          if (error.message.includes("missing email")) {
+            return "Please enter both email and password.";
+          }
+          return "Invalid login attempt. Please check your credentials.";
         case 401:
           return "Invalid credentials. Please check your email and password.";
         case 429:
+          const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
+          if (retryCount < MAX_RETRIES) {
+            setRetryCount(prev => prev + 1);
+            setTimeout(() => {
+              // Retry the operation
+              setRetryCount(0);
+              setErrorMessage("");
+            }, delay);
+            return "Too many attempts. Retrying in a few seconds...";
+          }
           return "Too many attempts. Please try again later.";
         default:
           return error.message;
       }
     }
-    return error.message;
+    return "An unexpected error occurred. Please try again.";
   };
-
-  const verifyUserRole = useCallback(async (userId: string, retryCount = 0) => {
-    try {
-      // First check if user role exists
-      const { data: roleData, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (roleError) {
-        if (roleError.code === "42501" && retryCount < MAX_RETRIES) {
-          // If RLS policy error, wait and retry
-          const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          return verifyUserRole(userId, retryCount + 1);
-        }
-        throw roleError;
-      }
-
-      if (!roleData) {
-        // Create default role if none exists
-        const { error: insertError } = await supabase
-          .from("user_roles")
-          .insert({ user_id: userId, role: "investor" });
-
-        if (insertError) {
-          if (insertError.code === "42501" && retryCount < MAX_RETRIES) {
-            const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return verifyUserRole(userId, retryCount + 1);
-          }
-          throw insertError;
-        }
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error verifying user role:", error);
-      return false;
-    }
-  }, [supabase]);
 
   useEffect(() => {
     let mounted = true;
@@ -85,10 +58,9 @@ const Auth = () => {
 
       setIsLoading(true);
       try {
-        const success = await verifyUserRole(session.user.id);
-        if (success && mounted) {
-          navigate("/", { replace: true });
-        }
+        // Add delay before navigation to prevent rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        navigate("/", { replace: true });
       } catch (error) {
         console.error("Session handling error:", error);
         if (mounted) {
@@ -106,9 +78,13 @@ const Auth = () => {
       if (!mounted) return;
 
       if (event === "SIGNED_IN" && session?.user?.id) {
-        handleSession();
+        // Add delay before handling session to prevent rate limiting
+        setTimeout(() => {
+          handleSession();
+        }, 1000);
       } else if (event === "SIGNED_OUT") {
         setErrorMessage("");
+        setRetryCount(0);
       }
     });
 
@@ -121,7 +97,7 @@ const Auth = () => {
       clearTimeout(retryTimeout);
       subscription.unsubscribe();
     };
-  }, [session, navigate, supabase, verifyUserRole]);
+  }, [session, navigate, supabase, retryCount]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">

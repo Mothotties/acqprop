@@ -18,6 +18,8 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("portfolio");
   const mounted = useRef(true);
 
+  // Comment out authentication logic temporarily
+  /*
   useEffect(() => {
     if (!session && mounted.current) {
       console.log("No session found in Index, redirecting to /auth");
@@ -45,6 +47,7 @@ const Index = () => {
   if (!session) {
     return null;
   }
+  */
 
   return (
     <DashboardLayout>

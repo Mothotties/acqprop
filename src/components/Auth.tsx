@@ -12,6 +12,7 @@ export function Auth() {
   const location = useLocation();
   const supabase = useSupabaseClient();
   const [loading, setLoading] = useState(true);
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
 
   useEffect(() => {
     console.log("[Auth] Component mounted, checking session:", { session });
@@ -28,7 +29,8 @@ export function Auth() {
 
         console.log("[Auth] Session check result:", { currentSession });
         
-        if (currentSession) {
+        // Only redirect if we have both a session and have done the initial check
+        if (currentSession && initialCheckDone) {
           const redirectTo = location.state?.from || "/dashboard";
           console.log("[Auth] Redirecting authenticated user to:", redirectTo);
           navigate(redirectTo, { replace: true });
@@ -38,11 +40,17 @@ export function Auth() {
         toast.error("An unexpected error occurred. Please try again.");
       } finally {
         setLoading(false);
+        setInitialCheckDone(true);
       }
     };
 
-    checkSession();
-  }, [session, navigate, location.state, supabase.auth]);
+    // Add a small delay before the initial session check
+    const timer = setTimeout(() => {
+      checkSession();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [session, navigate, location.state, supabase.auth, initialCheckDone]);
 
   if (loading) {
     return (
@@ -57,9 +65,9 @@ export function Auth() {
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <div className="w-full max-w-md space-y-8 px-4 py-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight">Welcome Back</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Welcome to ACQPROP</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Sign in to your account to continue
+              Sign in to access your real estate investment dashboard
             </p>
           </div>
           

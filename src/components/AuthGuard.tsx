@@ -17,6 +17,11 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const [hasRequiredRole, setHasRequiredRole] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    const maxAttempts = 3;
+    let attempts = 0;
+    const baseDelay = 1000;
+
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -33,32 +38,58 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
           return;
         }
 
-        // If requiredRole is specified, check user roles
+        // If requiredRole is specified, check user roles with retry logic
         if (requiredRole && requiredRole.length > 0) {
-          const { data: userRoles, error: rolesError } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .single();
+          while (attempts < maxAttempts) {
+            try {
+              const { data: userRoles, error: rolesError } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .single();
 
-          if (rolesError) {
-            console.error("Role check error:", rolesError);
-            toast.error("Error checking user permissions.");
-            setHasRequiredRole(false);
-          } else {
-            const hasRole = requiredRole.includes(userRoles?.role);
-            setHasRequiredRole(hasRole);
-            
-            if (!hasRole) {
-              toast.error("You don't have permission to access this page.");
-              navigate("/");
+              if (rolesError) {
+                if (rolesError.code === '429') {
+                  const waitTime = baseDelay * Math.pow(2, attempts);
+                  await new Promise(resolve => setTimeout(resolve, waitTime));
+                  attempts++;
+                  continue;
+                }
+                throw rolesError;
+              }
+
+              if (isMounted) {
+                const hasRole = requiredRole.includes(userRoles?.role);
+                setHasRequiredRole(hasRole);
+                
+                if (!hasRole) {
+                  toast.error("You don't have permission to access this page.");
+                  navigate("/");
+                }
+              }
+              break;
+            } catch (error) {
+              console.error("Role check error:", error);
+              attempts++;
+              
+              if (attempts === maxAttempts) {
+                if (isMounted) {
+                  toast.error("Error checking user permissions.");
+                  setHasRequiredRole(false);
+                  navigate("/");
+                }
+              }
             }
           }
         } else {
-          setHasRequiredRole(true);
+          if (isMounted) {
+            setHasRequiredRole(true);
+          }
         }
 
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error("Auth check failed:", error);
         toast.error("Authentication check failed. Please try again.");
@@ -67,6 +98,10 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     };
 
     checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [navigate, supabase.auth, requiredRole]);
 
   if (isLoading) {

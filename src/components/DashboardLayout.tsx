@@ -3,7 +3,6 @@ import { Header } from "@/components/Header";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { UserMenu } from "@/components/UserMenu";
-import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { useLocation } from "react-router-dom";
 
 interface DashboardLayoutProps {
@@ -12,7 +11,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
-  const currentTab = location.pathname.split('/')[1] || 'portfolio';
+  const currentTab = location.pathname.split('/')[1] || 'dashboard';
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -30,8 +29,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="space-y-8 backdrop-blur-sm bg-background/50 rounded-lg border border-gold/10 p-6 shadow-xl">
           <Tabs value={currentTab} className="w-full space-y-6">
             <NavigationTabs />
-            <TabsContent value={currentTab}>
-              <AnalyticsDashboard />
+            <TabsContent value={currentTab} className="space-y-6">
               {children}
             </TabsContent>
           </Tabs>

@@ -11,42 +11,20 @@ const Auth = () => {
   const mounted = useRef(true);
 
   useEffect(() => {
-    // Single initial session check
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Error checking session:", error);
-          setErrorMessage(error.message);
-          return;
-        }
-        
-        if (session && mounted.current) {
-          console.log("Initial session found in Auth, redirecting to /");
-          navigate("/");
-        }
-      } catch (err) {
-        console.error("Session check error:", err);
-        setErrorMessage("An error occurred while checking your session");
-      }
-    };
-
-    checkSession();
-
-    // Subscribe to auth changes
+    // Get initial session state once
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed in Auth.tsx:", event, !!session);
-      
       if (!mounted.current) return;
+      
+      console.log("Auth state changed in Auth.tsx:", event, !!session);
 
-      if (event === 'SIGNED_IN' && session) {
-        console.log("Successfully signed in, redirecting to /");
+      if (session) {
+        console.log("Session found in Auth, redirecting to /");
         setErrorMessage("");
         navigate("/");
       }
     });
 
+    // Cleanup subscription
     return () => {
       mounted.current = false;
       subscription.unsubscribe();

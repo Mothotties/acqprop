@@ -25,14 +25,13 @@ const Index = () => {
       return;
     }
 
-    // Subscribe to auth changes with error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Index auth state changed:", event, !!session);
-      
       if (!mounted.current) return;
       
-      if (event === 'SIGNED_OUT' || !session) {
-        console.log("User signed out or session lost, redirecting to /auth");
+      console.log("Index auth state changed:", event, !!session);
+      
+      if (!session) {
+        console.log("No session in Index, redirecting to /auth");
         navigate("/auth");
       }
     });
@@ -44,7 +43,6 @@ const Index = () => {
   }, [session, navigate]);
 
   if (!session) {
-    console.log("No session in Index render, returning null");
     return null;
   }
 

@@ -1,5 +1,5 @@
 import { PortfolioMetrics } from "./portfolio/PortfolioMetrics";
-import { PortfolioPerformanceMetrics } from "./PortfolioPerformanceMetrics";
+import { ROIPerformanceTracker } from "./analytics/ROIPerformanceTracker";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useState } from "react";
@@ -13,24 +13,6 @@ import { MarketCharts } from "./analytics/MarketCharts";
 import { PortfolioDashboardSkeleton } from "./portfolio/PortfolioDashboardSkeleton";
 
 const ITEMS_PER_PAGE = 6;
-
-// Sample data for analytics charts
-const performanceData = [
-  { property: "Luxury Condo", roi: 12.5, occupancy: 95 },
-  { property: "Downtown Office", roi: 15.2, occupancy: 88 },
-  { property: "Retail Space", roi: 9.8, occupancy: 92 },
-  { property: "Residential Complex", roi: 11.3, occupancy: 96 },
-  { property: "Industrial Park", roi: 13.7, occupancy: 89 },
-];
-
-// Sample data for market charts
-const marketData = [
-  { property: "Luxury Condo", marketValue: 850000, pricePerSqft: 425 },
-  { property: "Downtown Office", marketValue: 1200000, pricePerSqft: 380 },
-  { property: "Retail Space", marketValue: 750000, pricePerSqft: 350 },
-  { property: "Residential Complex", marketValue: 950000, pricePerSqft: 290 },
-  { property: "Industrial Park", marketValue: 1500000, pricePerSqft: 275 },
-];
 
 export function PortfolioDashboard() {
   const [search, setSearch] = useState("");
@@ -65,7 +47,7 @@ export function PortfolioDashboard() {
       <PortfolioMetrics />
       
       <div className="grid gap-6 md:grid-cols-2">
-        <PortfolioPerformanceMetrics />
+        <ROIPerformanceTracker />
         <PortfolioDiversification />
       </div>
 
@@ -73,9 +55,9 @@ export function PortfolioDashboard() {
         <PredictiveTrendAnalysis />
       </div>
 
-      <AnalyticsCharts performanceData={performanceData} />
+      <AnalyticsCharts performanceData={data?.performanceData || []} />
       
-      <MarketCharts data={marketData} />
+      <MarketCharts data={data?.marketData || []} />
       
       <PropertyOverviewCard
         properties={data?.properties || []}

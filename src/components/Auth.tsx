@@ -14,7 +14,12 @@ export function Auth() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleAuthError = (error: AuthError) => {
-    console.error("Auth error:", error);
+    console.error("[Auth] Authentication error:", {
+      error: error.message,
+      status: error instanceof AuthApiError ? error.status : 'unknown',
+      name: error.name
+    });
+    
     if (error instanceof AuthApiError) {
       switch (error.status) {
         case 400:
@@ -40,21 +45,28 @@ export function Auth() {
   };
 
   useEffect(() => {
+    console.log("[Auth] Component mounted");
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[Auth] Auth state changed:", { event, userId: session?.user?.id });
+      
       if (event === "SIGNED_IN") {
         setIsLoading(true);
+        console.log("[Auth] Sign in detected, attempting session setup");
+        
         try {
-          // Ensure we have a valid session
           if (session?.access_token && session?.refresh_token) {
+            console.log("[Auth] Setting up session with valid tokens");
             await supabase.auth.setSession({
               access_token: session.access_token,
               refresh_token: session.refresh_token,
             });
             toast.success("Successfully signed in!");
+            console.log("[Auth] Redirecting to dashboard");
             navigate("/");
           }
         } catch (error) {
-          console.error("Session error:", error);
+          console.error("[Auth] Session setup error:", error);
           handleAuthError(error as AuthError);
         } finally {
           setIsLoading(false);
@@ -64,19 +76,26 @@ export function Auth() {
 
     // Set up session refresh interval
     const refreshInterval = setInterval(async () => {
+      console.log("[Auth] Attempting token refresh");
       try {
         const { data, error } = await supabase.auth.refreshSession();
         if (error) throw error;
+        console.log("[Auth] Token refresh result:", {
+          success: !!data.session,
+          userId: data.session?.user?.id
+        });
         if (!data.session) {
+          console.log("[Auth] No valid session found, redirecting to auth");
           navigate("/auth");
         }
       } catch (error) {
-        console.error("Token refresh error:", error);
+        console.error("[Auth] Token refresh error:", error);
         navigate("/auth");
       }
     }, 1000 * 60 * 60); // Refresh every hour
 
     return () => {
+      console.log("[Auth] Component unmounting, cleaning up subscriptions");
       subscription.unsubscribe();
       clearInterval(refreshInterval);
     };

@@ -30,14 +30,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const fetchUserData = async (retryCount = 0) => {
+    console.log("[AuthProvider] Fetching user data", { 
+      retryCount,
+      sessionExists: !!session,
+      userId: session?.user?.id 
+    });
+
     try {
       if (!session?.user) {
+        console.log("[AuthProvider] No session found, clearing auth state");
         setAuthState({ user: null, isLoading: false, error: null });
         return;
       }
 
-      // Add a small delay before making requests to prevent race conditions
       await new Promise(resolve => setTimeout(resolve, 100));
+      console.log("[AuthProvider] Fetching user role");
 
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
@@ -46,21 +53,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (roleError) {
+        console.error("[AuthProvider] Role fetch error:", roleError);
         if (roleError.message.includes("rate_limit") && retryCount < MAX_RETRIES) {
           const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
+          console.log(`[AuthProvider] Rate limited, retrying in ${delay}ms`);
           await new Promise(resolve => setTimeout(resolve, delay));
           return fetchUserData(retryCount + 1);
         }
         throw roleError;
       }
 
+      console.log("[AuthProvider] Fetching user profile");
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, avatar_url")
         .eq("id", session.user.id)
         .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("[AuthProvider] Profile fetch error:", profileError);
+        throw profileError;
+      }
 
       const user: AuthUser = {
         id: session.user.id,
@@ -69,8 +82,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile: profileData || { full_name: null, avatar_url: null },
       };
 
+      console.log("[AuthProvider] User data fetched successfully:", {
+        userId: user.id,
+        role: user.role,
+        hasProfile: !!profileData
+      });
+
       setAuthState({ user, isLoading: false, error: null });
     } catch (error) {
+      console.error("[AuthProvider] Error in fetchUserData:", error);
       errorLogger.log(error as Error, "high", { component: "AuthProvider" });
       setAuthState({
         user: null,
@@ -84,17 +104,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const debouncedFetchUserData = debounce(fetchUserData, 2000);
 
   useEffect(() => {
+    console.log("[AuthProvider] Provider mounted");
     let mounted = true;
     let sessionRefreshInterval: NodeJS.Timeout;
 
     const handleAuthChange = async (event: string) => {
       if (!mounted) return;
+      console.log("[AuthProvider] Auth state changed:", { event });
 
       if (event === "SIGNED_IN") {
+        console.log("[AuthProvider] Sign in detected, fetching user data");
         await new Promise(resolve => setTimeout(resolve, 1000));
         await debouncedFetchUserData();
         navigate("/dashboard");
       } else if (event === "SIGNED_OUT") {
+        console.log("[AuthProvider] Sign out detected, clearing state");
         setAuthState({ user: null, isLoading: false, error: null });
         if (mounted) {
           setTimeout(() => {
@@ -104,16 +128,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Set up session refresh
     const setupSessionRefresh = () => {
+      console.log("[AuthProvider] Setting up session refresh interval");
       sessionRefreshInterval = setInterval(async () => {
         try {
+          console.log("[AuthProvider] Attempting to refresh session");
           const { data: { session }, error } = await supabase.auth.refreshSession();
           if (error) throw error;
+          console.log("[AuthProvider] Session refresh result:", {
+            success: !!session,
+            userId: session?.user?.id
+          });
           if (!session && mounted) {
             navigate("/auth", { replace: true });
           }
         } catch (error) {
+          console.error("[AuthProvider] Session refresh error:", error);
           errorLogger.log(error as Error, "medium", { 
             component: "AuthProvider",
             action: "refreshSession"
@@ -125,9 +155,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }, SESSION_REFRESH_INTERVAL);
     };
 
-    // Initial fetch with delay to prevent race conditions
     setTimeout(() => {
       if (mounted) {
+        console.log("[AuthProvider] Initial user data fetch");
         fetchUserData();
         setupSessionRefresh();
       }
@@ -138,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
+      console.log("[AuthProvider] Provider unmounting, cleaning up");
       mounted = false;
       debouncedFetchUserData.cancel();
       clearInterval(sessionRefreshInterval);

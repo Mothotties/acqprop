@@ -34,7 +34,8 @@ export function Analytics() {
         averageMarketValue: avgMarketValue,
         averageDemandScore: avgDemandScore,
         marketTrend: "Growing",
-        totalProperties: properties?.length || 0
+        totalProperties: properties?.length || 0,
+        propertyIds: properties?.map(p => p.id) || []
       };
     }
   });
@@ -56,7 +57,7 @@ export function Analytics() {
       <MarketTrendsAnalysis />
       
       <div className="grid gap-6 md:grid-cols-2">
-        <PropertyComparisonGrid />
+        <PropertyComparisonGrid propertyIds={marketStats?.propertyIds || []} />
         <AIMarketInsights />
       </div>
     </div>

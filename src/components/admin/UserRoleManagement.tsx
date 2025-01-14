@@ -35,21 +35,31 @@ export function UserRoleManagement() {
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['users-with-roles'],
     queryFn: async () => {
-      const { data: usersData, error: usersError } = await supabase
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email:auth.users!inner(email), user_roles!inner(role)');
+        .select(`
+          id,
+          auth_user:id (
+            email
+          ),
+          user_roles (
+            role
+          )
+        `);
 
-      if (usersError) {
+      if (profilesError) {
         toast.error("Error fetching users", {
-          description: usersError.message
+          description: profilesError.message
         });
         return [];
       }
 
-      return usersData.map(user => ({
-        id: user.id,
-        email: user.email,
-        role: user.user_roles?.[0]?.role || 'investor'
+      // Transform the data into the required format
+      return profiles?.map(profile => ({
+        id: profile.id,
+        email: profile.auth_user?.email || 'No email',
+        role: profile.user_roles?.[0]?.role || 'investor'
       })) as UserWithRole[];
     }
   });
@@ -66,7 +76,7 @@ export function UserRoleManagement() {
 
       toast.success("Role updated successfully");
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Error updating role", {
         description: error.message
       });

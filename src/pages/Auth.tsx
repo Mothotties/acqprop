@@ -8,6 +8,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+
 const Auth = () => {
   const session = useSession();
   const navigate = useNavigate();
@@ -21,6 +24,19 @@ const Auth = () => {
     }
   }, [session, navigate]);
 
+  const retryWithBackoff = async (operation: () => Promise<any>, retryCount = 0) => {
+    try {
+      return await operation();
+    } catch (error: any) {
+      if (error?.status === 429 && retryCount < MAX_RETRIES) {
+        const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return retryWithBackoff(operation, retryCount + 1);
+      }
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
@@ -29,15 +45,14 @@ const Auth = () => {
       if (event === 'USER_UPDATED') {
         setIsLoading(true);
         try {
-          const { error } = await supabase.auth.getSession();
-          if (error) {
-            setErrorMessage(getErrorMessage(error));
-            toast.error(getErrorMessage(error));
-          }
+          await retryWithBackoff(async () => {
+            const { error } = await supabase.auth.getSession();
+            if (error) throw error;
+          });
         } catch (error) {
           console.error('Session refresh error:', error);
-          setErrorMessage('Failed to refresh session. Please try again.');
-          toast.error('Failed to refresh session. Please try again.');
+          setErrorMessage(getErrorMessage(error as AuthError));
+          toast.error(getErrorMessage(error as AuthError));
         } finally {
           setIsLoading(false);
         }

@@ -4,6 +4,7 @@ import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { toast } from "sonner";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 export function Auth() {
   const session = useSession();
@@ -52,33 +53,35 @@ export function Auth() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <div className="w-full max-w-md space-y-8 px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight">Welcome Back</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to your account to continue
-          </p>
-        </div>
-        
-        <SupabaseAuth
-          supabaseClient={supabase}
-          appearance={{ 
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: 'hsl(var(--primary))',
-                  brandAccent: 'hsl(var(--primary))',
+    <ErrorBoundary>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+        <div className="w-full max-w-md space-y-8 px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight">Welcome Back</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Sign in to your account to continue
+            </p>
+          </div>
+          
+          <SupabaseAuth
+            supabaseClient={supabase}
+            appearance={{ 
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: 'hsl(var(--primary))',
+                    brandAccent: 'hsl(var(--primary))',
+                  }
                 }
               }
-            }
-          }}
-          theme="dark"
-          providers={["google", "github"]}
-          redirectTo={`${window.location.origin}/auth/callback`}
-        />
+            }}
+            theme="dark"
+            providers={["google", "github"]}
+            redirectTo={`${window.location.origin}/auth/callback`}
+          />
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

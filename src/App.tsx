@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -15,7 +15,6 @@ import { Profile } from "@/components/Profile";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { useEffect, Suspense } from "react";
-import { toast } from "sonner";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -109,7 +108,10 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <Suspense fallback={
               <div className="flex min-h-screen items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-sm text-muted-foreground">Loading application...</p>
+                </div>
               </div>
             }>
               <Router>
@@ -122,37 +124,27 @@ function App() {
                     </AuthGuard>
                   } />
 
-                  {/* Protected routes */}
-                  <Route path="/" element={
+                  {/* Protected routes wrapped in DashboardLayout */}
+                  <Route element={
                     <AuthGuard>
-                      <DashboardLayout>
-                        <Routes>
-                          {/* Redirect root to dashboard */}
-                          <Route index element={
-                            <Navigate 
-                              to={ROUTES.private.dashboard.path} 
-                              replace 
-                            />
-                          } />
-                          <Route path={ROUTES.private.dashboard.path} element={<Dashboard />} />
-                          <Route path={ROUTES.private.properties.path} element={<Properties />} />
-                          <Route path={ROUTES.private.propertyDetails.path} element={<PropertyDetailsView />} />
-                          <Route path={ROUTES.private.documents.path} element={<DocumentManager />} />
-                          <Route path={ROUTES.private.maintenance.path} element={<MaintenanceTracker />} />
-                          <Route path={ROUTES.private.analysis.path} element={<Analytics />} />
-                          <Route path={ROUTES.private.evaluation.path} element={<Analytics />} />
-                          <Route path={ROUTES.private.aiAnalysis.path} element={<Analytics />} />
-                          <Route path={ROUTES.private.settings.path} element={<Settings />} />
-                          <Route path={ROUTES.private.profile.path} element={<Profile />} />
-                        </Routes>
-                      </DashboardLayout>
+                      <DashboardLayout />
                     </AuthGuard>
-                  } />
+                  }>
+                    <Route index element={<Navigate to={ROUTES.private.dashboard.path} replace />} />
+                    <Route path={ROUTES.private.dashboard.path} element={<Dashboard />} />
+                    <Route path={ROUTES.private.properties.path} element={<Properties />} />
+                    <Route path={ROUTES.private.propertyDetails.path} element={<PropertyDetailsView />} />
+                    <Route path={ROUTES.private.documents.path} element={<DocumentManager />} />
+                    <Route path={ROUTES.private.maintenance.path} element={<MaintenanceTracker />} />
+                    <Route path={ROUTES.private.analysis.path} element={<Analytics />} />
+                    <Route path={ROUTES.private.evaluation.path} element={<Analytics />} />
+                    <Route path={ROUTES.private.aiAnalysis.path} element={<Analytics />} />
+                    <Route path={ROUTES.private.settings.path} element={<Settings />} />
+                    <Route path={ROUTES.private.profile.path} element={<Profile />} />
+                  </Route>
 
                   {/* Catch all route */}
-                  <Route path="*" element={
-                    <Navigate to={ROUTES.private.dashboard.path} replace />
-                  } />
+                  <Route path="*" element={<Navigate to={ROUTES.private.dashboard.path} replace />} />
                 </Routes>
               </Router>
             </Suspense>

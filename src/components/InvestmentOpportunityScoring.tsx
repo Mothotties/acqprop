@@ -18,6 +18,10 @@ import {
   Radar,
 } from "recharts";
 
+/**
+ * Fetches analytics data from Supabase for property analysis
+ * @returns Promise containing property analytics data with related property information
+ */
 const fetchAnalytics = async () => {
   const { data, error } = await supabase
     .from('property_analytics')
@@ -36,7 +40,17 @@ const fetchAnalytics = async () => {
   return data;
 };
 
+/**
+ * InvestmentOpportunityScoring Component
+ * Provides a comprehensive scoring analysis for investment opportunities
+ * Features include:
+ * - Overall score visualization using radar chart
+ * - Historical score trends
+ * - Key metrics display (ROI, Risk, Market Status)
+ * - AI-powered investment insights
+ */
 export function InvestmentOpportunityScoring() {
+  // Fetch analytics data using React Query
   const { data: analyticsData, isLoading } = useQuery({
     queryKey: ['propertyAnalytics'],
     queryFn: fetchAnalytics,
@@ -46,6 +60,7 @@ export function InvestmentOpportunityScoring() {
     return <div>Loading analytics...</div>;
   }
 
+  // Define scoring factors for radar chart visualization
   const scoringFactors = [
     { factor: "Location", score: 85 },
     { factor: "ROI Potential", score: analyticsData?.[0]?.roi || 0 },
@@ -54,6 +69,7 @@ export function InvestmentOpportunityScoring() {
     { factor: "AI Confidence", score: analyticsData?.[0]?.ai_confidence_score || 0 },
   ];
 
+  // Transform analytics data for historical score visualization
   const historicalScores = analyticsData?.map((item, index) => ({
     month: `Month ${index + 1}`,
     score: item.ai_confidence_score || 0,
@@ -69,6 +85,7 @@ export function InvestmentOpportunityScoring() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 md:grid-cols-2">
+          {/* Overall Score Analysis Section */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Overall Score Analysis</h3>
             <div className="h-[300px]">
@@ -89,6 +106,7 @@ export function InvestmentOpportunityScoring() {
             </div>
           </div>
 
+          {/* Historical Score Trends Section */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Score Trend</h3>
             <div className="h-[300px]">
@@ -105,7 +123,9 @@ export function InvestmentOpportunityScoring() {
           </div>
         </div>
 
+        {/* Key Metrics Grid */}
         <div className="mt-6 grid grid-cols-3 gap-4">
+          {/* Overall Score Metric */}
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Overall Score</p>
             <div className="flex items-center gap-2">
@@ -119,6 +139,8 @@ export function InvestmentOpportunityScoring() {
                analyticsData?.[0]?.ai_confidence_score >= 70 ? 'Good' : 'Fair'}
             </Badge>
           </div>
+
+          {/* ROI Potential Metric */}
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">ROI Potential</p>
             <div className="flex items-center gap-2">
@@ -130,6 +152,8 @@ export function InvestmentOpportunityScoring() {
                analyticsData?.[0]?.roi >= 10 ? 'Medium' : 'Low'}
             </Badge>
           </div>
+
+          {/* Risk Assessment Metric */}
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Risk Assessment</p>
             <div className="flex items-center gap-2">
@@ -145,6 +169,7 @@ export function InvestmentOpportunityScoring() {
           </div>
         </div>
 
+        {/* AI Investment Insights Section */}
         <div className="mt-6 space-y-2">
           <h4 className="font-semibold">AI Investment Insights</h4>
           <p className="text-sm text-muted-foreground">

@@ -10,6 +10,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+/**
+ * Sample sentiment data for demonstration
+ * In a production environment, this would be fetched from an API
+ */
 const sentimentData = [
   { time: "9:00", sentiment: 85, confidence: 92, volume: 1200 },
   { time: "10:00", sentiment: 82, confidence: 88, volume: 1500 },
@@ -19,6 +23,15 @@ const sentimentData = [
   { time: "14:00", sentiment: 92, confidence: 96, volume: 1800 },
 ];
 
+/**
+ * MarketSentimentChart Component
+ * Displays real-time market sentiment analysis with interactive charts
+ * Features:
+ * - Line chart showing sentiment trends
+ * - Current sentiment metrics
+ * - Market trend indicators
+ * - Trading volume information
+ */
 export function MarketSentimentChart() {
   return (
     <Card className="border-gold/10 hover:border-gold/20 transition-all duration-300">
@@ -29,6 +42,7 @@ export function MarketSentimentChart() {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Main Chart Section */}
         <div className="h-[300px] relative">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sentimentData}>
@@ -70,7 +84,10 @@ export function MarketSentimentChart() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Metrics Grid */}
         <div className="mt-4 grid grid-cols-3 gap-4">
+          {/* Current Sentiment Metric */}
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Current Sentiment</p>
             <div className="flex items-center gap-2">
@@ -78,6 +95,8 @@ export function MarketSentimentChart() {
               <p className="text-2xl font-bold">92%</p>
             </div>
           </div>
+
+          {/* Market Trend Metric */}
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Trend</p>
             <div className="flex items-center gap-2">
@@ -85,6 +104,8 @@ export function MarketSentimentChart() {
               <p className="text-2xl font-bold">Up</p>
             </div>
           </div>
+
+          {/* Trading Volume Metric */}
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Volume</p>
             <div className="flex items-center gap-2">

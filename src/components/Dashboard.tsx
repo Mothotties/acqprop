@@ -6,143 +6,139 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { Suspense, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Fetch functions for each tab
+// Fetch functions with error handling and limits
 const fetchPortfolioAnalytics = async () => {
-  const { data, error } = await supabase
-    .from('property_analytics')
-    .select(`
-      *,
-      property:properties(title, price, location)
-    `)
-    .limit(10);
-  
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('property_analytics')
+      .select(`
+        *,
+        property:properties(title, price, location)
+      `)
+      .limit(5); // Reduced limit
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching portfolio analytics:', error);
+    toast.error('Failed to fetch portfolio data');
+    return [];
+  }
 };
 
 const fetchInvestmentAnalytics = async () => {
-  const { data, error } = await supabase
-    .from('investment_opportunities')
-    .select(`
-      *,
-      property:properties(title, price, location)
-    `)
-    .limit(10);
-  
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('investment_opportunities')
+      .select(`
+        *,
+        property:properties(title, price, location)
+      `)
+      .limit(5); // Reduced limit
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching investment analytics:', error);
+    toast.error('Failed to fetch investment data');
+    return [];
+  }
 };
 
 const fetchPropertyAnalytics = async () => {
-  const { data, error } = await supabase
-    .from('properties')
-    .select(`
-      *,
-      property_analytics(*),
-      property_market_data(*)
-    `)
-    .limit(10);
-  
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .select(`
+        *,
+        property_analytics(*),
+        property_market_data(*)
+      `)
+      .limit(5); // Reduced limit
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching property analytics:', error);
+    toast.error('Failed to fetch property data');
+    return [];
+  }
 };
 
 const fetchLocationAnalytics = async () => {
-  const { data, error } = await supabase
-    .from('properties')
-    .select(`
-      id,
-      location,
-      coordinates,
-      property_market_data(
-        market_value,
-        market_demand_score,
-        local_market_trend
-      )
-    `)
-    .limit(10);
-  
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .select(`
+        id,
+        location,
+        coordinates,
+        property_market_data(
+          market_value,
+          market_demand_score,
+          local_market_trend
+        )
+      `)
+      .limit(5); // Reduced limit
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching location analytics:', error);
+    toast.error('Failed to fetch location data');
+    return [];
+  }
 };
 
 export function Dashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('main');
 
-  // Prefetch data for other tabs to prevent freezing on tab switch
-  useEffect(() => {
-    const prefetchData = async () => {
-      // Prefetch analytics data
+  // Prefetch data with proper error handling and cache configuration
+  const prefetchData = async (queryKey: string, fetchFn: () => Promise<any>) => {
+    try {
       await queryClient.prefetchQuery({
-        queryKey: ['portfolio-analytics'],
-        queryFn: fetchPortfolioAnalytics,
+        queryKey: [queryKey],
+        queryFn: fetchFn,
         staleTime: 30000,
+        gcTime: 60000,
+        retry: 2,
       });
-
-      // Prefetch investment data
-      await queryClient.prefetchQuery({
-        queryKey: ['investment-analytics'],
-        queryFn: fetchInvestmentAnalytics,
-        staleTime: 30000,
-      });
-
-      // Prefetch property data
-      await queryClient.prefetchQuery({
-        queryKey: ['property-analytics'],
-        queryFn: fetchPropertyAnalytics,
-        staleTime: 30000,
-      });
-
-      // Prefetch location data
-      await queryClient.prefetchQuery({
-        queryKey: ['location-analytics'],
-        queryFn: fetchLocationAnalytics,
-        staleTime: 30000,
-      });
-    };
-
-    prefetchData();
-  }, [queryClient]);
+    } catch (error) {
+      console.error(`Error prefetching ${queryKey}:`, error);
+    }
+  };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     
-    // Prefetch data for the next tab when user switches
+    // Prefetch data based on the selected tab
     switch (value) {
       case 'main':
-        queryClient.prefetchQuery({
-          queryKey: ['portfolio-analytics'],
-          queryFn: fetchPortfolioAnalytics,
-          staleTime: 30000,
-        });
+        prefetchData('portfolio-analytics', fetchPortfolioAnalytics);
         break;
       case 'investments':
-        queryClient.prefetchQuery({
-          queryKey: ['investment-analytics'],
-          queryFn: fetchInvestmentAnalytics,
-          staleTime: 30000,
-        });
+        prefetchData('investment-analytics', fetchInvestmentAnalytics);
         break;
       case 'properties':
-        queryClient.prefetchQuery({
-          queryKey: ['property-analytics'],
-          queryFn: fetchPropertyAnalytics,
-          staleTime: 30000,
-        });
+        prefetchData('property-analytics', fetchPropertyAnalytics);
         break;
       case 'location':
-        queryClient.prefetchQuery({
-          queryKey: ['location-analytics'],
-          queryFn: fetchLocationAnalytics,
-          staleTime: 30000,
-        });
+        prefetchData('location-analytics', fetchLocationAnalytics);
         break;
     }
   };
+
+  // Loading component for better UX
+  const LoadingFallback = () => (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-8 bg-muted rounded w-1/4"></div>
+      <div className="h-96 bg-muted rounded-lg"></div>
+    </div>
+  );
 
   return (
     <div className="space-y-8">
@@ -156,26 +152,34 @@ export function Dashboard() {
         
         <ErrorBoundary>
           <TabsContent value="main" className="space-y-6">
-            <Suspense fallback={<div className="animate-pulse h-96 bg-muted rounded-lg" />}>
-              <MainDashboardAnalytics />
+            <Suspense fallback={<LoadingFallback />}>
+              <ErrorBoundary>
+                <MainDashboardAnalytics />
+              </ErrorBoundary>
             </Suspense>
           </TabsContent>
           
           <TabsContent value="investments" className="space-y-6">
-            <Suspense fallback={<div className="animate-pulse h-96 bg-muted rounded-lg" />}>
-              <InvestmentAnalytics />
+            <Suspense fallback={<LoadingFallback />}>
+              <ErrorBoundary>
+                <InvestmentAnalytics />
+              </ErrorBoundary>
             </Suspense>
           </TabsContent>
           
           <TabsContent value="properties" className="space-y-6">
-            <Suspense fallback={<div className="animate-pulse h-96 bg-muted rounded-lg" />}>
-              <PropertyAnalytics />
+            <Suspense fallback={<LoadingFallback />}>
+              <ErrorBoundary>
+                <PropertyAnalytics />
+              </ErrorBoundary>
             </Suspense>
           </TabsContent>
           
           <TabsContent value="location" className="space-y-6">
-            <Suspense fallback={<div className="animate-pulse h-96 bg-muted rounded-lg" />}>
-              <LocationAnalytics />
+            <Suspense fallback={<LoadingFallback />}>
+              <ErrorBoundary>
+                <LocationAnalytics />
+              </ErrorBoundary>
             </Suspense>
           </TabsContent>
         </ErrorBoundary>

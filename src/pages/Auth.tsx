@@ -11,6 +11,21 @@ const Auth = () => {
   const mounted = useRef(true);
 
   useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("Error checking session:", error);
+        setErrorMessage(error.message);
+        return;
+      }
+      
+      if (session && mounted.current) {
+        console.log("Initial session found, redirecting to /");
+        navigate("/");
+      }
+    });
+
+    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, !!session);
       

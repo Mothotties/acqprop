@@ -17,6 +17,7 @@ const Auth = () => {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (session && mounted.current) {
+          console.log("Existing session found, redirecting to /");
           navigate("/");
         }
       } catch (error) {
@@ -28,11 +29,13 @@ const Auth = () => {
     checkSession();
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, !!session);
+      
       if (!mounted.current) return;
 
       if (event === 'SIGNED_IN' && session) {
-        console.log("Auth state changed: SIGNED_IN");
+        console.log("Successfully signed in, redirecting to /");
         setErrorMessage("");
         navigate("/");
       }

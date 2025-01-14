@@ -21,17 +21,19 @@ const Index = () => {
   useEffect(() => {
     // Check if not authenticated
     if (!session && mounted.current) {
-      console.log("No session found, redirecting to /auth");
+      console.log("No session found in Index, redirecting to /auth");
       navigate("/auth");
       return;
     }
 
     // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Index auth state changed:", event, !!session);
+      
       if (!mounted.current) return;
       
       if (event === 'SIGNED_OUT' || !session) {
-        console.log("Auth state changed: SIGNED_OUT");
+        console.log("User signed out or session lost, redirecting to /auth");
         navigate("/auth");
       }
     });
@@ -43,6 +45,7 @@ const Index = () => {
   }, [session, navigate]);
 
   if (!session) {
+    console.log("No session in Index render, returning null");
     return null;
   }
 

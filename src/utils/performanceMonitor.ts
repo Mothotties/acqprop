@@ -1,6 +1,4 @@
-import { errorLogger } from './errorLogger';
-
-interface PerformanceMetric {
+export interface PerformanceMetric {
   name: string;
   duration: number;
   timestamp: number;
@@ -18,37 +16,7 @@ interface PerformanceElementTiming extends PerformanceEntry {
 }
 
 class PerformanceMonitor {
-  private static instance: PerformanceMonitor;
   private metrics: PerformanceMetric[] = [];
-  private readonly MAX_METRICS = 100;
-
-  private constructor() {
-    if (typeof window !== 'undefined') {
-      this.observeLoadingMetrics();
-    }
-  }
-
-  static getInstance(): PerformanceMonitor {
-    if (!PerformanceMonitor.instance) {
-      PerformanceMonitor.instance = new PerformanceMonitor();
-    }
-    return PerformanceMonitor.instance;
-  }
-
-  private observeLoadingMetrics() {
-    const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        if (entry.entryType === 'largest-contentful-paint') {
-          const lcp = entry as PerformanceElementTiming;
-          this.logMetric('LCP', entry.startTime, { 
-            elementType: lcp.element?.tagName 
-          });
-        }
-      }
-    });
-
-    observer.observe({ entryTypes: ['largest-contentful-paint'] });
-  }
 
   logMetric(name: string, duration: number, metadata?: Record<string, unknown>) {
     const metric: PerformanceMetric = {
@@ -58,21 +26,18 @@ class PerformanceMonitor {
       metadata,
     };
 
-    this.metrics.unshift(metric);
+    this.metrics.push(metric);
+    console.log('Performance metric logged:', metric);
 
-    if (this.metrics.length > this.MAX_METRICS) {
-      this.metrics = this.metrics.slice(0, this.MAX_METRICS);
-    }
-
+    // Log slow operations as errors
     if (duration > 1000) {
-      errorLogger.log(
-        new Error(`Slow operation: ${name}`),
-        'low',
-        { duration, ...metadata }
-      );
+      console.error('Slow operation detected:', {
+        message: `Slow operation: ${name}`,
+        context: { duration },
+        severity: 'low',
+        timestamp: new Date().toISOString(),
+      });
     }
-
-    console.info(`Performance metric - ${name}: ${duration.toFixed(2)}ms`, metadata);
   }
 
   getMetrics(): PerformanceMetric[] {
@@ -82,6 +47,21 @@ class PerformanceMonitor {
   clearMetrics(): void {
     this.metrics = [];
   }
+
+  // Method to observe element timing
+  observeElementTiming(elementId: string, callback: (timing: PerformanceElementTiming) => void) {
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const elementTiming = entry as PerformanceElementTiming;
+        if (elementTiming.id === elementId) {
+          callback(elementTiming);
+        }
+      }
+    });
+
+    observer.observe({ entryTypes: ['element'] });
+    return observer;
+  }
 }
 
-export const performanceMonitor = PerformanceMonitor.getInstance();
+export const performanceMonitor = new PerformanceMonitor();

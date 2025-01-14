@@ -125,7 +125,7 @@ function App() {
                   } />
 
                   {/* Protected routes */}
-                  <Route element={
+                  <Route path="/" element={
                     <AuthGuard>
                       <DashboardLayout>
                         <Routes>

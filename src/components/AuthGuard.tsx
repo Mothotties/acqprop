@@ -12,7 +12,7 @@ interface AuthGuardProps {
 export const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
   const session = useSession();
   const navigate = useNavigate();
-  const { data: role, isLoading: roleLoading } = useUserRole();
+  const { role, loading: roleLoading } = useUserRole();
 
   useEffect(() => {
     if (!session) {

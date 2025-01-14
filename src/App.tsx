@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,15 +23,22 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <Routes>
-            <Route path="/auth" element={<Auth />} />
+            {/* Public routes */}
+            <Route path="/auth" element={
+              <AuthGuard requireAuth={false}>
+                <Auth />
+              </AuthGuard>
+            } />
+
+            {/* Protected routes */}
             <Route path="/" element={
               <AuthGuard>
                 <DashboardLayout>
                   <Routes>
-                    <Route index element={<Index />} />
-                    <Route path="/property/:id" element={<PropertyDetailsView />} />
+                    <Route index element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/properties" element={<Properties />} />
+                    <Route path="/property/:id" element={<PropertyDetailsView />} />
                     <Route path="/documents" element={<DocumentManager />} />
                     <Route path="/maintenance" element={<MaintenanceTracker />} />
                     <Route path="/analysis" element={<Analytics />} />
@@ -43,6 +50,9 @@ function App() {
                 </DashboardLayout>
               </AuthGuard>
             } />
+
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Router>
         <Toaster />

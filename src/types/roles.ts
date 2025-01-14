@@ -13,3 +13,9 @@ export interface RoleUpdatePayload {
   userId: string;
   newRole: Role;
 }
+
+export interface RoleManagementState {
+  selectedRole?: Role;
+  isUpdating: boolean;
+  error: Error | null;
+}

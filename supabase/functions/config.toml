@@ -1,5 +1,4 @@
-# project_id must be the first value in the toml
 project_id = "fldafqlezglfbmqrgcoj"
 
-[global.env]
-STRIPE_SECRET_KEY = "vault:stripe-secret-key"
+[functions.create-checkout]
+verify_jwt = false

@@ -14,6 +14,7 @@ import { PropertyListingView } from "@/components/PropertyListingView";
 import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
 import { MarketAnalyticsDashboard } from "@/components/MarketAnalyticsDashboard";
+import { MarketTrendsAnalysis } from "@/components/analytics/MarketTrendsAnalysis";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { useState } from "react";
@@ -47,6 +48,7 @@ const Index = () => {
           <PortfolioDashboard />
           <PropertyAnalyticsDashboard />
           <MarketAnalyticsDashboard />
+          <MarketTrendsAnalysis />
           <InvestmentOpportunityScoring />
           <RiskAssessmentDashboard />
         </TabsContent>

@@ -1,13 +1,19 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { MainDashboardAnalytics } from "@/components/dashboard/MainDashboardAnalytics";
+import { PropertyAnalytics } from "@/components/dashboard/PropertyAnalytics";
+import { InvestmentAnalytics } from "@/components/dashboard/InvestmentAnalytics";
+import { LocationAnalytics } from "@/components/dashboard/LocationAnalytics";
 import { PortfolioDashboard } from "@/components/PortfolioDashboard";
+import { DocumentManager } from "@/components/DocumentManager";
+import { MaintenanceTracker } from "@/components/MaintenanceTracker";
 import { PropertyAnalyticsDashboard } from "@/components/PropertyAnalyticsDashboard";
-import { MarketAnalyticsDashboard } from "@/components/MarketAnalyticsDashboard";
+import { PropertyListingView } from "@/components/PropertyListingView";
 import { InvestmentOpportunityScoring } from "@/components/InvestmentOpportunityScoring";
 import { RiskAssessmentDashboard } from "@/components/RiskAssessmentDashboard";
+import { MarketAnalyticsDashboard } from "@/components/MarketAnalyticsDashboard";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { useState } from "react";
@@ -16,38 +22,16 @@ const Index = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("portfolio");
-  const mounted = useRef(true);
 
-  // Comment out authentication logic temporarily
-  /*
   useEffect(() => {
-    if (!session && mounted.current) {
-      console.log("No session found in Index, redirecting to /auth");
+    if (!session) {
       navigate("/auth");
-      return;
     }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted.current) return;
-      
-      console.log("Index auth state changed:", event, !!session);
-      
-      if (!session) {
-        console.log("No session in Index, redirecting to /auth");
-        navigate("/auth");
-      }
-    });
-
-    return () => {
-      mounted.current = false;
-      subscription.unsubscribe();
-    };
   }, [session, navigate]);
 
   if (!session) {
     return null;
   }
-  */
 
   return (
     <DashboardLayout>
@@ -68,27 +52,30 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="ai" className="space-y-6">
-          <PropertyAnalyticsDashboard />
+          <MainDashboardAnalytics />
         </TabsContent>
 
         <TabsContent value="properties" className="space-y-6">
-          <PortfolioDashboard />
+          <PropertyListingView />
+          <PropertyAnalytics />
         </TabsContent>
         
         <TabsContent value="documents" className="space-y-6">
-          <div>Documents section coming soon</div>
+          <DocumentManager />
         </TabsContent>
         
         <TabsContent value="maintenance" className="space-y-6">
-          <div>Maintenance section coming soon</div>
+          <MaintenanceTracker />
         </TabsContent>
         
         <TabsContent value="analysis" className="space-y-6">
-          <PropertyAnalyticsDashboard />
+          <MainDashboardAnalytics />
+          <PropertyAnalytics />
+          <LocationAnalytics />
         </TabsContent>
         
         <TabsContent value="evaluation" className="space-y-6">
-          <PropertyAnalyticsDashboard />
+          <PropertyAnalytics />
         </TabsContent>
       </Tabs>
     </DashboardLayout>

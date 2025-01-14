@@ -2,30 +2,34 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 
-export type UserRole = "admin" | "investor" | "agent";
+export type UserRole = 'admin' | 'agent' | 'investor';
 
 export function useUserRole() {
   const session = useSession();
 
   return useQuery({
-    queryKey: ["userRole", session?.user?.id],
+    queryKey: ["user-role", session?.user?.id],
     queryFn: async (): Promise<UserRole> => {
       if (!session?.user?.id) {
-        return "investor"; // Default role
+        return 'investor';
       }
 
       const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id);
 
       if (error) {
-        console.error("Error fetching user role:", error);
-        return "investor"; // Default role on error
+        console.error('Error fetching user role:', error);
+        return 'investor';
       }
 
-      return (data?.role as UserRole) || "investor";
+      // If no role is found, return default role
+      if (!data || data.length === 0) {
+        return 'investor';
+      }
+
+      return data[0].role as UserRole;
     },
     enabled: !!session?.user?.id,
   });

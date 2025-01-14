@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -40,7 +40,13 @@ const LoadingFallback = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error: any) => {
+        // Don't retry on 401/403 errors
+        if (error?.status === 401 || error?.status === 403) return false;
+        // Retry up to 3 times with exponential backoff
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 10,
       refetchOnWindowFocus: false,
@@ -56,6 +62,11 @@ const queryClient = new QueryClient({
       },
     },
     mutations: {
+      retry: (failureCount, error: any) => {
+        if (error?.status === 401 || error?.status === 403) return false;
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       meta: {
         onError: (error: Error) => {
           errorLogger.log(error, "high", { source: "mutation" });
@@ -64,11 +75,6 @@ const queryClient = new QueryClient({
             description: "Failed to update data. Please try again.",
             variant: "destructive",
           });
-        },
-        onSettled: (_, error) => {
-          if (error) {
-            console.error("Mutation error:", error);
-          }
         },
       },
     },
@@ -118,7 +124,7 @@ const App = () => {
                       <Route
                         path="/admin/roles"
                         element={
-                          <AuthGuard requiredRole={["admin"]}>
+                          <AuthGuard requiredRole="admin">
                             <RoleManagement />
                           </AuthGuard>
                         }
@@ -126,7 +132,7 @@ const App = () => {
                       <Route
                         path="/properties/create"
                         element={
-                          <AuthGuard requiredRole={["admin", "agent"]}>
+                          <AuthGuard requiredRole="agent">
                             <CreatePropertyForm />
                           </AuthGuard>
                         }

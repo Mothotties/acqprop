@@ -6,7 +6,6 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { PropertyDetailsView } from "@/components/PropertyDetailsView";
 import { Auth } from "@/components/Auth";
-import { Index } from "@/components/Index";
 import { Dashboard } from "@/components/Dashboard";
 import { Properties } from "@/components/Properties";
 import { Analytics } from "@/components/Analytics";
@@ -119,6 +118,7 @@ function App() {
               <AuthGuard>
                 <DashboardLayout>
                   <Routes>
+                    {/* Redirect root to dashboard */}
                     <Route index element={
                       <Navigate 
                         to={ROUTES.private.dashboard.path} 

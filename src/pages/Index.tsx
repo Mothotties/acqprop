@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,27 +16,28 @@ const Index = () => {
   const session = useSession();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("portfolio");
+  const mounted = useRef(true);
 
   useEffect(() => {
-    // Redirect if no session
-    if (!session) {
+    if (!session && mounted.current) {
       navigate("/auth");
       return;
     }
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted.current) return;
+      
       if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
       }
     });
 
     return () => {
+      mounted.current = false;
       subscription.unsubscribe();
     };
   }, [session, navigate]);
 
-  // Don't render anything if there's no session
   if (!session) {
     return null;
   }

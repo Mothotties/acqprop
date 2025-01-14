@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -9,28 +9,35 @@ import type { AuthError } from "@supabase/supabase-js";
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
+  const mounted = useRef(true);
 
   useEffect(() => {
     // Single initial session check
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && mounted.current) {
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
       }
     };
     checkSession();
 
-    // Subscribe to auth changes with debounced navigation
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted.current) return;
+
       if (event === 'SIGNED_IN' && session) {
-        // Clear any existing errors
         setErrorMessage("");
-        // Navigate to home
         navigate("/");
       }
     });
 
+    // Cleanup
     return () => {
+      mounted.current = false;
       subscription.unsubscribe();
     };
   }, [navigate]);

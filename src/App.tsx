@@ -13,11 +13,19 @@ import { Settings } from "@/components/Settings";
 import { Profile } from "@/components/Profile";
 import { DocumentManager } from "@/components/DocumentManager";
 import { MaintenanceTracker } from "@/components/MaintenanceTracker";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Custom hook to log navigation
 const useNavigationLogger = () => {
@@ -102,60 +110,68 @@ function App() {
   }, [location]);
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          <Routes>
-            {/* Public routes */}
-            <Route path={ROUTES.public.auth.path} element={
-              <AuthGuard requireAuth={false}>
-                <Auth />
-              </AuthGuard>
-            } />
+    <ErrorBoundary>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <QueryClientProvider client={queryClient}>
+          <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          }>
+            <Router>
+              <Routes>
+                {/* Public routes */}
+                <Route path={ROUTES.public.auth.path} element={
+                  <AuthGuard requireAuth={false}>
+                    <Auth />
+                  </AuthGuard>
+                } />
 
-            {/* Protected routes */}
-            <Route path="/" element={
-              <AuthGuard>
-                <DashboardLayout>
-                  <Routes>
-                    {/* Redirect root to dashboard */}
-                    <Route index element={
-                      <Navigate 
-                        to={ROUTES.private.dashboard.path} 
-                        replace 
-                      />
-                    } />
-                    <Route path={ROUTES.private.dashboard.path} element={<Dashboard />} />
-                    <Route path={ROUTES.private.properties.path} element={<Properties />} />
-                    <Route path={ROUTES.private.propertyDetails.path} element={<PropertyDetailsView />} />
-                    <Route path={ROUTES.private.documents.path} element={<DocumentManager />} />
-                    <Route path={ROUTES.private.maintenance.path} element={<MaintenanceTracker />} />
-                    <Route path={ROUTES.private.analysis.path} element={<Analytics />} />
-                    <Route path={ROUTES.private.evaluation.path} element={<Analytics />} />
-                    <Route path={ROUTES.private.aiAnalysis.path} element={<Analytics />} />
-                    <Route path={ROUTES.private.settings.path} element={<Settings />} />
-                    <Route path={ROUTES.private.profile.path} element={<Profile />} />
-                  </Routes>
-                </DashboardLayout>
-              </AuthGuard>
-            } />
+                {/* Protected routes */}
+                <Route path="/" element={
+                  <AuthGuard>
+                    <DashboardLayout>
+                      <Routes>
+                        {/* Redirect root to dashboard */}
+                        <Route index element={
+                          <Navigate 
+                            to={ROUTES.private.dashboard.path} 
+                            replace 
+                          />
+                        } />
+                        <Route path={ROUTES.private.dashboard.path} element={<Dashboard />} />
+                        <Route path={ROUTES.private.properties.path} element={<Properties />} />
+                        <Route path={ROUTES.private.propertyDetails.path} element={<PropertyDetailsView />} />
+                        <Route path={ROUTES.private.documents.path} element={<DocumentManager />} />
+                        <Route path={ROUTES.private.maintenance.path} element={<MaintenanceTracker />} />
+                        <Route path={ROUTES.private.analysis.path} element={<Analytics />} />
+                        <Route path={ROUTES.private.evaluation.path} element={<Analytics />} />
+                        <Route path={ROUTES.private.aiAnalysis.path} element={<Analytics />} />
+                        <Route path={ROUTES.private.settings.path} element={<Settings />} />
+                        <Route path={ROUTES.private.profile.path} element={<Profile />} />
+                      </Routes>
+                    </DashboardLayout>
+                  </AuthGuard>
+                } />
 
-            {/* Catch all route with error handling */}
-            <Route path="*" element={
-              (() => {
-                console.error("[Router] Invalid route accessed:", {
-                  path: location.pathname,
-                  timestamp: new Date().toISOString()
-                });
-                toast.error("Page not found");
-                return <Navigate to={ROUTES.private.dashboard.path} replace />;
-              })()
-            } />
-          </Routes>
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </ThemeProvider>
+                {/* Catch all route with error handling */}
+                <Route path="*" element={
+                  (() => {
+                    console.error("[Router] Invalid route accessed:", {
+                      path: location.pathname,
+                      timestamp: new Date().toISOString()
+                    });
+                    toast.error("Page not found");
+                    return <Navigate to={ROUTES.private.dashboard.path} replace />;
+                  })()
+                } />
+              </Routes>
+            </Router>
+          </Suspense>
+          <Toaster />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -1,9 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, TrendingUp, Target, DollarSign } from "lucide-react";
 
-/**
- * Interface defining the structure of an opportunity card
- */
 interface OpportunityCard {
   title: string;
   location: string;
@@ -13,10 +10,6 @@ interface OpportunityCard {
   riskLevel: string;
 }
 
-/**
- * Sample investment opportunities data
- * In a production environment, this would be fetched from an API
- */
 const opportunities: OpportunityCard[] = [
   {
     title: "Luxury Apartment Complex",
@@ -44,25 +37,14 @@ const opportunities: OpportunityCard[] = [
   },
 ];
 
-/**
- * InvestmentOpportunities Component
- * Displays a grid of AI-recommended investment opportunities
- * Features:
- * - Property details
- * - AI confidence scores
- * - ROI predictions
- * - Risk assessments
- */
 export function InvestmentOpportunities() {
   return (
     <div className="space-y-6">
-      {/* Section Header */}
       <div className="flex items-center gap-2">
         <Brain className="w-6 h-6 text-primary" />
         <h2 className="text-2xl font-bold">AI-Powered Investment Opportunities</h2>
       </div>
 
-      {/* Opportunities Grid */}
       <div className="grid gap-6 md:grid-cols-3">
         {opportunities.map((opportunity, index) => (
           <Card key={index}>
@@ -72,14 +54,12 @@ export function InvestmentOpportunities() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Price Information */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Price</span>
                   <span className="font-medium">
                     ${opportunity.price.toLocaleString()}
                   </span>
                 </div>
-                {/* AI Confidence Score */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">AI Confidence Score</span>
                   <div className="flex items-center gap-1">
@@ -87,7 +67,6 @@ export function InvestmentOpportunities() {
                     <span className="font-medium">{opportunity.aiScore}%</span>
                   </div>
                 </div>
-                {/* ROI Potential */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Potential ROI</span>
                   <div className="flex items-center gap-1">
@@ -97,7 +76,6 @@ export function InvestmentOpportunities() {
                     </span>
                   </div>
                 </div>
-                {/* Risk Level */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Risk Level</span>
                   <div className="flex items-center gap-1">
